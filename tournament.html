@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tournament detail — TourneyHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-bar">
+      <a class="logo" href="index.html">TourneyHub</a>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span class="menu-icon"></span>
+      </button>
+    </div>
+<!-- Example for admin.html navigation -->
+<nav class="site-nav" aria-label="Primary">
+  <a href="tournaments.html">🏆 Tournaments</a>
+  <a href="profile.html" id="nav-profile">👤 My Dashboard</a>
+  <a href="wallet.html" id="nav-wallet">💰 Wallet</a>
+  <a href="admin.html" id="nav-admin">⚙️ Organizer Panel</a>
+  <a href="login.html" id="nav-login" class="btn btn-outline">🔑 Sign in / Join</a>
+</nav>
+  </header>
+
+  <main class="container">
+    <section id="not-found" class="section card" style="display:none">
+      <h2>Tournament not found</h2>
+      <p class="muted">This page needs a valid tournament ID. Browse tournaments and open one.</p>
+      <a class="btn btn-primary" href="tournaments.html">Browse tournaments</a>
+    </section>
+
+    <section id="tournament-hero" class="tournament-hero" aria-live="polite"></section>
+
+    <section class="tabs" role="tablist" aria-label="Tournament details">
+      <button class="tab active" role="tab" aria-selected="true" data-tab="about">Overview & Rules</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="participants">Registered Players</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="bracket">Live Bracket</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="schedule">Match Schedule</button>
+    </section>
+    <section id="tab-content" class="section card" aria-live="polite"></section>
+
+    <section id="register-card" class="section">
+      <div class="card flex-between">
+        <div>
+          <h3>Ready to compete?</h3>
+          <p id="reg-info">Join this tournament now.</p>
+        </div>
+        <div>
+          <button id="register-btn" class="btn btn-primary">Register</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© TourneyHub</p>
+  </footer>
+
+  <script>
+    (function() {
+      const hasId = new URLSearchParams(location.search).get("id");
+      if (!hasId) {
+        document.getElementById("not-found").style.display = "block";
+        ["tournament-hero","register-card"].forEach(id => document.getElementById(id).style.display = "none");
+        document.querySelector(".tabs").style.display = "none";
+      }
+    })();
+  </script>
+</body>
+</html>
+</html>

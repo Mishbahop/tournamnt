@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard — TourneyHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <main>
+    <h1>Dashboard</h1>
+    <p id="welcome"></p>
+    <button id="logout-btn">Logout</button>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const auth = firebase.auth();
+      const welcome = document.getElementById("welcome");
+      const logoutBtn = document.getElementById("logout-btn");
+
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          welcome.textContent = "Welcome, " + user.email;
+        } else {
+          window.location.href = "login.html";
+        }
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        await auth.signOut();
+        window.location.href = "login.html";
+      });
+    });
+  </script>
+</body>
+</html>

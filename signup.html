@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Signup — TourneyHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <script>
+    // Your Firebase config (same as login.html)
+    const firebaseConfig = {
+      apiKey: "AIzaSyArosy2vQbF_ac9YE9TcnTSoHwJoJW4",
+      authDomain: "authapp-386ee.firebaseapp.com",
+      projectId: "authapp-386ee",
+      storageBucket: "authapp-386ee.appspot.com",
+      messagingSenderId: "586780888880",
+      appId: "1:586780888880:web:5cb7de808de9ef12692f",
+      measurementId: "G-EJZISBSBQT"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body class="auth-body">
+  <main class="auth-card">
+    <h1>Create Account</h1>
+    <p class="muted">Join TourneyHub and start competing.</p>
+
+    <label class="input">
+      <span>Email</span>
+      <input id="signup-email" type="email" placeholder="you@example.com" />
+    </label>
+    <label class="input">
+      <span>Password</span>
+      <input id="signup-password" type="password" placeholder="••••••••" />
+    </label>
+    <button id="signup-btn" class="btn btn-primary">Sign Up</button>
+
+    <p class="tiny muted">
+      Already have an account? <a href="login.html" class="link">Login</a>
+    </p>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const auth = firebase.auth();
+
+      const emailInput = document.getElementById("signup-email");
+      const passwordInput = document.getElementById("signup-password");
+      const signupBtn = document.getElementById("signup-btn");
+
+      signupBtn.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!email || !password) {
+          alert("Please enter both email and password.");
+          return;
+        }
+
+        try {
+          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          alert("Signup successful! Welcome " + userCredential.user.email);
+          window.location.href = "dashboard.html"; // redirect after signup
+        } catch (error) {
+          alert("Signup failed: " + error.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

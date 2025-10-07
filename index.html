@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TourneyHub — Play, Compete, Win</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-bar">
+      <a class="logo" href="index.html">TourneyHub</a>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Compete. Conquer. Celebrate.</h1>
+        <p>Join thrilling tournaments, track live brackets, and prove your skills. Whether you’re a solo player or part of a squad, TourneyHub is your arena.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="tournaments.html">Find a Tournament</a>
+          <a class="btn btn-ghost" href="admin.html">Host Your Own</a>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>🔥 Trending Right Now</h2>
+        <a href="tournaments.html" class="link">View all tournaments</a>
+      </div>
+      <div id="featured-grid" class="grid cards"></div>
+    </section>
+
+    <section class="section">
+      <h2>Why TourneyHub?</h2>
+      <div class="grid features">
+        <div class="feature">
+          <div class="icon">🏁</div>
+          <h3>Brackets that feel good</h3>
+          <p>Single or double elimination, seeded or shuffled—your call.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">💳</div>
+          <h3>Smooth registrations</h3>
+          <p>Join solo or as a team. Instant confirmations.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">🔔</div>
+          <style>
+            .feature .icon {
+              font-size: 2.6rem;
+              margin-bottom: 16px;
+              color: var(--accent-light);
+            }
+            .feature h3 {
+              font-size: 1.25rem;
+              font-weight: 700;
+              margin-bottom: 10px;
+              color: var(--text);
+            }
+            .feature p {
+              color: var(--body-text);
+              font-size: 1.05rem;
+            }
+            .feature {
+              padding: 70px;
+            }
+          </style>
+          <h3>Stay in the loop</h3>
+          <p>Reminders and updates so nobody misses a match.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom navigation (mobile) -->
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="tournaments.html" aria-label="Tournaments">🏆</a>
+    <a href="wallet.html" aria-label="Wallet">💰</a>
+    <a href="admin.html" aria-label="Organizer Panel">⚙️</a>
+    <a href="login.html" aria-label="Sign in / Join">🔑</a>
+       <a href="profile.html" aria-label="My Dashboard">👤</a>
+  </nav>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Browse Tournaments — TourneyHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-bar">
+      <a class="logo" href="index.html">TourneyHub</a>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span class="menu-icon"></span>
+      </button>
+    </div>
+<!-- Example for admin.html navigation -->
+<nav class="site-nav" aria-label="Primary">
+  <a href="tournaments.html">🏆 Tournaments</a>
+  <a href="profile.html" id="nav-profile">👤 My Dashboard</a>
+  <a href="wallet.html" id="nav-wallet">💰 Wallet</a>
+  <a href="admin.html" id="nav-admin">⚙️ Organizer Panel</a>
+  <a href="login.html" id="nav-login" class="btn btn-outline">🔑 Sign in / Join</a>
+</nav>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="filters">
+        <input id="search" type="text" placeholder="Search by title or game…" />
+        <select id="type">
+          <option value="">All Types</option>
+          <option value="SOLO">Solo</option>
+          <option value="TEAM">Team</option>
+        </select>
+        <select id="bracket">
+          <option value="">All Brackets</option>
+          <option value="SINGLE_ELIM">Single Elimination</option>
+          <option value="DOUBLE_ELIM">Double Elimination</option>
+        </select>
+      </div>
+    </section>
+    <section class="section">
+      <div id="tournaments-grid" class="grid cards"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© TourneyHub</p>
+  </footer>
+</body>
+</html>

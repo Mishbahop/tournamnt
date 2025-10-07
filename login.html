@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login — TourneyHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <script>
+    // Replace with your Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body class="auth-body">
+  <main class="auth-card">
+    <h1>Welcome back</h1>
+    <p class="muted">Sign in to your account and join the action.</p>
+
+    <label class="input">
+      <span>Email</span>
+      <input id="login-email" type="email" placeholder="you@example.com" />
+    </label>
+    <label class="input">
+      <span>Password</span>
+      <input id="login-password" type="password" placeholder="••••••••" />
+    </label>
+    <button id="login-btn" class="btn btn-primary">Login</button>
+
+    <p class="tiny muted">
+      Don't have an account? <a href="signup.html" class="link">Create one</a>
+    </p>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const auth = firebase.auth();
+
+      const emailInput = document.getElementById("login-email");
+      const passwordInput = document.getElementById("login-password");
+      const loginBtn = document.getElementById("login-btn");
+
+      loginBtn.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!email || !password) {
+          alert("Please enter both email and password.");
+          return;
+        }
+
+        try {
+          const userCredential = await auth.signInWithEmailAndPassword(email, password);
+          alert("Login successful! Welcome " + userCredential.user.email);
+          window.location.href = "dashboard.html"; // redirect after login
+        } catch (error) {
+          alert("Login failed: " + error.message);
+        }
+      });
+
+      // Optional: auto-detect if already logged in
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          console.log("Already logged in as:", user.email);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

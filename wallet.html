@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wallet — TourneyHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-bar">
+      <a class="logo" href="index.html">TourneyHub</a>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="site-nav">
+        <span class="menu-icon"></span>
+      </button>
+    </div>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="tournaments.html">🏆 Tournaments</a>
+      <a href="profile.html" id="nav-profile">👤 My Dashboard</a>
+      <a href="wallet.html" id="nav-wallet" class="active">💰 Wallet</a>
+      <a href="admin.html" id="nav-admin">⚙️ Organizer Panel</a>
+      <a href="login.html" id="nav-login" class="btn btn-outline">🔑 Sign in / Join</a>
+    </nav>
+  </header>
+
+  <main class="container">
+  <section class="section card">
+    <h2>💰 Wallet</h2>
+    <div id="wallet-balance" style="font-size:1.2rem;font-weight:700;margin-bottom:18px;"></div>
+    <div class="tab-bar" style="display:flex;gap:12px;margin-bottom:24px;">
+      <button class="tab active" id="tab-deposit">Deposit</button>
+      <button class="tab" id="tab-withdraw">Withdraw</button>
+      <button class="tab" id="tab-history">History</button>
+    </div>
+    <div id="wallet-content"></div>
+    <div id="wallet-status" class="muted tiny" style="margin-top:18px;"></div>
+  </section>
+</main>
+  <footer class="site-footer">
+    <p>© TourneyHub</p>
+  </footer>
+</body>
+</html>

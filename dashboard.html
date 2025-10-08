@@ -2,49 +2,212 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard — TourneyHub</title>
+  <title>My Dashboard — TourneyHub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
+    <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="tournaments.html" aria-label="Tournaments">🏆</a>
+    <a href="wallet.html" aria-label="Wallet">💰</a>
+    <a href="admin.html" aria-label="Organizer Panel">⚙️</a>
+    <a href="login.html" aria-label="Sign in / Join">🔑</a>
+       <a href="dashboard.html" aria-label="My Dashboard">👤</a>
+  </nav>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0f1a;
+      color: #f1f5f9;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: calc(56px + env(safe-area-inset-bottom));
+    }
+    .site-header {
+      position: sticky;
+      top: 0;
+      background: #0b0f1a;
+      border-bottom: 1px solid #1e293b;
+      z-index: 100;
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+    }
+    .logo {
+      color: #38bdf8;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 18px;
+    }
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      margin: 12px 0;
+      border-radius: 8px;
+      background: #1e293b;
+      padding: 4px;
+    }
+    .tab {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #cbd5e1;
+      padding: 10px 0;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .tab.active {
+      background: #3b82f6;
+      color: #fff;
+      font-weight: 600;
+    }
+    .section-header h2 {
+      margin: 16px 0 8px;
+      font-size: 16px;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 9999;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .bottom-nav a {
+      flex: 1;
+      text-align: center;
+      font-size: 22px;
+      color: #111827;
+      text-decoration: none;
+    }
+    .bottom-nav a.active {
+      color: #2563eb;
+    }
+    @media (min-width: 768px) {
+      .bottom-nav { display: none; }
+    }
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-bar">
+      <a class="logo" href="index.html">TourneyHub</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="tabs">
+      <button class="tab active" id="tab-my-tournaments">My Tournaments</button>
+      <button class="tab" id="tab-my-matches">My Matches</button>
+      <button class="tab" id="tab-my-gifts">My Gifts</button>
+      <button class="tab" id="tab-my-profile">My Profile</button>
+    </nav>
+
+    <section id="profile-content">
+      <section id="my-registrations-section" class="section">
+        <div class="section-header"><h2>🎟️ My Tournaments</h2></div>
+        <div id="my-registrations" class="list"></div>
+      </section>
+      <section id="my-matches-section" class="section" style="display:none;">
+        <div class="section-header"><h2>📅 My Matches</h2></div>
+        <div id="my-matches" class="list"></div>
+      </section>
+      <section id="my-gifts-section" class="section" style="display:none;">
+        <div class="section-header"><h2>🎁 My Gifts</h2></div>
+        <div id="my-gifts" class="list"></div>
+      </section>
+      <section id="my-profile-section" class="section" style="display:none;">
+        <div class="section-header"><h2>👤 My Profile</h2></div>
+        <div id="my-profile" class="list"></div>
+      </section>
+    </section>
+  </main>
+
 
   <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
   <script>
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+      authDomain: "authapp-386ee.firebaseapp.com",
+      projectId: "authapp-386ee",
+      storageBucket: "authapp-386ee.firebasestorage.app",
+      messagingSenderId: "809698525310",
+      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+      measurementId: "G-EJZTSBSGQT"
     };
     firebase.initializeApp(firebaseConfig);
   </script>
-</head>
-<body>
-  <main>
-    <h1>Dashboard</h1>
-    <p id="welcome"></p>
-    <button id="logout-btn">Logout</button>
-  </main>
 
+  <!-- Tab navigation + Auth logic -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const auth = firebase.auth();
-      const welcome = document.getElementById("welcome");
-      const logoutBtn = document.getElementById("logout-btn");
 
+      // Tab switching
+      const tabs = [
+        document.getElementById("tab-my-tournaments"),
+        document.getElementById("tab-my-matches"),
+        document.getElementById("tab-my-gifts"),
+        document.getElementById("tab-my-profile")
+      ];
+      const sections = [
+        document.getElementById("my-registrations-section"),
+        document.getElementById("my-matches-section"),
+        document.getElementById("my-gifts-section"),
+        document.getElementById("my-profile-section")
+      ];
+      function showTab(idx) {
+        tabs.forEach((tab, i) => tab.classList.toggle("active", i === idx));
+        sections.forEach((sec, i) => sec.style.display = i === idx ? "" : "none");
+      }
+      tabs.forEach((tab, i) => tab.onclick = () => showTab(i));
+      showTab(0);
+
+      // Auth check
       auth.onAuthStateChanged(user => {
-        if (user) {
-          welcome.textContent = "Welcome, " + user.email;
-        } else {
+        if (!user) {
           window.location.href = "login.html";
+          return;
         }
-      });
 
-      logoutBtn.addEventListener("click", async () => {
-        await auth.signOut();
-        window.location.href = "login.html";
+        const profileBox = document.getElementById("my-profile");
+        profileBox.innerHTML = `
+          <p><strong>Email:</strong> ${user.email}</p>
+          <p><strong>User ID:</strong> ${user.uid}</p>
+          <p><strong>Created:</strong> ${new Date(user.metadata.creationTime).toLocaleString()}</p>
+          <p><strong>Last Login:</strong> ${new Date(user.metadata.lastSignInTime).toLocaleString()}</p>
+          <p><strong>Provider:</strong> ${user.providerData[0]?.providerId || "email"}</p>
+          <p><strong>Email Verified:</strong> ${user.emailVerified ? "✅ Yes" : "❌ No"}</p>
+          <button id="logout-btn" class="btn-primary">Logout</button>
+        `;
+        document.getElementById("logout-btn").addEventListener("click", async () => {
+          await auth.signOut();
+          window.location.href = "login.html";
+        });
       });
     });
   </script>

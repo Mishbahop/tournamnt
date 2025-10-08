@@ -1,44 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <title>Wallet — TourneyHub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
-  <script defer src="script.js"></script>
+  
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#071029;color:#e6eef8;}
+    .container{max-width:760px;margin:20px auto;padding:16px}
+    .card{background:#0f1724;border-radius:12px;padding:16px;border:1px solid #1f2a3a}
+    h2{margin:0 0 12px}
+    .muted{color:#9aa6b2;font-size:13px}
+    .balance{font-size:20px;font-weight:700;margin:10px 0}
+    .tab-bar{display:flex;gap:8px;margin-bottom:12px}
+    .tab{flex:1;padding:10px;border-radius:8px;background:#0b1220;border:1px solid #1f2a3a;color:#bcd3f7;cursor:pointer}
+    .tab.active{background:#1f59ff;color:white}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #1f2a3a;background:#071428;color:inherit;margin-top:8px}
+    .row{display:flex;gap:8px}
+    .col{flex:1}
+    button{padding:10px 14px;border-radius:10px;border:none;background:#1f59ff;color:white;cursor:pointer;font-weight:700}
+    button.ghost{background:transparent;border:1px solid #1f2a3a;color:#bcd3f7}
+    .status{margin-top:12px;color:#9bd0ff}
+    .history-list{list-style:none;padding:0;margin:0}
+    .history-list li{padding:10px;border-bottom:1px solid #102033}
+    .qr-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6)}
+    .qr-card{background:#071429;padding:16px;border-radius:12px;border:1px solid #203246;max-width:320px;text-align:center}
+    .small{font-size:13px;color:#9aa6b2}
+    @media(min-width:720px){ .row .col {flex: 1} }
+  </style>
 </head>
+  <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="tournaments.html" aria-label="Tournaments">🏆</a>
+    <a href="wallet.html" aria-label="Wallet">💰</a>
+    <a href="admin.html" aria-label="Organizer Panel">⚙️</a>
+    <a href="login.html" aria-label="Sign in / Join">🔑</a>
+       <a href="dashboard.html" aria-label="My Dashboard">👤</a>
+  </nav>
 <body>
-  <header class="site-header">
-    <div class="header-bar">
-      <a class="logo" href="index.html">TourneyHub</a>
-      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="site-nav">
-        <span class="menu-icon"></span>
-      </button>
-    </div>
-    <nav class="site-nav" aria-label="Primary">
-      <a href="tournaments.html">🏆 Tournaments</a>
-      <a href="profile.html" id="nav-profile">👤 My Dashboard</a>
-      <a href="wallet.html" id="nav-wallet" class="active">💰 Wallet</a>
-      <a href="admin.html" id="nav-admin">⚙️ Organizer Panel</a>
-      <a href="login.html" id="nav-login" class="btn btn-outline">🔑 Sign in / Join</a>
-    </nav>
-  </header>
-
+  
   <main class="container">
-  <section class="section card">
-    <h2>💰 Wallet</h2>
-    <div id="wallet-balance" style="font-size:1.2rem;font-weight:700;margin-bottom:18px;"></div>
-    <div class="tab-bar" style="display:flex;gap:12px;margin-bottom:24px;">
-      <button class="tab active" id="tab-deposit">Deposit</button>
-      <button class="tab" id="tab-withdraw">Withdraw</button>
-      <button class="tab" id="tab-history">History</button>
+    <div class="card">
+      <h2>💰 Wallet</h2>
+      <div id="wallet-balance" class="balance">Balance: —</div>
+
+      <div class="tab-bar">
+        <button id="tab-deposit" class="tab active">Deposit</button>
+        <button id="tab-withdraw" class="tab">Withdraw</button>
+        <button id="tab-history" class="tab">History</button>
+      </div>
+
+      <div id="wallet-content"></div>
+      <div id="wallet-status" class="status"></div>
     </div>
-    <div id="wallet-content"></div>
-    <div id="wallet-status" class="muted tiny" style="margin-top:18px;"></div>
-  </section>
-</main>
-  <footer class="site-footer">
-    <p>© TourneyHub</p>
-  </footer>
+  </main>
+
+  <!-- QR modal (hidden) -->
+  <div id="qrModal" class="qr-modal" style="display:none">
+    <div class="qr-card">
+      <div id="qrTitle" style="font-weight:800;margin-bottom:8px">Scan to pay</div>
+      <img id="qrImg" src="" alt="QR" style="width:240px;height:240px;border-radius:8px;border:1px solid #102033"/>
+      <div class="small" id="qrNote" style="margin-top:8px"></div>
+      <div style="margin-top:12px">
+        <button id="closeQr" class="ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Replace with your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+      authDomain: "authapp-386ee.firebaseapp.com",
+      projectId: "authapp-386ee",
+      storageBucket: "authapp-386ee.firebasestorage.app",
+      messagingSenderId: "809698525310",
+      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+      measurementId: "G-EJZTSBSGQT"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const balanceBox = document.getElementById('wallet-balance');
+    const contentBox = document.getElementById('wallet-content');
+    const statusBox = document.getElementById('wallet-status');
+
+    const qrModal = document.getElementById('qrModal');
+    const qrImg = document.getElementById('qrImg');
+    const qrNote = document.getElementById('qrNote');
+    const qrTitle = document.getElementById('qrTitle');
+    document.getElementById('closeQr').onclick = () => qrModal.style.display = 'none';
+
+    let userEmail = null;
+    let cachedBalance = 0;
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      userEmail = user.email;
+      updateWalletBalance();
+      renderTab('deposit');
+    });
+
+    document.getElementById('tab-deposit').onclick = () => renderTab('deposit');
+    document.getElementById('tab-withdraw').onclick = () => renderTab('withdraw');
+    document.getElementById('tab-history').onclick = () => renderTab('history');
+
+    async function updateWalletBalance(){
+      if (!userEmail) return;
+      try {
+        const depSnap = await db.collection('deposits').where('email','==',userEmail).where('status','==','approved').get();
+        let totalD = 0;
+        depSnap.forEach(d => totalD += Number(d.data().amount) || 0);
+
+        const witSnap = await db.collection('withdrawals').where('email','==',userEmail).where('status','==','approved').get();
+        let totalW = 0;
+        witSnap.forEach(w => totalW += Number(w.data().amount) || 0);
+
+        cachedBalance = totalD - totalW;
+        balanceBox.textContent = `Balance: ₹${cachedBalance.toLocaleString()} — ${userEmail}`;
+      } catch (err) {
+        console.error('Balance calc error', err);
+        balanceBox.textContent = `Balance: unavailable — ${userEmail}`;
+      }
+    }
+
+    function renderTab(tab){
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-'+tab).classList.add('active');
+      statusBox.textContent = '';
+
+      if (tab === 'deposit') {
+        contentBox.innerHTML = `
+          <label class="small">Amount (₹)</label>
+          <input id="deposit-amount" type="number" min="1" step="1" placeholder="Enter amount" />
+          <label class="small" style="margin-top:8px">TRN / UTR / Reference</label>
+          <input id="deposit-utr" type="text" placeholder="Enter bank UTR or transaction reference" />
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="deposit-btn">Submit deposit</button>
+            <button id="show-qr" class="ghost">Show QR for payment</button>
+          </div>
+        `;
+        document.getElementById('deposit-btn').onclick = submitDeposit;
+        document.getElementById('show-qr').onclick = showPaymentQr;
+      }
+
+      if (tab === 'withdraw') {
+        contentBox.innerHTML = `
+          <label class="small">Amount to withdraw (₹)</label>
+          <input id="withdraw-amount" type="number" min="1" step="1" placeholder="Enter amount" />
+          <label class="small" style="margin-top:8px">Payment details (UPI/Account)</label>
+          <input id="withdraw-detail" type="text" placeholder="Enter UPI ID or account details" />
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="withdraw-btn">Request withdraw</button>
+            <button id="max-btn" class="ghost">Use max</button>
+          </div>
+        `;
+        document.getElementById('withdraw-btn').onclick = submitWithdraw;
+        document.getElementById('max-btn').onclick = () => {
+          const el = document.getElementById('withdraw-amount');
+          if (el) el.valueAsNumber = cachedBalance;
+        };
+      }
+
+      if (tab === 'history') {
+        contentBox.innerHTML = `<p class="muted">Loading history…</p>`;
+        loadHistory();
+      }
+    }
+
+    async function submitDeposit(){
+      const amtEl = document.getElementById('deposit-amount');
+      const utrEl = document.getElementById('deposit-utr');
+      const amt = Number(amtEl?.value ?? 0);
+      const utr = (utrEl?.value || '').trim();
+
+      if (amt <= 0) { statusBox.textContent = 'Enter a valid deposit amount.'; return; }
+      if (!utr) {
+        // allow empty UTR but warn
+        if (!confirm('No UTR entered. Submit deposit without reference?')) return;
+      }
+
+      try {
+        await db.collection('deposits').add({
+          email: userEmail,
+          amount: amt,
+          utr: utr || null,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdAtClient: new Date().toISOString(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        statusBox.textContent = `Deposit of ₹${amt} submitted. Add UTR later from profile if needed.`;
+        amtEl.value = ''; utrEl.value = '';
+      } catch (err) {
+        console.error('Deposit error', err);
+        statusBox.textContent = 'Error submitting deposit.';
+      }
+    }
+
+    // Payment QR modal: you can customize paymentText (UPI/other)
+    function showPaymentQr(){
+      // Replace this with your actual payment string (UPI or payment URL)
+      const paymentText = prompt('Enter payment string for QR (e.g., UPI or payment link):', 'upi://pay?pa=merchant@upi&pn=TourneyHub&am=0');
+      if (!paymentText) return;
+
+      // Create QR via Google Chart API (simple)
+      const encoded = encodeURIComponent(paymentText);
+      const qrSrc = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encoded}&choe=UTF-8`;
+      qrImg.src = qrSrc;
+      qrNote.textContent = 'Scan the QR with your UPI app or scanner. After payment, submit deposit with UTR/reference.';
+      qrTitle.textContent = 'Scan to pay';
+      qrModal.style.display = 'flex';
+    }
+
+    async function submitWithdraw(){
+      const amtEl = document.getElementById('withdraw-amount');
+      const detailEl = document.getElementById('withdraw-detail');
+      const amt = Number(amtEl?.value ?? 0);
+      const detail = (detailEl?.value || '').trim();
+
+      if (amt <= 0) { statusBox.textContent = 'Enter a valid withdraw amount.'; return; }
+      if (amt > cachedBalance) { statusBox.textContent = `You cannot withdraw more than your balance (₹${cachedBalance}).`; return; }
+      if (!detail) { statusBox.textContent = 'Enter payment details (UPI or account).'; return; }
+
+      try {
+        await db.collection('withdrawals').add({
+          email: userEmail,
+          amount: amt,
+          details: detail,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdAtClient: new Date().toISOString(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        statusBox.textContent = `Withdrawal request of ₹${amt} submitted.`;
+        amtEl.value = ''; detailEl.value = '';
+      } catch (err) {
+        console.error('Withdraw error', err);
+        statusBox.textContent = 'Error submitting withdrawal.';
+      }
+    }
+
+    async function loadHistory(){
+      try {
+        const [deps, wits] = await Promise.all([
+          db.collection('deposits').where('email','==',userEmail).get(),
+          db.collection('withdrawals').where('email','==',userEmail).get()
+        ]);
+        const items = [];
+        deps.forEach(doc => {
+          const d = doc.data();
+          const time = d.createdAt?.toDate?.().toLocaleString() || (d.createdAtClient || '—');
+          items.push({ order: d.createdAt?.toDate?.().getTime() || new Date(d.createdAtClient || 0).getTime(), html: `Deposit ₹${d.amount} • ${d.status} • UTR: ${d.utr || '—'} • ${time}` });
+        });
+        wits.forEach(doc => {
+          const w = doc.data();
+          const time = w.createdAt?.toDate?.().toLocaleString() || (w.createdAtClient || '—');
+          items.push({ order: w.createdAt?.toDate?.().getTime() || new Date(w.createdAtClient || 0).getTime(), html: `Withdrawal ₹${w.amount} • ${w.status} • ${time}` });
+        });
+        items.sort((a,b) => b.order - a.order);
+        contentBox.innerHTML = items.length ? `<ul class="history-list">${items.map(i=>`<li>${i.html}</li>`).join('')}</ul>` : '<p class="muted">No transactions yet.</p>';
+      } catch (err) {
+        console.error('History load error', err);
+        contentBox.innerHTML = '<p class="muted">Error loading history.</p>';
+      }
+    }
+
+    // Optional: listen for admin approving deposits/withdrawals and refresh balance automatically
+    // You can enable these listeners for live updates if you prefer
+    // auth.onAuthStateChanged(user => {
+    //   if (user) {
+    //     db.collection('deposits').where('email','==',user.email).onSnapshot(updateWalletBalance);
+    //     db.collection('withdrawals').where('email','==',user.email).onSnapshot(updateWalletBalance);
+    //   }
+    // });
+  </script>
 </body>
 </html>

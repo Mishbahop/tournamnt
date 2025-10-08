@@ -6,19 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <!-- Firebase SDKs (compat version for browser) -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+
   <script>
-    // Your Firebase config (same as login.html)
     const firebaseConfig = {
-      apiKey: "AIzaSyArosy2vQbF_ac9YE9TcnTSoHwJoJW4",
+      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
       authDomain: "authapp-386ee.firebaseapp.com",
       projectId: "authapp-386ee",
-      storageBucket: "authapp-386ee.appspot.com",
-      messagingSenderId: "586780888880",
-      appId: "1:586780888880:web:5cb7de808de9ef12692f",
-      measurementId: "G-EJZISBSBQT"
+      storageBucket: "authapp-386ee.firebasestorage.app",
+      messagingSenderId: "809698525310",
+      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+      measurementId: "G-EJZTSBSGQT"
     };
     firebase.initializeApp(firebaseConfig);
   </script>
@@ -47,13 +47,15 @@
     document.addEventListener("DOMContentLoaded", () => {
       const auth = firebase.auth();
 
-      const emailInput = document.getElementById("signup-email");
-      const passwordInput = document.getElementById("signup-password");
-      const signupBtn = document.getElementById("signup-btn");
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          window.location.href = "dashboard.html";
+        }
+      });
 
-      signupBtn.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
+      document.getElementById("signup-btn").addEventListener("click", async () => {
+        const email = document.getElementById("signup-email").value.trim();
+        const password = document.getElementById("signup-password").value.trim();
 
         if (!email || !password) {
           alert("Please enter both email and password.");
@@ -62,8 +64,8 @@
 
         try {
           const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-          alert("Signup successful! Welcome " + userCredential.user.email);
-          window.location.href = "dashboard.html"; // redirect after signup
+          alert("Signup successful: " + userCredential.user.email);
+          window.location.href = "dashboard.html";
         } catch (error) {
           alert("Signup failed: " + error.message);
         }

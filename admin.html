@@ -1,438 +1,573 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Organizer Panel — TourneyHub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
-  <script defer src="script.js"></script>
+  <title>Admin — TourneyHub (Mobile)</title>
+  <body>
+      <nav class="bottom-nav" aria-label="Mobile navigation">
+    <a href="tournaments.html" aria-label="Tournaments">🏆</a>
+    <a href="wallet.html" aria-label="Wallet">💰</a>
+    <a href="admin.html" aria-label="Organizer Panel">⚙️</a>
+    <a href="login.html" aria-label="Sign in / Join">🔑</a>
+       <a href="dashboard.html" aria-label="My Dashboard">👤</a>
+  </nav>
+  </body>
+  <style>
+    :root{
+      --bg:#070812; --panel:#0f1724; --muted:#9aa6b2; --accent:#2563eb;
+      --ok:#16a34a; --bad:#ef4444; --card:#0b1220; --line:#1f2a38; --glass: rgba(255,255,255,0.03);
+      --radius:12px;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#e6eef8;background:var(--bg);}
+    header{position:sticky;top:0;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);backdrop-filter: blur(6px);border-bottom:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;gap:12px;z-index:40;}
+    .logo{font-weight:700;color:var(--accent);font-size:16px;text-decoration:none}
+    .badge{margin-left:auto;padding:6px 10px;border-radius:999px;background:var(--card);font-size:13px;border:1px solid var(--line);color:var(--muted)}
+    main{padding:14px;max-width:980px;margin:0 auto;}
+    .card{background:linear-gradient(180deg,var(--panel),var(--card));border-radius:var(--radius);padding:12px;border:1px solid var(--line);box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-bottom:12px;}
+    h1{font-size:18px;margin:0 0 8px 0}
+    .muted{color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px;margin-top:10px}
+    button{appearance:none;border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer;background:var(--accent);color:white;box-shadow:0 6px 12px rgba(2,6,23,0.45)}
+    button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);box-shadow:none}
+    button.small{padding:8px 10px;font-size:14px;border-radius:9px}
+    .stats{display:flex;gap:8px;overflow:auto;padding-bottom:4px;margin-top:8px}
+    .stat{min-width:120px;background:var(--glass);padding:10px;border-radius:10px;border:1px solid var(--line)}
+    .grid{display:grid;grid-template-columns:1fr;gap:10px}
+    /* table desktop, cards mobile */
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+    th{font-size:13px;color:var(--muted);background:transparent}
+    .action-row{display:flex;gap:8px;flex-wrap:wrap}
+    .approve{background:var(--ok);color:#05240f}
+    .reject{background:var(--bad)}
+    /* mobile cards */
+    .list-card{display:block;background:transparent;border:1px solid var(--line);padding:12px;border-radius:10px}
+    .row-title{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
+    .row-meta{color:var(--muted);font-size:13px;margin-bottom:6px}
+    .compact-amount{font-weight:800}
+    /* search */
+    .search-wrap{display:flex;gap:8px;align-items:center}
+    .search{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit}
+    /* responsive */
+    @media(min-width:920px){
+      .grid{grid-template-columns:1fr 1fr}
+      .list-card.mobile-only{display:none}
+      .table-only{display:table}
+    }
+    @media(max-width:919px){
+      .table-only{display:none}
+      .list-card.mobile-only{display:block}
+    }
+    /* touch improvements */
+    button, .search, input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    .center{display:flex;align-items:center;justify-content:center}
+    .no-data{color:var(--muted);padding:12px;text-align:center}
+    footer{padding:14px;text-align:center;color:var(--muted);font-size:13px}
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-bar">
-      <a class="logo" href="index.html">TourneyHub</a>
-     
-      </button>
-    </div>
-<!-- Bottom navigation (place as last element inside <body>) -->
-
+  <header>
+    <a class="logo" href="#">TourneyHub</a>
+    <div style="margin-left:8px;color:var(--muted);font-size:13px">Admin</div>
+    <div class="badge" id="admin-badge">Checking…</div>
   </header>
 
-  <!-- Bottom navigation (place as last element inside <body>) -->
-<nav class="bottom-nav" aria-label="Mobile navigation">
-  <a href="tournaments.html" aria-label="Tournaments" data-route="tournaments">🏆</a>
-  <a href="profile.html" aria-label="My Dashboard" data-route="profile">👤</a>
-  <a href="wallet.html" aria-label="Wallet" data-route="wallet">💰</a>
-  <a href="admin.html" aria-label="Organizer Panel" data-route="admin">⚙️</a>
-  <a href="login.html" aria-label="Sign in / Join" data-route="login">🔑</a>
-</nav>
-
-
-  <main class="container">
-    <div class="section card">
-      <div class="section-header">
-        <h2>Organizer Actions</h2>
+  <main>
+    <div id="gate" class="card">
+      <h1>Admin access</h1>
+      <p id="status" class="muted">Verifying your permissions…</p>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button id="refresh-claims" class="small">Refresh</button>
+        <button id="signout" class="ghost small" onclick="signOut()">Sign out</button>
       </div>
-      <div class="tab-bar" style="display:flex;gap:12px;margin-bottom:24px;">
-        <button class="tab active" id="tab-create">New Tournament</button>
-        <button class="tab" id="tab-payments">Verify Payments</button>
-        <button class="tab" id="tab-hosted">Hosted Tournaments</button>
-      </div>
-      <div id="admin-content"></div>
     </div>
+
+    <div id="dashboard" style="display:none">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;align-items:center">
+              <h1 style="margin:0">Overview</h1>
+            </div>
+            <div class="muted" style="margin-top:6px;font-size:13px">Quick operational view</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:8px">
+              <button id="reload" class="small">Reload</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats" aria-hidden="false">
+          <div class="stat">
+            <div class="muted" style="font-size:12px">Deposits pending</div>
+            <div id="stat-deposits-pending" style="font-weight:800;font-size:18px">—</div>
+          </div>
+          <div class="stat">
+            <div class="muted" style="font-size:12px">Withdrawals pending</div>
+            <div id="stat-withdrawals-pending" style="font-weight:800;font-size:18px">—</div>
+          </div>
+          <div class="stat">
+            <div class="muted" style="font-size:12px">Approved today</div>
+            <div id="stat-approved-today" style="font-weight:800;font-size:18px">—</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center" class="search-wrap">
+          <input id="globalSearch" class="search" placeholder="Search by email or amount" aria-label="Search transactions" />
+          <button id="clearSearch" class="ghost small">Clear</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Deposits card / table -->
+        <section class="card" aria-labelledby="deposits-title">
+          <h2 id="deposits-title" style="font-size:16px;margin-bottom:8px">Deposits</h2>
+
+          <!-- mobile list -->
+          <div id="deposits-list-mobile"></div>
+
+          <!-- desktop table -->
+          <div class="table-only" style="overflow:auto">
+            <table id="table-deposits" role="table" aria-label="Deposits table">
+              <thead>
+                <tr><th>Email</th><th>Amount</th><th>Status</th><th>Created</th><th>Action</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+        </section>
+
+        <!-- Withdrawals -->
+        <section class="card" aria-labelledby="withdrawals-title">
+          <h2 id="withdrawals-title" style="font-size:16px;margin-bottom:8px">Withdrawals</h2>
+
+          <div id="withdrawals-list-mobile"></div>
+
+          <div class="table-only" style="overflow:auto">
+            <table id="table-withdrawals" role="table" aria-label="Withdrawals table">
+              <thead>
+                <tr><th>Email</th><th>Amount</th><th>Status</th><th>Created</th><th>Action</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size:16px">User balances</h2>
+        <div class="muted" style="margin-bottom:8px">Approved deposits minus approved withdrawals</div>
+
+        <div id="balances-list-mobile"></div>
+
+        <div class="table-only" style="overflow:auto">
+          <table id="table-balances"><thead><tr><th>Email</th><th>Deposits</th><th>Withdrawals</th><th>Balance</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <footer>Tap actions to approve or reject. Use search to filter results.</footer>
   </main>
 
+  <!-- Firebase SDKs (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
   <script>
-    // Tab switching logic
-    const tabCreate = document.getElementById('tab-create');
-    const tabPayments = document.getElementById('tab-payments');
-    const tabHosted = document.getElementById('tab-hosted');
-    const adminContent = document.getElementById('admin-content');
-    const tabs = [tabCreate, tabPayments, tabHosted];
+    // CONFIG: replace with your Firebase project config
+    const firebaseConfig = {
+      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+      authDomain: "authapp-386ee.firebaseapp.com",
+      projectId: "authapp-386ee",
+      storageBucket: "authapp-386ee.firebasestorage.app",
+      messagingSenderId: "809698525310",
+      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+      measurementId: "G-EJZTSBSGQT"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    function setActive(tab) {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
+    // UI refs
+    const adminBadge = document.getElementById('admin-badge');
+    const statusBox = document.getElementById('status');
+    const gate = document.getElementById('gate');
+    const dashboard = document.getElementById('dashboard');
+
+    const depositsTableBody = document.querySelector('#table-deposits tbody');
+    const withdrawalsTableBody = document.querySelector('#table-withdrawals tbody');
+    const depositsListMobile = document.getElementById('deposits-list-mobile');
+    const withdrawalsListMobile = document.getElementById('withdrawals-list-mobile');
+
+    const balancesTableBody = document.querySelector('#table-balances tbody');
+    const balancesListMobile = document.getElementById('balances-list-mobile');
+
+    const statDepositsPending = document.getElementById('stat-deposits-pending');
+    const statWithdrawalsPending = document.getElementById('stat-withdrawals-pending');
+    const statApprovedToday = document.getElementById('stat-approved-today');
+
+    const reloadBtn = document.getElementById('reload');
+    const refreshClaims = document.getElementById('refresh-claims');
+    const signoutBtn = document.getElementById('signout');
+    const globalSearch = document.getElementById('globalSearch');
+    const clearSearch = document.getElementById('clearSearch');
+
+    // search state
+    let searchQuery = '';
+
+    // sign out helper
+    function signOut() {
+      auth.signOut().then(() => location.href = 'login.html').catch(console.error);
     }
 
-    tabCreate.onclick = () => {
-      setActive(tabCreate);
-      renderCreateTournament();
-    };
-    tabPayments.onclick = () => {
-      setActive(tabPayments);
-      renderPayments();
-    };
-    tabHosted.onclick = () => {
-      setActive(tabHosted);
-      renderHostedTournaments();
-    };
+    refreshClaims.addEventListener('click', async () => {
+      const u = auth.currentUser;
+      if (!u) return;
+      try {
+        await u.getIdTokenResult(true);
+        verifyAdminByRole(u);
+      } catch (e) { console.error(e); }
+    });
 
-    // Initial tab
-    renderCreateTournament();
+    reloadBtn.addEventListener('click', loadAll);
+    clearSearch.addEventListener('click', () => { globalSearch.value=''; searchQuery=''; loadAll(); });
 
-    // --- Create Tournament ---
-    function renderCreateTournament() {
-      adminContent.innerHTML = `
-        <h2>🚀 Launch a New Tournament</h2>
-        <label class="input"><span>Title</span><input id="t-title" placeholder="Tournament name" /></label>
-        <label class="input"><span>Description</span><textarea id="t-desc" rows="3" placeholder="Rules, format, prizes"></textarea></label>
-        <label class="input"><span>Game</span><input id="t-game" placeholder="e.g., Valorant" /></label>
-        <label class="input"><span>Type</span>
-          <select id="t-type">
-            <option value="SOLO">Solo</option>
-            <option value="TEAM">Team</option>
-          </select>
-        </label>
-        <label class="input"><span>Bracket</span>
-          <select id="t-bracket">
-            <option value="SINGLE_ELIM">Single Elimination</option>
-            <option value="DOUBLE_ELIM">Double Elimination</option>
-          </select>
-        </label>
-        <label class="input"><span>Max Participants</span><input id="t-max" type="number" value="16" /></label>
-        <label class="input"><span>Entry Fee (₹)</span><input id="t-fee" type="number" value="0" /></label>
-        <label class="input"><span>Start Date</span><input id="t-start" type="datetime-local" /></label>
-        <button id="create-btn" class="btn btn-primary">Create Tournament</button>
-      `;
-      // Attach create logic if using inline JS, otherwise handled in script.js
-      if (window.initAdminCreate) window.initAdminCreate();
-    }
+    globalSearch.addEventListener('input', (e) => {
+      searchQuery = (e.target.value || '').trim().toLowerCase();
+      // small debounce
+      if (window._srchTm) clearTimeout(window._srchTm);
+      window._srchTm = setTimeout(loadAll, 250);
+    });
 
-    // --- Payments Verification ---
-    function renderPayments() {
-      // Get payments from localStorage
-      const payments = JSON.parse(localStorage.getItem("walletPayments") || "[]");
-      if (!payments.length) {
-        adminContent.innerHTML = `<p class="muted">No wallet transactions yet.</p>`;
+    // auth gate
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        statusBox.textContent = 'Not signed in. Redirecting…';
+        setTimeout(()=>location.href='login.html',700);
         return;
       }
-      adminContent.innerHTML = `
-        <h2>💳 Wallet Payments — Verify UTR</h2>
-        <div>
-          <div style="margin-bottom:12px;">
-            <span class="tiny" style="color:#ffa726;">Pending</span> | 
-            <span class="tiny" style="color:#4caf50;">Verified</span> | 
-            <span class="tiny" style="color:#e53935;">Cancelled</span>
-          </div>
-          <div id="wallet-verification-list">
-            ${payments.map(p => `
-              <div class="item flex-between" style="margin-bottom:16px;">
-                <div>
-                  <strong>User:</strong> ${p.userId}<br>
-                  <strong>UTR:</strong> ${p.utr}<br>
-                  <strong>Amount:</strong> ₹${p.amount || "-"}<br>
-                  <span class="tiny muted">${p.createdAt}</span>
-                  ${p.status === "CANCELLED" && p.remark ? `<div class="tiny" style="color:#e53935;"><strong>Remark:</strong> ${p.remark}</div>` : ""}
-                </div>
-                <div>
-                  ${p.status === "PENDING" ? `
-                    <button class="btn btn-outline tiny" onclick="verifyWalletPayment('${p.id}')">Verify</button>
-                    <button class="btn btn-outline tiny" onclick="cancelWalletPayment('${p.id}')">Cancel</button>
-                  ` : ""}
-                  <span class="tiny" style="color:${p.status === "VERIFIED" ? "#4caf50" : p.status === "CANCELLED" ? "#e53935" : "#ffa726"}">${p.status}</span>
-                </div>
-              </div>
-            `).join("")}
-          </div>
-        </div>
-      `;
-    }
+      await verifyAdminByRole(user);
+    });
 
-    // --- Hosted Tournaments ---
-    function renderHostedTournaments() {
-      // Get tournaments from localStorage
-      const tournaments = JSON.parse(localStorage.getItem("tournaments") || "[]");
-      adminContent.innerHTML = `
-        <h2>📊 Your Hosted Tournaments</h2>
-        <div id="admin-list">
-          ${tournaments.length ? tournaments.map(t => `
-            <div class="item flex-between" style="margin-bottom:16px;">
-              <div>
-                <strong>${t.title}</strong>
-                <div class="tiny muted">${t.game} • ${t.type} • ${t.bracket}</div>
-                <div class="tiny muted">Participants: ${t.participants ? t.participants.length : 0}/${t.max}</div>
-              </div>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-outline tiny bracket-btn" data-id="${t.id}">View Bracket</button>
-                <button class="btn btn-outline tiny schedule-btn" data-id="${t.id}">View Schedule</button>
-                <button class="btn btn-outline tiny" onclick="generateBracket('${t.id}')">Generate Bracket</button>
-                <button class="btn btn-outline tiny delete-btn" data-id="${t.id}">Delete</button>
-              </div>
-            </div>
-          `).join("") : `<p class="muted">No tournaments hosted yet.</p>`}
-        </div>
-        <div id="admin-bracket-modal"></div>
-      `;
-      // Clear modal when switching tab
-      const modal = document.getElementById("admin-bracket-modal");
-      if (modal) modal.innerHTML = "";
+    async function verifyAdminByRole(user) {
+      try {
+        statusBox.textContent = 'Checking admin role…';
+        // try token claim first
+        let claimAdmin = false;
+        try {
+          const t = await user.getIdTokenResult(true);
+          claimAdmin = t?.claims?.admin === true;
+          console.log('token claims', t.claims);
+        } catch (e) { console.warn('claim read failed', e); }
 
-      // Attach event listeners after DOM update
-      setTimeout(function() {
-        document.querySelectorAll('.bracket-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-            window.showBracket(btn.getAttribute('data-id'));
-          });
-        });
-        document.querySelectorAll('.schedule-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-            window.showSchedule(btn.getAttribute('data-id'));
-          });
-        });
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
-            window.deleteTournament(btn.getAttribute('data-id'));
-          });
-        });
-      }, 0);
-    }
+        // read users/{uid}
+        let roleAdmin = false;
+        try {
+          const doc = await db.collection('users').doc(user.uid).get();
+          if (doc.exists) roleAdmin = doc.data()?.role === 'admin';
+          else console.warn('users doc not found:', user.uid);
+        } catch (err) {
+          console.error('Error reading users doc', err);
+          statusBox.innerHTML = `Error reading users document: ${err?.code || ''} ${err?.message || ''}`;
+          adminBadge.textContent = 'Admin: error';
+          adminBadge.style.color = '#f59e0b';
+          return;
+        }
 
-    // --- Withdrawal Requests (Admin Panel) ---
-    function renderWithdrawals() {
-      const withdrawals = JSON.parse(localStorage.getItem("withdrawalRequests") || "[]");
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      adminContent.innerHTML = `
-        <h2>💸 Withdrawal Requests</h2>
-        <div id="withdrawal-list">
-          ${withdrawals.length ? withdrawals.map(req => {
-            const user = users.find(u => u.id === req.userId);
-            return `
-              <div class="item card" style="margin-bottom:16px;">
-                <div>
-                  <strong>User:</strong> ${user ? (user.name || user.email) : req.userId}<br>
-                  <strong>Amount:</strong> ₹${req.amount}<br>
-                  <strong>UPI Name:</strong> ${req.upiInfo.name}<br>
-                  <strong>UPI ID:</strong> ${req.upiInfo.upiId}<br>
-                  <span class="tiny muted">${req.createdAt}</span>
-                  ${req.remark ? `<div class="tiny" style="color:#e53935;"><strong>Remark:</strong> ${req.remark}</div>` : ""}
-                </div>
-                <div style="margin-top:8px;">
-                  ${req.status === "PENDING" ? `
-                    <button class="btn btn-outline tiny" onclick="processWithdrawalRequest('${req.id}', 'PAID')">Send Payment</button>
-                    <button class="btn btn-outline tiny" onclick="rejectWithdrawal('${req.id}')">Reject</button>
-                  ` : `<span class="tiny" style="color:${req.status === "PAID" ? "#4caf50" : "#e53935"}">${req.status}</span>`}
-                </div>
-              </div>
-            `;
-          }).join("") : `<p class="muted">No withdrawal requests yet.</p>`}
-        </div>
-      `;
-    }
+        const isAdmin = claimAdmin || roleAdmin;
+        adminBadge.textContent = isAdmin ? 'Admin: active' : 'Admin: denied';
+        adminBadge.style.color = isAdmin ? '#10b981' : '#ef4444';
 
-    // Add tab for withdrawals
-    const tabWithdrawals = document.createElement('button');
-    tabWithdrawals.className = 'tab';
-    tabWithdrawals.id = 'tab-withdrawals';
-    tabWithdrawals.textContent = 'Withdrawal Sender';
-    document.querySelector('.tab-bar').appendChild(tabWithdrawals);
-    tabs.push(tabWithdrawals);
-
-    tabWithdrawals.onclick = () => {
-      setActive(tabWithdrawals);
-      renderWithdrawals();
-    };
-
-    // Admin: send payment or reject withdrawal
-    window.processWithdrawalRequest = function(requestId, status) {
-      const withdrawals = JSON.parse(localStorage.getItem("withdrawalRequests") || "[]");
-      const req = withdrawals.find(r => r.id === requestId);
-      if (!req) return alert("Withdrawal request not found.");
-      req.status = status;
-      req.remark = "";
-      localStorage.setItem("withdrawalRequests", JSON.stringify(withdrawals));
-      // Notify user (add to gifts for notification)
-      if (status === "PAID") {
-        const gifts = JSON.parse(localStorage.getItem("gifts") || "[]");
-        gifts.push({
-          id: Math.random().toString(36).slice(2, 10),
-          userId: req.userId,
-          tournamentId: null,
-          message: `Your withdrawal of ₹${req.amount} to UPI ID ${req.upiInfo.upiId} has been processed.`,
-          createdAt: new Date().toISOString()
-        });
-        localStorage.setItem("gifts", JSON.stringify(gifts));
+        if (!isAdmin) {
+          statusBox.innerHTML = '⛔ Access denied. Not an admin.<br><span class="muted">Ensure users/{uid}.role is "admin".</span>';
+          dashboard.style.display = 'none';
+          return;
+        }
+        statusBox.textContent = '✅ Admin access granted';
+        gate.style.display = 'none';
+        dashboard.style.display = 'block';
+        await loadAll();
+      } catch (e) {
+        console.error('verify error', e);
+        statusBox.textContent = 'Error verifying admin access: ' + (e?.message || e);
       }
-      alert("Withdrawal processed!");
-      renderWithdrawals();
-    };
+    }
 
-    window.rejectWithdrawal = function(requestId) {
-      const withdrawals = JSON.parse(localStorage.getItem("withdrawalRequests") || "[]");
-      const req = withdrawals.find(r => r.id === requestId);
-      if (!req) return alert("Withdrawal request not found.");
-      const remark = prompt("Enter reason for rejection:", "");
-      req.status = "REJECTED";
-      req.remark = remark || "";
-      localStorage.setItem("withdrawalRequests", JSON.stringify(withdrawals));
-      // Notify user
-      const gifts = JSON.parse(localStorage.getItem("gifts") || "[]");
-      gifts.push({
-        id: Math.random().toString(36).slice(2, 10),
-        userId: req.userId,
-        tournamentId: null,
-        message: `Your withdrawal request was rejected. ${remark}`,
-        createdAt: new Date().toISOString()
+    // load all: deposits & withdrawals & balances
+    async function loadAll() {
+      await Promise.all([loadDeposits(), loadWithdrawals()]);
+      await Promise.all([computeBalances(), computeStats()]);
+    }
+
+    function filterMatch(text){
+      if(!searchQuery) return true;
+      return (String(text||'').toLowerCase().indexOf(searchQuery) !== -1);
+    }
+
+    // deposits
+    async function loadDeposits(){
+      depositsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">Loading…</td></tr>`;
+      depositsListMobile.innerHTML = '';
+      try {
+        const snap = await db.collection('deposits').orderBy('createdAt','desc').get();
+        const items = [];
+        snap.forEach(doc => {
+          const d = doc.data();
+          items.push({ id: doc.id, data: d });
+        });
+        // apply client filter
+        const filtered = items.filter(it => filterMatch(it.data.email) || filterMatch(it.data.amount));
+
+        // render mobile list
+        if(filtered.length===0) depositsListMobile.innerHTML = `<div class="no-data">No deposits</div>`;
+        else depositsListMobile.innerHTML = filtered.map(it => {
+          const d = it.data;
+          const created = d.createdAt?.toDate?.().toLocaleString() || (d.createdAtClient || '—');
+          return `
+            <article class="list-card mobile-only" role="article">
+              <div class="row-title">
+                <div style="flex:1">
+                  <div style="font-weight:800">${d.email || '—'}</div>
+                  <div class="row-meta">${created}</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="compact-amount">₹${Number(d.amount||0).toLocaleString()}</div>
+                  <div class="row-meta">${d.status||'pending'}</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button class="approve small" data-id="${it.id}" data-col="deposits" data-action="approved">Approve</button>
+                <button class="reject small" data-id="${it.id}" data-col="deposits" data-action="rejected">Reject</button>
+              </div>
+            </article>`;
+        }).join('');
+
+        // render desktop table
+        if(filtered.length===0) depositsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">No deposits</td></tr>`;
+        else depositsTableBody.innerHTML = filtered.map(it => {
+          const d = it.data;
+          const created = d.createdAt?.toDate?.().toLocaleString() || (d.createdAtClient || '—');
+          return `<tr>
+            <td>${d.email||'—'}</td>
+            <td>₹${Number(d.amount||0).toLocaleString()}</td>
+            <td>${d.status||'pending'}</td>
+            <td>${created}</td>
+            <td class="action-row">
+              <button class="approve small" data-id="${it.id}" data-col="deposits" data-action="approved">Approve</button>
+              <button class="reject small" data-id="${it.id}" data-col="deposits" data-action="rejected">Reject</button>
+            </td>
+          </tr>`;
+        }).join('');
+
+        attachActionHandlers();
+      } catch (err) {
+        console.error('Load deposits error', err);
+        depositsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">Error loading deposits</td></tr>`;
+        depositsListMobile.innerHTML = `<div class="no-data">Error loading deposits</div>`;
+      }
+    }
+
+    async function loadWithdrawals(){
+      withdrawalsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">Loading…</td></tr>`;
+      withdrawalsListMobile.innerHTML = '';
+      try {
+        const snap = await db.collection('withdrawals').orderBy('createdAt','desc').get();
+        const items = [];
+        snap.forEach(doc => { items.push({ id: doc.id, data: doc.data() }); });
+
+        const filtered = items.filter(it => filterMatch(it.data.email) || filterMatch(it.data.amount));
+
+        if(filtered.length===0) withdrawalsListMobile.innerHTML = `<div class="no-data">No withdrawals</div>`;
+        else withdrawalsListMobile.innerHTML = filtered.map(it => {
+          const w = it.data;
+          const created = w.createdAt?.toDate?.().toLocaleString() || (w.createdAtClient || '—');
+          return `
+            <article class="list-card mobile-only" role="article">
+              <div class="row-title">
+                <div style="flex:1">
+                  <div style="font-weight:800">${w.email || '—'}</div>
+                  <div class="row-meta">${created}</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="compact-amount">₹${Number(w.amount||0).toLocaleString()}</div>
+                  <div class="row-meta">${w.status||'pending'}</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button class="approve small" data-id="${it.id}" data-col="withdrawals" data-action="approved">Approve</button>
+                <button class="reject small" data-id="${it.id}" data-col="withdrawals" data-action="rejected">Reject</button>
+              </div>
+            </article>`;
+        }).join('');
+
+        if(filtered.length===0) withdrawalsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">No withdrawals</td></tr>`;
+        else withdrawalsTableBody.innerHTML = filtered.map(it => {
+          const w = it.data;
+          const created = w.createdAt?.toDate?.().toLocaleString() || (w.createdAtClient || '—');
+          return `<tr>
+            <td>${w.email||'—'}</td>
+            <td>₹${Number(w.amount||0).toLocaleString()}</td>
+            <td>${w.status||'pending'}</td>
+            <td>${created}</td>
+            <td class="action-row">
+              <button class="approve small" data-id="${it.id}" data-col="withdrawals" data-action="approved">Approve</button>
+              <button class="reject small" data-id="${it.id}" data-col="withdrawals" data-action="rejected">Reject</button>
+            </td>
+          </tr>`;
+        }).join('');
+
+        attachActionHandlers();
+      } catch (err) {
+        console.error('Load withdrawals error', err);
+        withdrawalsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">Error loading withdrawals</td></tr>`;
+        withdrawalsListMobile.innerHTML = `<div class="no-data">Error loading withdrawals</div>`;
+      }
+    }
+
+    function attachActionHandlers(){
+      document.querySelectorAll('button[data-id]').forEach(btn=>{
+        btn.onclick = async (e)=>{
+          const id = btn.getAttribute('data-id');
+          const col = btn.getAttribute('data-col');
+          const action = btn.getAttribute('data-action');
+          btn.disabled = true;
+          try{
+            await db.collection(col).doc(id).update({ status: action, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+            await loadAll();
+          }catch(err){
+            console.error('action error', err); alert('Error updating: '+(err?.message||err));
+          } finally { btn.disabled = false; }
+        };
       });
-      localStorage.setItem("gifts", JSON.stringify(gifts));
-      alert("Withdrawal rejected!");
-      renderWithdrawals();
-    };
-
-    // Add this function to allow tournament deletion from admin panel
-    window.deleteTournament = function(tid) {
-      if (!confirm("Are you sure you want to delete this tournament?")) return;
-      let tournaments = JSON.parse(localStorage.getItem("tournaments") || "[]");
-      tournaments = tournaments.filter(t => t.id !== tid);
-      localStorage.setItem("tournaments", JSON.stringify(tournaments));
-      alert("Tournament deleted!");
-      renderHostedTournaments();
-    };
-
-    // Add this function to allow bracket generation from admin panel
-    window.generateBracket = function(tid) {
-      const tournaments = JSON.parse(localStorage.getItem("tournaments") || "[]");
-      const t = tournaments.find(x => x.id === tid);
-      if (!t) return alert("Tournament not found.");
-      if (!t.participants || t.participants.length < 2) return alert("Need at least 2 participants to generate bracket.");
-      // Shuffle participants
-      const p = [...t.participants];
-      p.sort(() => Math.random() - 0.5);
-      const matches = [];
-      for (let i = 0; i < p.length; i += 2) {
-        const a = p[i], b = p[i + 1];
-        if (!b) continue;
-        matches.push({ id: Math.random().toString(36).slice(2, 8), round: 1, a, b, scoreA: 0, scoreB: 0, winner: null });
-      }
-      t.matches = matches;
-      localStorage.setItem("tournaments", JSON.stringify(tournaments));
-      alert("Bracket generated!");
-      renderHostedTournaments();
-    };
-
-    window.showBracket = function(tid) {
-      const tournaments = JSON.parse(localStorage.getItem("tournaments") || "[]");
-      const t = tournaments.find(x => x.id === tid);
-      const modal = document.getElementById("admin-bracket-modal");
-      if (!t || !modal) return;
-      if (!t.matches || !t.matches.length) {
-        modal.innerHTML = `<div class="card" style="margin-top:16px;"><h3>Bracket</h3><p class="muted">Bracket will appear once seeded.</p></div>`;
-        return;
-      }
-      // Render bracket rounds with score edit buttons
-      const rounds = {};
-      t.matches.forEach(m => { (rounds[m.round] ||= []).push(m); });
-      modal.innerHTML = `
-        <div class="card" style="margin-top:16px;">
-          <h3>Bracket — ${t.title}</h3>
-          <div class="bracket">
-            ${Object.keys(rounds).sort((a,b)=>a-b).map(r=>`
-              <div class="round">
-                <h4>Round ${r}</h4>
-                ${rounds[r].map(m=>`
-                  <div class="match">
-                    <div class="row">
-                      <span>${getUserName(m.a)}</span>
-                      <span class="score">${m.scoreA}</span>
-                    </div>
-                    <div class="row">
-                      <span>${getUserName(m.b)}</span>
-                      <span class="score">${m.scoreB}</span>
-                    </div>
-                    <div class="row tiny muted">
-                      <span>Round ${m.round}</span>
-                      <button class="btn btn-outline tiny" onclick="editMatchScore('${tid}','${m.id}')">Edit Score</button>
-                    </div>
-                  </div>
-                `).join("")}
-              </div>
-            `).join("")}
-          </div>
-        </div>
-      `;
-    };
-
-    // Score editing logic for admin
-    window.editMatchScore = function(tid, matchId) {
-      const tournaments = JSON.parse(localStorage.getItem("tournaments") || "[]");
-      const t = tournaments.find(x => x.id === tid);
-      if (!t) return alert("Tournament not found.");
-      const m = t.matches.find(x => x.id === matchId);
-      if (!m) return alert("Match not found.");
-      const scoreA = parseInt(prompt(`Enter score for ${getUserName(m.a)}`, m.scoreA), 10);
-      const scoreB = parseInt(prompt(`Enter score for ${getUserName(m.b)}`, m.scoreB), 10);
-      if (isNaN(scoreA) || isNaN(scoreB)) return alert("Invalid score.");
-      m.scoreA = scoreA;
-      m.scoreB = scoreB;
-      m.winner = scoreA === scoreB ? null : scoreA > scoreB ? m.a : m.b;
-      localStorage.setItem("tournaments", JSON.stringify(tournaments));
-      alert("Score updated!");
-      window.showBracket(tid);
-    };
-
-    function getUserName(uid) {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const u = users.find(x => x.id === uid);
-      return u ? (u.name || u.email) : "Unknown";
     }
 
-    // --- Payment Actions ---
-    window.verifyWalletPayment = function(paymentId) {
-      const payments = JSON.parse(localStorage.getItem("walletPayments") || "[]");
-      const payment = payments.find(p => p.id === paymentId);
-      if (!payment) return alert("Payment not found.");
-      payment.status = "VERIFIED";
-      localStorage.setItem("walletPayments", JSON.stringify(payments));
-      alert("Payment verified!");
-      renderPayments();
-    };
-
-    window.cancelWalletPayment = function(paymentId) {
-      const payments = JSON.parse(localStorage.getItem("walletPayments") || "[]");
-      const payment = payments.find(p => p.id === paymentId);
-      if (!payment) return alert("Payment not found.");
-      const remark = prompt("Enter remark for cancellation (visible to user):", "");
-      payment.status = "CANCELLED";
-      payment.remark = remark || "";
-      localStorage.setItem("walletPayments", JSON.stringify(payments));
-      alert("Payment cancelled!");
-      renderPayments();
-    };
-
-    // --- Tournament Create Logic (if not handled in script.js) ---
-    window.initAdminCreate = function() {
-      const btn = document.getElementById("create-btn");
-      if (!btn) return;
-      btn.onclick = () => {
-        const title = document.getElementById("t-title").value;
-        const desc = document.getElementById("t-desc").value;
-        const game = document.getElementById("t-game").value;
-        const type = document.getElementById("t-type").value;
-        const bracket = document.getElementById("t-bracket").value;
-        const max = parseInt(document.getElementById("t-max").value, 10) || 16;
-        const fee = parseInt(document.getElementById("t-fee").value, 10) || 0;
-        const start = document.getElementById("t-start").value;
-        if (!title) return alert("Title required");
-        const tournaments = JSON.parse(localStorage.getItem("tournaments") || "[]");
-        tournaments.unshift({
-          id: Math.random().toString(36).slice(2, 10),
-          title,
-          description: desc,
-          game: game || "General",
-          type,
-          bracket,
-          max,
-          fee,
-          startsAt: start ? new Date(start).toISOString() : new Date().toISOString(),
-          published: true,
-          participants: [],
-          matches: []
+    // compute balances
+    async function computeBalances(){
+      balancesTableBody.innerHTML = `<tr><td colspan="4" class="no-data">Loading…</td></tr>`;
+      balancesListMobile.innerHTML = '';
+      try{
+        const [depSnap, witSnap] = await Promise.all([
+          db.collection('deposits').where('status','==','approved').get(),
+          db.collection('withdrawals').where('status','==','approved').get()
+        ]);
+        const totals = new Map();
+        depSnap.forEach(doc=>{
+          const d = doc.data();
+          const e = d.email || '—';
+          const amt = Number(d.amount||0);
+          const cur = totals.get(e) || {dep:0,wit:0}; cur.dep += amt; totals.set(e,cur);
         });
-        localStorage.setItem("tournaments", JSON.stringify(tournaments));
-        alert("Tournament created");
-        renderCreateTournament();
-      };
+        witSnap.forEach(doc=>{
+          const w = doc.data();
+          const e = w.email || '—';
+          const amt = Number(w.amount||0);
+          const cur = totals.get(e) || {dep:0,wit:0}; cur.wit += amt; totals.set(e,cur);
+        });
+
+        const rows = Array.from(totals.entries()).map(([email,t])=>{
+          const bal = t.dep - t.wit;
+          return { email, dep: t.dep, wit: t.wit, bal };
+        }).sort((a,b)=>b.bal - a.bal);
+
+        if(rows.length===0){
+          balancesTableBody.innerHTML = `<tr><td colspan="4" class="no-data">No approved transactions</td></tr>`;
+          balancesListMobile.innerHTML = `<div class="no-data">No approved balances</div>`;
+        } else {
+          balancesTableBody.innerHTML = rows.map(r=>`
+            <tr>
+              <td>${r.email}</td>
+              <td>₹${r.dep.toLocaleString()}</td>
+              <td>₹${r.wit.toLocaleString()}</td>
+              <td>₹${r.bal.toLocaleString()}</td>
+            </tr>`).join('');
+
+          balancesListMobile.innerHTML = rows.map(r=>`
+            <article class="list-card mobile-only">
+              <div class="row-title"><div style="font-weight:800">${r.email}</div><div style="text-align:right;font-weight:800">₹${r.bal.toLocaleString()}</div></div>
+              <div class="row-meta">Deposits ₹${r.dep.toLocaleString()} • Withdrawals ₹${r.wit.toLocaleString()}</div>
+            </article>`).join('');
+        }
+      }catch(err){
+        console.error('compute balances error', err);
+        balancesTableBody.innerHTML = `<tr><td colspan="4" class="no-data">Error computing balances</td></tr>`;
+        balancesListMobile.innerHTML = `<div class="no-data">Error computing balances</div>`;
+      }
+    }
+
+    // stats
+    async function computeStats(){
+      try{
+        const [depPending, witPending] = await Promise.all([
+          db.collection('deposits').where('status','==','pending').get(),
+          db.collection('withdrawals').where('status','==','pending').get()
+        ]);
+        statDepositsPending.textContent = depPending.size;
+        statWithdrawalsPending.textContent = witPending.size;
+
+        const [depApproved, witApproved] = await Promise.all([
+          db.collection('deposits').where('status','==','approved').get(),
+          db.collection('withdrawals').where('status','==','approved').get()
+        ]);
+        // approximate "approved today"
+        const today = new Date(); const yyyy = today.getFullYear(), mm = today.getMonth(), dd = today.getDate();
+        const start = new Date(yyyy,mm,dd,0,0,0), end = new Date(yyyy,mm,dd,23,59,59);
+        const inRange = (ts, clientStr) => {
+          if(ts?.toDate) { const d = ts.toDate(); return d>=start && d<=end; }
+          if(clientStr) { const d = new Date(clientStr); return d>=start && d<=end; }
+          return false;
+        };
+        let ct = 0;
+        depApproved.forEach(doc=>{ const d = doc.data(); if(inRange(d.updatedAt, d.createdAtClient)) ct++; });
+        witApproved.forEach(doc=>{ const w = doc.data(); if(inRange(w.updatedAt, w.createdAtClient)) ct++; });
+        statApprovedToday.textContent = ct;
+      }catch(err){
+        console.error('compute stats error', err);
+        statApprovedToday.textContent = '—';
+      }
+    }
+
+    // main loads
+    async function loadAll(){
+      // small visual hint
+      statDepositsPending.textContent = '…';
+      statWithdrawalsPending.textContent = '…';
+      statApprovedToday.textContent = '…';
+      await Promise.all([loadDeposits(), loadWithdrawals()]);
+      await Promise.all([computeBalances(), computeStats()]);
+    }
+
+    // initial attach (buttons events delegated)
+    document.addEventListener('click', (e)=>{
+      const t = e.target;
+      if(!t) return;
+      const id = t.getAttribute && t.getAttribute('data-id');
+      if(id){
+        // handled in attachActionHandlers (which sets onclick), but ensure fallback here
+        const col = t.getAttribute('data-col');
+        const action = t.getAttribute('data-action');
+        if(col && action){
+          t.disabled = true;
+          db.collection(col).doc(id).update({ status: action, updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+            .then(()=>loadAll())
+            .catch(err=>{ console.error(err); alert('Error: '+(err?.message||err)); })
+            .finally(()=> t.disabled=false);
+        }
+      }
+    });
+
+    // expose a quick diagnostic function to console if needed
+    window.adminDiag = async ()=> {
+      console.log('projectId', firebase.app().options.projectId);
+      console.log('user', auth.currentUser && { uid: auth.currentUser.uid, email: auth.currentUser.email });
+      try{ const v = await auth.currentUser.getIdTokenResult(true); console.log('claims', v.claims); }catch(e){console.warn('token error',e);}
+      try{ const udoc = await db.collection('users').doc(auth.currentUser.uid).get(); console.log('users doc', udoc.exists, udoc.data()); }catch(e){console.warn('users doc read failed', e);}
     };
+
   </script>
 </body>
 </html>

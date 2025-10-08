@@ -6,18 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <!-- Firebase SDKs (compat version) -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+
   <script>
-    // Replace with your Firebase config
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+      authDomain: "authapp-386ee.firebaseapp.com",
+      projectId: "authapp-386ee",
+      storageBucket: "authapp-386ee.firebasestorage.app",
+      messagingSenderId: "809698525310",
+      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+      measurementId: "G-EJZTSBSGQT"
     };
     firebase.initializeApp(firebaseConfig);
   </script>
@@ -38,6 +39,10 @@
     <button id="login-btn" class="btn btn-primary">Login</button>
 
     <p class="tiny muted">
+      <a href="#" id="forgot-password" class="link">Forgot password?</a>
+    </p>
+
+    <p class="tiny muted">
       Don't have an account? <a href="signup.html" class="link">Create one</a>
     </p>
   </main>
@@ -46,13 +51,17 @@
     document.addEventListener("DOMContentLoaded", () => {
       const auth = firebase.auth();
 
-      const emailInput = document.getElementById("login-email");
-      const passwordInput = document.getElementById("login-password");
-      const loginBtn = document.getElementById("login-btn");
+      // Auto redirect if already logged in
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          window.location.href = "dashboard.html";
+        }
+      });
 
-      loginBtn.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
+      // Login logic
+      document.getElementById("login-btn").addEventListener("click", async () => {
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value.trim();
 
         if (!email || !password) {
           alert("Please enter both email and password.");
@@ -61,17 +70,26 @@
 
         try {
           const userCredential = await auth.signInWithEmailAndPassword(email, password);
-          alert("Login successful! Welcome " + userCredential.user.email);
-          window.location.href = "dashboard.html"; // redirect after login
+          alert("Login successful: " + userCredential.user.email);
+          window.location.href = "dashboard.html";
         } catch (error) {
           alert("Login failed: " + error.message);
         }
       });
 
-      // Optional: auto-detect if already logged in
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          console.log("Already logged in as:", user.email);
+      // Forgot password
+      document.getElementById("forgot-password").addEventListener("click", async () => {
+        const email = document.getElementById("login-email").value.trim();
+        if (!email) {
+          alert("Please enter your email to reset password.");
+          return;
+        }
+
+        try {
+          await auth.sendPasswordResetEmail(email);
+          alert("Password reset email sent to " + email);
+        } catch (error) {
+          alert("Error: " + error.message);
         }
       });
     });

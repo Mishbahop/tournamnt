@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+    authDomain: "authapp-386ee.firebaseapp.com",
+    projectId: "authapp-386ee",
+    storageBucket: "authapp-386ee.firebasestorage.app",
+    messagingSenderId: "809698525310",
+    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+    measurementId: "G-EJZTSBSGQT"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+
   <meta charset="UTF-8" />
   <title>TourneyHub — Play, Compete, Win</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -84,7 +99,7 @@
     <a href="wallet.html" aria-label="Wallet">💰</a>
     <a href="admin.html" aria-label="Organizer Panel">⚙️</a>
     <a href="login.html" aria-label="Sign in / Join">🔑</a>
-       <a href="profile.html" aria-label="My Dashboard">👤</a>
+       <a href="dashboard.html" aria-label="My Dashboard">👤</a>
   </nav>
 </body>
 </html>

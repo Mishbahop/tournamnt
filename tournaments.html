@@ -1,161 +1,337 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Browse Tournaments — TourneyHub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: #0b0f1a;
-      color: #f1f5f9;
-    }
-    .container {
-      padding: 16px;
-    }
-    .filters {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-    .filters input, .filters select {
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
-      font-size: 14px;
-    }
-    .grid.cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
-    }
-    .site-header {
-      background: #0b0f1a;
-      border-bottom: 1px solid #1e293b;
-      padding: 12px 16px;
-    }
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo {
-      color: #38bdf8;
-      font-weight: 700;
-      text-decoration: none;
-      font-size: 18px;
-    }
-    .site-nav {
-      display: flex;
-      gap: 12px;
-      padding: 12px 0;
-    }
-    .site-nav a {
-      color: #cbd5e1;
-      text-decoration: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-    }
-    .site-nav a.active {
-      background: #1e293b;
-      color: #3b82f6;
-      font-weight: bold;
-    }
-    .btn-outline {
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      background: transparent;
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-    }
-    .site-footer {
-      text-align: center;
-      padding: 16px;
-      font-size: 14px;
-      color: #94a3b8;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TourneyHub — Tournaments</title>
+ <link rel="stylesheet" href="style.css" />
+      <!-- Bottom Navigation (Mobile) -->
+   <nav class="bottom-nav" aria-label="Mobile navigation">
+         <a href="index.html" class="nav-item">🏠<span>Home</span></a>
+    <a href="tournaments.html" class="nav-item">🏆<span>Tournaments</span></a>
+    <a href="wallet.html" class="nav-item">💰<span>Wallet</span></a>
+    <a href="admin.html" class="nav-item">⚙️<span>Organizer</span></a>
+    <a href="login.html" class="nav-item">🔑<span>Login</span></a>
+    <a href="dashboard.html" class="nav-item">👤<span>Dashboard</span></a>
+  </nav>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;background:#0b0f1a;color:#f1f5f9}
+  header{padding:12px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
+  .logo{color:#38bdf8;font-weight:700;text-decoration:none}
+  main{padding:16px;max-width:1000px;margin:0 auto}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  input,select,button{font-family:inherit}
+  input,select{padding:8px;border-radius:6px;border:none;background:#0f1724;color:#e6eef8}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .card{background:#1e293b;padding:12px;border-radius:8px}
+  .muted{color:#94a3b8;font-size:13px}
+  .btn{padding:8px 10px;border-radius:8px;border:0;background:#3b82f6;color:white;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid #334155}
+  .joined{background:#16a34a}
+  .no-data{color:#94a3b8;text-align:center;padding:12px}
+  .section-title{color:#38bdf8;font-weight:700;margin:18px 0 8px}
+  .dashboard{margin-top:20px}
+  .card-meta{margin-top:6px;color:#cbd5e1;font-size:13px}
+  .action-row{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+  a.link{color:#93c5fd;text-decoration:none;padding:6px;border-radius:6px}
+  body{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#0b0f1a;border-top:1px solid #1e293b;display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom);z-index:100}
+  .bottom-nav a{font-size:1.6rem;color:#64748b;text-decoration:none}
+  .bottom-nav a.active,.bottom-nav a:hover{color:#38bdf8}
+</style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-bar">
-      <a class="logo" href="index.html">TourneyHub</a>
-      <span id="user-info" style="font-size:14px;color:#94a3b8;"></span>
-    </div>
-      </header>
-    <nav class="bottom-nav" aria-label="Primary">
-      <a href="tournaments.html" class="active">🏆</a>
-      <a href="profile.html">👤</a>
-      <a href="wallet.html">💰 </a>
-      <a href="admin.html">⚙️ </a>
-      <a href="login.html" class="btn-outline">🔑</a>
-    </nav>
+<header>
+  <a class="logo" href="index.html">TourneyHub</a>
+  <div id="userArea" class="muted">Checking…</div>
+</header>
 
+<main>
+  <div class="filters">
+    <input id="search" placeholder="Search title, game or host" />
+    <select id="filterGame"><option value="">All games</option><option>BGMI</option><option>Free Fire</option><option>Valorant</option><option>PUBG</option><option>Other</option></select>
+    <select id="filterType"><option value="">All types</option><option value="SOLO">Solo</option><option value="TEAM">Team</option></select>
+    <button id="reload" class="btn">Reload</button>
+  </div>
 
-  <main class="container">
-    <section class="section">
-      <div class="filters">
-        <input id="search" type="text" placeholder="Search by title or game…" />
-        <select id="type">
-          <option value="">All Types</option>
-          <option value="SOLO">Solo</option>
-          <option value="TEAM">Team</option>
-        </select>
-        <select id="bracket">
-          <option value="">All Brackets</option>
-          <option value="SINGLE_ELIM">Single Elimination</option>
-          <option value="DOUBLE_ELIM">Double Elimination</option>
-        </select>
-      </div>
-    </section>
-    <section class="section">
-      <div id="tournaments-grid" class="grid cards"></div>
-    </section>
-  </main>
+  <section id="allSections"></section>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-      authDomain: "authapp-386ee.firebaseapp.com",
-      projectId: "authapp-386ee",
-      storageBucket: "authapp-386ee.firebasestorage.app",
-      messagingSenderId: "809698525310",
-      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-      measurementId: "G-EJZTSBSGQT"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
+  <div class="dashboard card">
+    <h3 class="section-title">My Joined Tournaments</h3>
+    <div id="myJoined"></div>
+  </div>
+</main>
 
-  <!-- Auth + Tournament Logic -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const auth = firebase.auth();
-      const userInfo = document.getElementById("user-info");
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+<script>
+  // ===== Replace with your Firebase project config =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+    authDomain: "authapp-386ee.firebaseapp.com",
+    projectId: "authapp-386ee",
+    storageBucket: "authapp-386ee.firebasestorage.app",
+    messagingSenderId: "809698525310",
+    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+    measurementId: "G-EJZTSBSGQT"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-      auth.onAuthStateChanged(user => {
-        if (!user) {
-          window.location.href = "login.html";
-          return;
+  // UI references
+  const userArea = document.getElementById('userArea');
+  const allSections = document.getElementById('allSections');
+  const myJoined = document.getElementById('myJoined');
+
+  let currentUser = null;
+
+  // debounce helper
+  function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t = setTimeout(()=>fn(...a), ms); }; }
+
+  // format helpers
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtDate(t){ try { if (!t) return '—'; if (t.toDate) return t.toDate().toLocaleString(); if (t.seconds) return new Date(t.seconds*1000).toLocaleString(); return new Date(t).toLocaleString(); } catch(e){ return '—'; } }
+
+  // auth state
+  auth.onAuthStateChanged(async user => {
+    if (!user) return location.href = 'login.html';
+    currentUser = user;
+    userArea.textContent = user.email;
+    await loadPage();
+  });
+
+  // controls
+  document.getElementById('reload').onclick = loadPage;
+  document.getElementById('search').oninput = debounce(loadPage, 300);
+  document.getElementById('filterGame').onchange = loadPage;
+  document.getElementById('filterType').onchange = loadPage;
+
+  async function loadPage(){
+    await Promise.all([renderAllTournaments(), renderMyJoined()]);
+  }
+
+  // Render all tournaments grouped by game
+  async function renderAllTournaments(){
+    allSections.innerHTML = '<div class="no-data">Loading…</div>';
+    const search = (document.getElementById('search').value || '').trim().toLowerCase();
+    const gameFilter = document.getElementById('filterGame').value;
+    const typeFilter = document.getElementById('filterType').value;
+
+    try {
+      const snap = await db.collection('tournaments').orderBy('createdAt','desc').get();
+      const items = [];
+      snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+
+      // group
+      const groups = {};
+      items.forEach(t => {
+        if (gameFilter && t.game !== gameFilter) return;
+        if (typeFilter && t.type !== typeFilter) return;
+        if (search) {
+          const blob = `${t.title||''} ${t.game||''} ${t.host||''}`.toLowerCase();
+          if (!blob.includes(search)) return;
         }
-        loadTournaments();
+        const g = t.game || 'Other';
+        groups[g] = groups[g] || [];
+        groups[g].push(t);
       });
 
-      function loadTournaments() {
-        const grid = document.getElementById("tournaments-grid");
-        grid.innerHTML = `
-          <div class="card">🎮 Valorant Solo Cup</div>
-          <div class="card">⚔️ PUBG Team Battle</div>
-          <div class="card">🏀 NBA 2K Elimination</div>
-        `;
+      allSections.innerHTML = '';
+      if (Object.keys(groups).length === 0) {
+        allSections.innerHTML = '<div class="no-data">No tournaments</div>';
+        return;
       }
-    });
-  </script>
+
+      for (const game of Object.keys(groups)) {
+        const section = document.createElement('section');
+        section.innerHTML = `<h3 class="section-title">${escapeHtml(game)}</h3><div class="grid" id="grid-${escapeHtml(game)}"></div>`;
+        allSections.appendChild(section);
+        const grid = section.querySelector('.grid');
+
+        groups[game].forEach(t => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div><strong>${escapeHtml(t.title)}</strong></div>
+            <div class="card-meta">${escapeHtml(t.type||'')} • ${escapeHtml(t.bracket||'')}</div>
+            <div class="card-meta">Host: ${escapeHtml(t.host||'—')}</div>
+            <div class="card-meta">Entry: ₹${Number(t.entryFee||t.entry||0)}</div>
+            <div class="card-meta">Participants: <span id="count-${t.id}">${Number(t.participants||t.part||0)}</span> / ${Number(t.maxParticipants||t.max||0)}</div>
+            <div class="action-row" id="btnwrap-${t.id}"><button class="btn" disabled>Loading</button></div>
+          `;
+          grid.appendChild(card);
+          renderJoinButton(t);
+        });
+      }
+    } catch (err) {
+      console.error('Error loading tournaments', err);
+      allSections.innerHTML = '<div class="no-data">Error loading tournaments</div>';
+    }
+  }
+
+  // Renders join/leave button and handles click for tournament t
+  async function renderJoinButton(t){
+    const btnWrap = document.getElementById('btnwrap-' + t.id);
+    if (!btnWrap) return;
+    btnWrap.innerHTML = `<button class="btn" disabled>Loading</button>`;
+    try {
+      // check whether current user joined
+      const partRef = db.collection('tournaments').doc(t.id).collection('participants').doc(currentUser.uid);
+      const partDoc = await partRef.get();
+      const joined = partDoc.exists;
+
+      // update participants count display
+      const countEl = document.getElementById('count-' + t.id);
+      if (countEl) countEl.textContent = Number(t.participants || t.part || 0);
+
+      // create actual button
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = joined ? 'Leave' : 'Join';
+      if (joined) btn.classList.add('joined');
+      btn.disabled = false;
+      btnWrap.innerHTML = '';
+      btnWrap.appendChild(btn);
+
+      btn.onclick = async () => {
+        btn.disabled = true;
+        try {
+          if (!joined) {
+            // Join: transaction to add participant, pointer, increment
+            await db.runTransaction(async tx => {
+              const tRef = db.collection('tournaments').doc(t.id);
+              const tSnap = await tx.get(tRef);
+              if (!tSnap.exists) throw new Error('Tournament removed');
+              const data = tSnap.data();
+              const cur = Number(data.participants || data.part || 0);
+              const max = Number(data.maxParticipants || data.max || 0);
+              if (max > 0 && cur >= max) throw new Error('Tournament is full');
+
+              // set participant under tournament
+              tx.set(tRef.collection('participants').doc(currentUser.uid), {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+
+              // set user pointer
+              tx.set(db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(t.id), {
+                tournamentId: t.id,
+                title: t.title || '',
+                game: t.game || '',
+                joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                uid: currentUser.uid
+              });
+
+              // increment participants
+              tx.update(tRef, { participants: cur + 1 });
+            });
+          } else {
+            // Leave: transaction to remove participant, pointer, decrement
+            await db.runTransaction(async tx => {
+              const tRef = db.collection('tournaments').doc(t.id);
+              const tSnap = await tx.get(tRef);
+              if (!tSnap.exists) throw new Error('Tournament removed');
+              const data = tSnap.data();
+              const cur = Number(data.participants || data.part || 0);
+
+              tx.delete(tRef.collection('participants').doc(currentUser.uid));
+              tx.delete(db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(t.id));
+              tx.update(tRef, { participants: Math.max(0, cur - 1) });
+            });
+          }
+
+          // re-fetch tournament for accurate count and re-render button
+          const tDoc = await db.collection('tournaments').doc(t.id).get();
+          const fresh = tDoc.exists ? { id: t.id, ...tDoc.data() } : t;
+          await renderAllCountsAndButtons(t.id, fresh);
+          await renderMyJoined();
+        } catch (err) {
+          // permission or other errors surface here
+          console.error(err);
+          alert(err.message || 'Action failed');
+        } finally {
+          btn.disabled = false;
+        }
+      };
+    } catch (err) {
+      console.error('renderJoinButton error', err);
+      btnWrap.innerHTML = `<div class="muted">Error</div>`;
+    }
+  }
+
+  // Refresh counts and button for a single tournament id
+  async function renderAllCountsAndButtons(tid, optionalData){
+    try {
+      const tDoc = optionalData ? { exists: true, data: () => optionalData } : await db.collection('tournaments').doc(tid).get();
+      if (!tDoc || !tDoc.exists) return;
+      const data = optionalData || tDoc.data();
+      const countEl = document.getElementById('count-' + tid);
+      if (countEl) countEl.textContent = Number(data.participants || data.part || 0);
+      await renderJoinButton({ id: tid, ...data });
+    } catch (e) { console.error(e); }
+  }
+
+  // Render user's joined tournaments (dashboard)
+  async function renderMyJoined(){
+    myJoined.innerHTML = 'Loading…';
+    try {
+      const joinedSnap = await db.collection('userTournaments').doc(currentUser.uid).collection('joined').orderBy('joinedAt','desc').get();
+      const items = [];
+      joinedSnap.forEach(d => items.push({ id: d.id, ...d.data() }));
+      if (items.length === 0) {
+        myJoined.innerHTML = '<div class="no-data">You have not joined any tournaments yet.</div>';
+        return;
+      }
+
+      myJoined.innerHTML = items.map(i => `
+        <div class="card">
+          <div><strong>${escapeHtml(i.title)}</strong></div>
+          <div class="muted">${escapeHtml(i.game||'')}</div>
+          <div class="action-row">
+            <button class="btn ghost" data-leave="${i.tournamentId}">Leave</button>
+            <a class="link" href="tournament.html?id=${encodeURIComponent(i.tournamentId)}">View</a>
+          </div>
+        </div>
+      `).join('');
+
+      // attach leave handlers
+      document.querySelectorAll('[data-leave]').forEach(btn => {
+        btn.onclick = async () => {
+          const tid = btn.getAttribute('data-leave');
+          if (!confirm('Leave this tournament?')) return;
+          btn.disabled = true;
+          try {
+            await db.runTransaction(async tx => {
+              const tRef = db.collection('tournaments').doc(tid);
+              const tSnap = await tx.get(tRef);
+              if (!tSnap.exists) throw new Error('Tournament removed');
+              const data = tSnap.data();
+              const cur = Number(data.participants || data.part || 0);
+
+              tx.delete(tRef.collection('participants').doc(currentUser.uid));
+              tx.delete(db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(tid));
+              tx.update(tRef, { participants: Math.max(0, cur - 1) });
+            });
+
+            await renderMyJoined();
+            await renderAllCountsAndButtons(tid);
+          } catch (err) {
+            console.error(err);
+            alert(err.message || 'Error leaving tournament');
+          } finally {
+            btn.disabled = false;
+          }
+        };
+      });
+    } catch (err) {
+      console.error('renderMyJoined error', err);
+      myJoined.innerHTML = '<div class="no-data">Error loading joined tournaments</div>';
+    }
+  }
+
+</script>
 </body>
 </html>

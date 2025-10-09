@@ -5,96 +5,7 @@
   <title>Tournament detail — TourneyHub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: #0b0f1a;
-      color: #f1f5f9;
-    }
-    .container {
-      padding: 16px;
-    }
-    .tabs {
-      display: flex;
-      gap: 12px;
-      margin: 16px 0;
-    }
-    .tab {
-      flex: 1;
-      background: #334155;
-      color: #cbd5e1;
-      border: none;
-      padding: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .tab.active {
-      background: #3b82f6;
-      color: #fff;
-      font-weight: 600;
-    }
-    .card {
-      background: #1e293b;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    .btn-primary {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .btn-outline {
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      background: transparent;
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-    }
-    .site-header {
-      background: #0b0f1a;
-      border-bottom: 1px solid #1e293b;
-      padding: 12px 16px;
-    }
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo {
-      color: #38bdf8;
-      font-weight: 700;
-      text-decoration: none;
-      font-size: 18px;
-    }
-    .site-nav {
-      display: flex;
-      gap: 12px;
-      padding: 12px 0;
-    }
-    .site-nav a {
-      color: #cbd5e1;
-      text-decoration: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-    }
-    .site-nav a.active {
-      background: #1e293b;
-      color: #3b82f6;
-      font-weight: bold;
-    }
-    .site-footer {
-      text-align: center;
-      padding: 16px;
-      font-size: 14px;
-      color: #94a3b8;
-    }
-  </style>
+  <script defer src="script.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -104,13 +15,6 @@
     </div>
  
   </header>
-      <nav class="bottom-nav" aria-label="Primary">
-      <a href="tournaments.html" class="active">🏆</a>
-      <a href="profile.html">👤</a>
-      <a href="wallet.html">💰 </a>
-      <a href="admin.html">⚙️ </a>
-      <a href="login.html" class="btn-outline">🔑</a>
-    </nav>
 
   <main class="container">
     <section id="not-found" class="card" style="display:none">

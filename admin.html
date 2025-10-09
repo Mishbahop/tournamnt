@@ -1,573 +1,462 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
-  <title>Admin — TourneyHub (Mobile)</title>
-  <body>
-      <nav class="bottom-nav" aria-label="Mobile navigation">
-    <a href="tournaments.html" aria-label="Tournaments">🏆</a>
-    <a href="wallet.html" aria-label="Wallet">💰</a>
-    <a href="admin.html" aria-label="Organizer Panel">⚙️</a>
-    <a href="login.html" aria-label="Sign in / Join">🔑</a>
-       <a href="dashboard.html" aria-label="My Dashboard">👤</a>
-  </nav>
-  </body>
-  <style>
-    :root{
-      --bg:#070812; --panel:#0f1724; --muted:#9aa6b2; --accent:#2563eb;
-      --ok:#16a34a; --bad:#ef4444; --card:#0b1220; --line:#1f2a38; --glass: rgba(255,255,255,0.03);
-      --radius:12px;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#e6eef8;background:var(--bg);}
-    header{position:sticky;top:0;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);backdrop-filter: blur(6px);border-bottom:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;gap:12px;z-index:40;}
-    .logo{font-weight:700;color:var(--accent);font-size:16px;text-decoration:none}
-    .badge{margin-left:auto;padding:6px 10px;border-radius:999px;background:var(--card);font-size:13px;border:1px solid var(--line);color:var(--muted)}
-    main{padding:14px;max-width:980px;margin:0 auto;}
-    .card{background:linear-gradient(180deg,var(--panel),var(--card));border-radius:var(--radius);padding:12px;border:1px solid var(--line);box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-bottom:12px;}
-    h1{font-size:18px;margin:0 0 8px 0}
-    .muted{color:var(--muted);font-size:13px}
-    .controls{display:flex;gap:8px;margin-top:10px}
-    button{appearance:none;border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer;background:var(--accent);color:white;box-shadow:0 6px 12px rgba(2,6,23,0.45)}
-    button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);box-shadow:none}
-    button.small{padding:8px 10px;font-size:14px;border-radius:9px}
-    .stats{display:flex;gap:8px;overflow:auto;padding-bottom:4px;margin-top:8px}
-    .stat{min-width:120px;background:var(--glass);padding:10px;border-radius:10px;border:1px solid var(--line)}
-    .grid{display:grid;grid-template-columns:1fr;gap:10px}
-    /* table desktop, cards mobile */
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
-    th{font-size:13px;color:var(--muted);background:transparent}
-    .action-row{display:flex;gap:8px;flex-wrap:wrap}
-    .approve{background:var(--ok);color:#05240f}
-    .reject{background:var(--bad)}
-    /* mobile cards */
-    .list-card{display:block;background:transparent;border:1px solid var(--line);padding:12px;border-radius:10px}
-    .row-title{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
-    .row-meta{color:var(--muted);font-size:13px;margin-bottom:6px}
-    .compact-amount{font-weight:800}
-    /* search */
-    .search-wrap{display:flex;gap:8px;align-items:center}
-    .search{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit}
-    /* responsive */
-    @media(min-width:920px){
-      .grid{grid-template-columns:1fr 1fr}
-      .list-card.mobile-only{display:none}
-      .table-only{display:table}
-    }
-    @media(max-width:919px){
-      .table-only{display:none}
-      .list-card.mobile-only{display:block}
-    }
-    /* touch improvements */
-    button, .search, input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-    .center{display:flex;align-items:center;justify-content:center}
-    .no-data{color:var(--muted);padding:12px;text-align:center}
-    footer{padding:14px;text-align:center;color:var(--muted);font-size:13px}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="style.css" />
+<title>TourneyHub Admin</title>
+
+<style>
+  :root{--bg:#070812;--panel:#0f1724;--card:#0b1220;--line:#1f2a38;--text:#e6eef8;--muted:#9aa6b2;--accent:#2563eb;--ok:#16a34a;--bad:#ef4444;--radius:10px}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto;color:var(--text);background:var(--bg)}
+  header{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--line)}
+  .logo{font-weight:700;color:var(--accent);font-size:18px;text-decoration:none}
+  .badge{margin-left:auto;padding:6px 10px;border-radius:999px;background:var(--card);font-size:13px;border:1px solid var(--line);color:var(--muted)}
+  main{padding:14px;max-width:1200px;margin:0 auto}
+  .card{background:linear-gradient(180deg,var(--panel),var(--card));border-radius:var(--radius);padding:12px;border:1px solid var(--line);margin-bottom:12px}
+  .tabs{display:flex;gap:8px;overflow:auto}
+  .tab{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:#bcd3f7;cursor:pointer;font-weight:700}
+  .tab.active{background:var(--accent);color:#fff;border-color:transparent}
+  input,textarea,select,button{font-family:inherit}
+  input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:#071428;color:inherit;margin-top:8px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .col{flex:1;min-width:160px}
+  button{padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:white;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid var(--line);color:#bcd3f7}
+  .small{padding:6px}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+  .muted{color:var(--muted);font-size:13px}
+  .action-row{display:flex;gap:8px;flex-wrap:wrap}
+  .ok{background:var(--ok);color:#04260f}
+  .danger{background:var(--bad)}
+  .no-data{color:var(--muted);padding:10px;text-align:center}
+  .grid.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px}
+  body{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#0b0f1a;border-top:1px solid #1e293b;display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom);z-index:100}
+  .bottom-nav a{font-size:1.6rem;color:#64748b;text-decoration:none}
+  .bottom-nav a.active,.bottom-nav a:hover{color:#38bdf8}
+
+  /* New: status tabs for deposits/withdrawals */
+  .status-tabs{display:flex;gap:8px;margin-top:8px}
+  .status-tab{padding:6px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);cursor:pointer;color:var(--muted)}
+  .status-tab.active{background:var(--accent);color:#fff;border-color:transparent}
+  .inline-select{min-width:150px}
+</style>
 </head>
 <body>
-  <header>
-    <a class="logo" href="#">TourneyHub</a>
-    <div style="margin-left:8px;color:var(--muted);font-size:13px">Admin</div>
-    <div class="badge" id="admin-badge">Checking…</div>
-  </header>
+<header>
+  <a class="logo" href="#">TourneyHub Admin</a>
+  <div id="adminBadge" class="badge">Checking…</div>
+</header>
 
-  <main>
-    <div id="gate" class="card">
-      <h1>Admin access</h1>
-      <p id="status" class="muted">Verifying your permissions…</p>
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button id="refresh-claims" class="small">Refresh</button>
-        <button id="signout" class="ghost small" onclick="signOut()">Sign out</button>
-      </div>
+<main>
+  <div class="card">
+    <div class="tabs" id="tabsBar">
+      <button class="tab active" data-tab="tournaments">Tournaments</button>
+      <button class="tab" data-tab="users">Users</button>
+      <button class="tab" data-tab="deposits">Deposits</button>
+      <button class="tab" data-tab="withdrawals">Withdrawals</button>
+      <button class="tab" data-tab="settings">Settings</button>
     </div>
 
-    <div id="dashboard" style="display:none">
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="flex:1">
-            <div style="display:flex;gap:8px;align-items:center">
-              <h1 style="margin:0">Overview</h1>
-            </div>
-            <div class="muted" style="margin-top:6px;font-size:13px">Quick operational view</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;gap:8px">
-              <button id="reload" class="small">Reload</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="stats" aria-hidden="false">
-          <div class="stat">
-            <div class="muted" style="font-size:12px">Deposits pending</div>
-            <div id="stat-deposits-pending" style="font-weight:800;font-size:18px">—</div>
-          </div>
-          <div class="stat">
-            <div class="muted" style="font-size:12px">Withdrawals pending</div>
-            <div id="stat-withdrawals-pending" style="font-weight:800;font-size:18px">—</div>
-          </div>
-          <div class="stat">
-            <div class="muted" style="font-size:12px">Approved today</div>
-            <div id="stat-approved-today" style="font-weight:800;font-size:18px">—</div>
-          </div>
-        </div>
-
-        <div style="margin-top:12px;display:flex;gap:8px;align-items:center" class="search-wrap">
-          <input id="globalSearch" class="search" placeholder="Search by email or amount" aria-label="Search transactions" />
-          <button id="clearSearch" class="ghost small">Clear</button>
-        </div>
-      </div>
-
-      <div class="grid">
-        <!-- Deposits card / table -->
-        <section class="card" aria-labelledby="deposits-title">
-          <h2 id="deposits-title" style="font-size:16px;margin-bottom:8px">Deposits</h2>
-
-          <!-- mobile list -->
-          <div id="deposits-list-mobile"></div>
-
-          <!-- desktop table -->
-          <div class="table-only" style="overflow:auto">
-            <table id="table-deposits" role="table" aria-label="Deposits table">
-              <thead>
-                <tr><th>Email</th><th>Amount</th><th>Status</th><th>Created</th><th>Action</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-        </section>
-
-        <!-- Withdrawals -->
-        <section class="card" aria-labelledby="withdrawals-title">
-          <h2 id="withdrawals-title" style="font-size:16px;margin-bottom:8px">Withdrawals</h2>
-
-          <div id="withdrawals-list-mobile"></div>
-
-          <div class="table-only" style="overflow:auto">
-            <table id="table-withdrawals" role="table" aria-label="Withdrawals table">
-              <thead>
-                <tr><th>Email</th><th>Amount</th><th>Status</th><th>Created</th><th>Action</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-
-      <div class="card">
-        <h2 style="font-size:16px">User balances</h2>
-        <div class="muted" style="margin-bottom:8px">Approved deposits minus approved withdrawals</div>
-
-        <div id="balances-list-mobile"></div>
-
-        <div class="table-only" style="overflow:auto">
-          <table id="table-balances"><thead><tr><th>Email</th><th>Deposits</th><th>Withdrawals</th><th>Balance</th></tr></thead><tbody></tbody></table>
-        </div>
-      </div>
+    <div class="row" style="margin-top:12px">
+      <input id="globalSearch" placeholder="Search: title, email, UTR, host…" />
+      <button id="clearSearch" class="ghost small">Clear</button>
+      <button id="refreshBtn" class="small">Refresh</button>
+      <button id="signOut" class="ghost small">Sign out</button>
     </div>
+  </div>
 
-    <footer>Tap actions to approve or reject. Use search to filter results.</footer>
-  </main>
+  <div id="content"></div>
+  <div id="globalStatus" class="muted"></div>
+</main>
 
-  <!-- Firebase SDKs (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+<!-- Bottom navigation moved into body -->
+<nav class="bottom-nav" aria-label="Mobile navigation">
+  <a href="index.html" class="nav-item">🏠<span style="display:block;font-size:12px">Home</span></a>
+  <a href="tournaments.html" class="nav-item">🏆<span style="display:block;font-size:12px">Tournaments</span></a>
+  <a href="wallet.html" class="nav-item">💰<span style="display:block;font-size:12px">Wallet</span></a>
+  <a href="admin.html" class="nav-item active">⚙️<span style="display:block;font-size:12px">Organizer</span></a>
+  <a href="dashboard.html" class="nav-item">👤<span style="display:block;font-size:12px">Dashboard</span></a>
+</nav>
 
-  <script>
-    // CONFIG: replace with your Firebase project config
-    const firebaseConfig = {
-      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-      authDomain: "authapp-386ee.firebaseapp.com",
-      projectId: "authapp-386ee",
-      storageBucket: "authapp-386ee.firebasestorage.app",
-      messagingSenderId: "809698525310",
-      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-      measurementId: "G-EJZTSBSGQT"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 
-    // UI refs
-    const adminBadge = document.getElementById('admin-badge');
-    const statusBox = document.getElementById('status');
-    const gate = document.getElementById('gate');
-    const dashboard = document.getElementById('dashboard');
+<script>
+  // Replace with your Firebase project config
+  const firebaseConfig = {
+    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+    authDomain: "authapp-386ee.firebaseapp.com",
+    projectId: "authapp-386ee",
+    storageBucket: "authapp-386ee.firebasestorage.app",
+    messagingSenderId: "809698525310",
+    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+    measurementId: "G-EJZTSBSGQT"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    const depositsTableBody = document.querySelector('#table-deposits tbody');
-    const withdrawalsTableBody = document.querySelector('#table-withdrawals tbody');
-    const depositsListMobile = document.getElementById('deposits-list-mobile');
-    const withdrawalsListMobile = document.getElementById('withdrawals-list-mobile');
+  // UI refs
+  const content = document.getElementById('content');
+  const adminBadge = document.getElementById('adminBadge');
+  const tabs = document.querySelectorAll('.tab');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const signOutBtn = document.getElementById('signOut');
+  const globalSearchEl = document.getElementById('globalSearch');
+  const clearSearchBtn = document.getElementById('clearSearch');
 
-    const balancesTableBody = document.querySelector('#table-balances tbody');
-    const balancesListMobile = document.getElementById('balances-list-mobile');
+  // state
+  let currentUser = null;
+  let activeTab = 'tournaments';
+  let searchQuery = '';
+  let depositFilterStatus = 'all'; // new status filter state
+  let withdrawalFilterStatus = 'all';
 
-    const statDepositsPending = document.getElementById('stat-deposits-pending');
-    const statWithdrawalsPending = document.getElementById('stat-withdrawals-pending');
-    const statApprovedToday = document.getElementById('stat-approved-today');
+  // helpers
+  const escapeHtml = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const debounce = (fn,ms)=>{let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
+  function fmtDate(t){ try{ if(!t) return '—'; if(t.toDate) return t.toDate().toLocaleString(); if(t.seconds) return new Date(t.seconds*1000).toLocaleString(); return new Date(t).toLocaleString(); }catch(e){return '—';} }
+  function tsToMs(t){ if(!t) return 0; if(t.toMillis) return t.toMillis(); if(t.seconds) return t.seconds*1000; if(typeof t==='string' || typeof t==='number') return new Date(t).getTime(); return 0; }
 
-    const reloadBtn = document.getElementById('reload');
-    const refreshClaims = document.getElementById('refresh-claims');
-    const signoutBtn = document.getElementById('signout');
-    const globalSearch = document.getElementById('globalSearch');
-    const clearSearch = document.getElementById('clearSearch');
+  // auth + admin gate
+  auth.onAuthStateChanged(async u=>{
+    if(!u) return location.href='login.html';
+    currentUser = u;
+    try {
+      const doc = await db.collection('users').doc(u.uid).get();
+      const isAdmin = doc.exists && doc.data().role === 'admin';
+      if(!isAdmin){ alert('Access denied'); await auth.signOut(); return location.href='login.html'; }
+      adminBadge.textContent = `Admin: ${u.email}`;
+      adminBadge.style.color = '#10b981';
+      bindTopControls();
+      renderActiveTab();
+    } catch(e){ console.error(e); adminBadge.textContent='Error'; }
+  });
 
-    // search state
-    let searchQuery = '';
+  // top controls + event delegation
+  function bindTopControls(){
+    tabs.forEach(t=> t.addEventListener('click', ()=>{ tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active'); activeTab = t.dataset.tab; renderActiveTab(); }));
+    refreshBtn.onclick = () => renderActiveTab();
+    signOutBtn.onclick = () => auth.signOut().then(()=>location.href='login.html');
+    clearSearchBtn.onclick = () => { globalSearchEl.value=''; searchQuery=''; renderActiveTab(); };
+    globalSearchEl.oninput = debounce((e)=>{ searchQuery = (e.target.value||'').trim().toLowerCase(); renderActiveTab(); }, 300);
 
-    // sign out helper
-    function signOut() {
-      auth.signOut().then(() => location.href = 'login.html').catch(console.error);
-    }
-
-    refreshClaims.addEventListener('click', async () => {
-      const u = auth.currentUser;
-      if (!u) return;
-      try {
-        await u.getIdTokenResult(true);
-        verifyAdminByRole(u);
-      } catch (e) { console.error(e); }
-    });
-
-    reloadBtn.addEventListener('click', loadAll);
-    clearSearch.addEventListener('click', () => { globalSearch.value=''; searchQuery=''; loadAll(); });
-
-    globalSearch.addEventListener('input', (e) => {
-      searchQuery = (e.target.value || '').trim().toLowerCase();
-      // small debounce
-      if (window._srchTm) clearTimeout(window._srchTm);
-      window._srchTm = setTimeout(loadAll, 250);
-    });
-
-    // auth gate
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        statusBox.textContent = 'Not signed in. Redirecting…';
-        setTimeout(()=>location.href='login.html',700);
+    // event delegation for many small actions
+    document.addEventListener('click', async ev=>{
+      const btn = ev.target.closest('button');
+      if(!btn) return;
+      const action = btn.dataset.action;
+      const col = btn.dataset.col;
+      const id = btn.dataset.id;
+      const inc = btn.dataset.inc;
+      const dec = btn.dataset.dec;
+      const del = btn.dataset.del;
+      const load = btn.dataset.load;
+      const prom = btn.dataset.prom;
+      const dem = btn.dataset.dem;
+      const createType = btn.dataset.create;
+      const updateBracketId = btn.dataset.updateBracket;
+      // status update (approve/reject)
+      if(action && col && id){
+        ev.preventDefault(); btn.disabled=true;
+        try {
+          await db.collection(col).doc(id).update({ status: action==='approve' ? 'approved' : 'rejected', updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          renderActiveTab();
+        } catch(e){ alert('Update failed: '+(e.message||e)); console.error(e); } finally { btn.disabled=false; }
         return;
       }
-      await verifyAdminByRole(user);
-    });
-
-    async function verifyAdminByRole(user) {
-      try {
-        statusBox.textContent = 'Checking admin role…';
-        // try token claim first
-        let claimAdmin = false;
+      // increment participants
+      if(inc){
+        ev.preventDefault(); btn.disabled=true;
         try {
-          const t = await user.getIdTokenResult(true);
-          claimAdmin = t?.claims?.admin === true;
-          console.log('token claims', t.claims);
-        } catch (e) { console.warn('claim read failed', e); }
-
-        // read users/{uid}
-        let roleAdmin = false;
+          await db.runTransaction(async tx=>{
+            const ref = db.collection('tournaments').doc(inc);
+            const s = await tx.get(ref);
+            if(!s.exists) throw new Error('Not found');
+            const d=s.data(); const cur = Number(d.participants||d.part||0); const max = Number(d.maxParticipants||d.max||0);
+            if(max > 0 && cur>=max) throw new Error('At max participants');
+            tx.update(ref, { participants: cur+1, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          });
+          renderActiveTab();
+        } catch(e){ alert(e.message||'Error'); } finally { btn.disabled=false; }
+        return;
+      }
+      // decrement participants
+      if(dec){
+        ev.preventDefault(); btn.disabled=true;
         try {
-          const doc = await db.collection('users').doc(user.uid).get();
-          if (doc.exists) roleAdmin = doc.data()?.role === 'admin';
-          else console.warn('users doc not found:', user.uid);
-        } catch (err) {
-          console.error('Error reading users doc', err);
-          statusBox.innerHTML = `Error reading users document: ${err?.code || ''} ${err?.message || ''}`;
-          adminBadge.textContent = 'Admin: error';
-          adminBadge.style.color = '#f59e0b';
-          return;
-        }
-
-        const isAdmin = claimAdmin || roleAdmin;
-        adminBadge.textContent = isAdmin ? 'Admin: active' : 'Admin: denied';
-        adminBadge.style.color = isAdmin ? '#10b981' : '#ef4444';
-
-        if (!isAdmin) {
-          statusBox.innerHTML = '⛔ Access denied. Not an admin.<br><span class="muted">Ensure users/{uid}.role is "admin".</span>';
-          dashboard.style.display = 'none';
-          return;
-        }
-        statusBox.textContent = '✅ Admin access granted';
-        gate.style.display = 'none';
-        dashboard.style.display = 'block';
-        await loadAll();
-      } catch (e) {
-        console.error('verify error', e);
-        statusBox.textContent = 'Error verifying admin access: ' + (e?.message || e);
+          await db.runTransaction(async tx=>{
+            const ref = db.collection('tournaments').doc(dec);
+            const s = await tx.get(ref);
+            if(!s.exists) throw new Error('Not found');
+            const d=s.data(); const cur = Number(d.participants||d.part||0);
+            if(cur<=0) throw new Error('Already zero');
+            tx.update(ref, { participants: cur-1, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          });
+          renderActiveTab();
+        } catch(e){ alert(e.message||'Error'); } finally { btn.disabled=false; }
+        return;
       }
-    }
-
-    // load all: deposits & withdrawals & balances
-    async function loadAll() {
-      await Promise.all([loadDeposits(), loadWithdrawals()]);
-      await Promise.all([computeBalances(), computeStats()]);
-    }
-
-    function filterMatch(text){
-      if(!searchQuery) return true;
-      return (String(text||'').toLowerCase().indexOf(searchQuery) !== -1);
-    }
-
-    // deposits
-    async function loadDeposits(){
-      depositsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">Loading…</td></tr>`;
-      depositsListMobile.innerHTML = '';
-      try {
-        const snap = await db.collection('deposits').orderBy('createdAt','desc').get();
-        const items = [];
-        snap.forEach(doc => {
+      // delete
+      if(del){
+        ev.preventDefault();
+        if(!confirm('Delete item?')) return;
+        btn.disabled=true;
+        try { const colDel = btn.dataset.colDel || btn.dataset.col || 'tournaments'; await db.collection(colDel).doc(del).delete(); renderActiveTab(); } catch(e){ alert('Delete failed'); } finally { btn.disabled=false; }
+        return;
+      }
+      // load tournament into form
+      if(load){
+        ev.preventDefault(); btn.disabled=true;
+        try {
+          const doc = await db.collection('tournaments').doc(load).get();
+          if(!doc.exists) throw new Error('Not found');
           const d = doc.data();
-          items.push({ id: doc.id, data: d });
-        });
-        // apply client filter
-        const filtered = items.filter(it => filterMatch(it.data.email) || filterMatch(it.data.amount));
-
-        // render mobile list
-        if(filtered.length===0) depositsListMobile.innerHTML = `<div class="no-data">No deposits</div>`;
-        else depositsListMobile.innerHTML = filtered.map(it => {
-          const d = it.data;
-          const created = d.createdAt?.toDate?.().toLocaleString() || (d.createdAtClient || '—');
-          return `
-            <article class="list-card mobile-only" role="article">
-              <div class="row-title">
-                <div style="flex:1">
-                  <div style="font-weight:800">${d.email || '—'}</div>
-                  <div class="row-meta">${created}</div>
-                </div>
-                <div style="text-align:right">
-                  <div class="compact-amount">₹${Number(d.amount||0).toLocaleString()}</div>
-                  <div class="row-meta">${d.status||'pending'}</div>
-                </div>
-              </div>
-              <div style="display:flex;gap:8px;justify-content:flex-end">
-                <button class="approve small" data-id="${it.id}" data-col="deposits" data-action="approved">Approve</button>
-                <button class="reject small" data-id="${it.id}" data-col="deposits" data-action="rejected">Reject</button>
-              </div>
-            </article>`;
-        }).join('');
-
-        // render desktop table
-        if(filtered.length===0) depositsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">No deposits</td></tr>`;
-        else depositsTableBody.innerHTML = filtered.map(it => {
-          const d = it.data;
-          const created = d.createdAt?.toDate?.().toLocaleString() || (d.createdAtClient || '—');
-          return `<tr>
-            <td>${d.email||'—'}</td>
-            <td>₹${Number(d.amount||0).toLocaleString()}</td>
-            <td>${d.status||'pending'}</td>
-            <td>${created}</td>
-            <td class="action-row">
-              <button class="approve small" data-id="${it.id}" data-col="deposits" data-action="approved">Approve</button>
-              <button class="reject small" data-id="${it.id}" data-col="deposits" data-action="rejected">Reject</button>
-            </td>
-          </tr>`;
-        }).join('');
-
-        attachActionHandlers();
-      } catch (err) {
-        console.error('Load deposits error', err);
-        depositsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">Error loading deposits</td></tr>`;
-        depositsListMobile.innerHTML = `<div class="no-data">Error loading deposits</div>`;
+          document.getElementById('t-id').value = load;
+          document.getElementById('t-title').value = d.title||'';
+          document.getElementById('t-date').value = d.date||'';
+          document.getElementById('t-game').value = d.game||'Other';
+          document.getElementById('t-type').value = d.type||'SOLO';
+          document.getElementById('t-bracket').value = d.bracket||'SINGLE_ELIM';
+          document.getElementById('t-entry').value = d.entry||0;
+          document.getElementById('t-host').value = d.host||'';
+          document.getElementById('t-max').value = d.maxParticipants||d.max||1;
+          document.getElementById('t-part').value = d.participants||d.part||0;
+          document.getElementById('t-desc').value = d.description||'';
+          window.scrollTo({top:0,behavior:'smooth'});
+        } catch(e){ alert(e.message||'Load failed'); } finally { btn.disabled=false; }
+        return;
       }
-    }
+      // promote/demote user
+      if(prom){ ev.preventDefault(); btn.disabled=true; try{ await db.collection('users').doc(prom).update({ role:'admin' }); renderActiveTab(); } catch(e){ alert('Failed'); } finally { btn.disabled=false; } return; }
+      if(dem){ ev.preventDefault(); btn.disabled=true; try{ await db.collection('users').doc(dem).update({ role:'user' }); renderActiveTab(); } catch(e){ alert('Failed'); } finally { btn.disabled=false; } return; }
+      // quick create deposit/withdraw
+      if(createType){
+        ev.preventDefault(); btn.disabled=true;
+        try {
+          if(createType==='deposit'){
+            const email = document.getElementById('dep-create-email').value.trim(); if(!email) throw new Error('Enter email');
+            const amount = Number(prompt('Amount (₹)', '100'))||0;
+            await db.collection('deposits').add({ email, amount, utr:null, status:'approved', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            alert('Deposit created and approved');
+          } else if(createType==='withdraw'){
+            const email = document.getElementById('wit-create-email').value.trim(); if(!email) throw new Error('Enter email');
+            const amount = Number(prompt('Amount (₹)','100'))||0; const details = prompt('Details','')||'';
+            await db.collection('withdrawals').add({ email, amount, details, status:'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            alert('Withdrawal created (pending)');
+          }
+          renderActiveTab();
+        } catch(e){ alert(e.message||'Failed'); } finally { btn.disabled=false; }
+        return;
+      }
 
-    async function loadWithdrawals(){
-      withdrawalsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">Loading…</td></tr>`;
-      withdrawalsListMobile.innerHTML = '';
+      // update bracket inline: button has data-update-bracket="<id>"
+      if(updateBracketId){
+        ev.preventDefault();
+        const tid = updateBracketId;
+        const sel = document.querySelector(`select[data-bracket-select="${tid}"]`);
+        if(!sel) { alert('Select not found'); return; }
+        const newBracket = sel.value;
+        btn.disabled = true;
+        try {
+          await db.collection('tournaments').doc(tid).update({ bracket: newBracket, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          // success — UI will update via snapshot on tournaments page
+          renderActiveTab();
+        } catch(e){ alert('Failed to update bracket'); console.error(e); } finally { btn.disabled=false; }
+        return;
+      }
+
+    }); // end document click
+  } // end bindTopControls
+
+  // router
+  function renderActiveTab(){ if(activeTab==='tournaments') renderTournamentsAdmin(); else if(activeTab==='users') renderUsersAdmin(); else if(activeTab==='deposits') renderDepositsAdmin(); else if(activeTab==='withdrawals') renderWithdrawalsAdmin(); else renderSettings(); }
+
+  // tournaments admin
+  async function renderTournamentsAdmin(){
+    content.innerHTML = `
+      <div class="card">
+        <h2>Create / Edit Tournament</h2>
+        <input id="t-id" type="hidden" />
+        <div class="row"><div class="col lg"><label class="muted">Title</label><input id="t-title" placeholder="Tournament title" /></div><div class="col"><label class="muted">Date</label><input id="t-date" type="date" /></div><div class="col"><label class="muted">Game</label><select id="t-game"><option>BGMI</option><option>Free Fire</option><option>Valorant</option><option>PUBG</option><option>Other</option></select></div></div>
+        <div class="row"><div class="col"><label class="muted">Type</label><select id="t-type"><option value="SOLO">Solo</option><option value="TEAM">Team</option></select></div><div class="col"><label class="muted">Bracket</label><select id="t-bracket"><option value="SINGLE_ELIM">Single Elimination</option><option value="DOUBLE_ELIM">Double Elimination</option></select></div><div class="col"><label class="muted">Entry fee (₹)</label><input id="t-entry" type="number" min="0" value="0" /></div></div>
+        <div class="row"><div class="col"><label class="muted">Host</label><input id="t-host" /></div><div class="col"><label class="muted">Max participants</label><input id="t-max" type="number" min="1" value="64" /></div><div class="col"><label class="muted">Participants</label><input id="t-part" type="number" min="0" value="0" /></div></div>
+        <div class="row"><div class="col lg"><label class="muted">Description</label><textarea id="t-desc"></textarea></div></div>
+        <div class="row"><button id="t-save">Save</button><button id="t-reset" class="ghost small">Reset</button></div>
+        <div id="t-status" class="muted"></div>
+      </div>
+
+      <div class="card">
+        <h2>Manage tournaments</h2>
+        <div class="row"><input id="t-search" class="search" placeholder="Search title, game, host" /><select id="t-filter-game"><option value="">All games</option><option>BGMI</option><option>Free Fire</option><option>Valorant</option><option>PUBG</option><option>Other</option></select><button id="t-reload" class="small">Reload</button><button id="t-clear" class="ghost small">Clear</button></div>
+        <div id="t-list-mobile" class="grid cards"></div>
+        <div style="overflow:auto"><table><thead><tr><th>Title</th><th>Game/Type</th><th>Host</th><th>Entry</th><th>Participants</th><th>Date</th><th>Created</th><th>Action</th></tr></thead><tbody id="t-table"></tbody></table></div>
+      </div>
+    `;
+
+    document.getElementById('t-save').onclick = async ()=>{
+      const id = document.getElementById('t-id').value || null;
+      const title = (document.getElementById('t-title').value||'').trim(); if(!title){ document.getElementById('t-status').textContent='Title required'; return; }
+      const data = {
+        title, date: document.getElementById('t-date').value||null, game: document.getElementById('t-game').value||'Other',
+        type: document.getElementById('t-type').value||'SOLO', bracket: document.getElementById('t-bracket').value||'SINGLE_ELIM',
+        entry: Number(document.getElementById('t-entry').value||0), host: (document.getElementById('t-host').value||'').trim(),
+        maxParticipants: Math.max(1, Number(document.getElementById('t-max').value||1)), participants: Math.max(0, Number(document.getElementById('t-part').value||0)),
+        description: (document.getElementById('t-desc').value||'').trim(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
       try {
-        const snap = await db.collection('withdrawals').orderBy('createdAt','desc').get();
-        const items = [];
-        snap.forEach(doc => { items.push({ id: doc.id, data: doc.data() }); });
-
-        const filtered = items.filter(it => filterMatch(it.data.email) || filterMatch(it.data.amount));
-
-        if(filtered.length===0) withdrawalsListMobile.innerHTML = `<div class="no-data">No withdrawals</div>`;
-        else withdrawalsListMobile.innerHTML = filtered.map(it => {
-          const w = it.data;
-          const created = w.createdAt?.toDate?.().toLocaleString() || (w.createdAtClient || '—');
-          return `
-            <article class="list-card mobile-only" role="article">
-              <div class="row-title">
-                <div style="flex:1">
-                  <div style="font-weight:800">${w.email || '—'}</div>
-                  <div class="row-meta">${created}</div>
-                </div>
-                <div style="text-align:right">
-                  <div class="compact-amount">₹${Number(w.amount||0).toLocaleString()}</div>
-                  <div class="row-meta">${w.status||'pending'}</div>
-                </div>
-              </div>
-              <div style="display:flex;gap:8px;justify-content:flex-end">
-                <button class="approve small" data-id="${it.id}" data-col="withdrawals" data-action="approved">Approve</button>
-                <button class="reject small" data-id="${it.id}" data-col="withdrawals" data-action="rejected">Reject</button>
-              </div>
-            </article>`;
-        }).join('');
-
-        if(filtered.length===0) withdrawalsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">No withdrawals</td></tr>`;
-        else withdrawalsTableBody.innerHTML = filtered.map(it => {
-          const w = it.data;
-          const created = w.createdAt?.toDate?.().toLocaleString() || (w.createdAtClient || '—');
-          return `<tr>
-            <td>${w.email||'—'}</td>
-            <td>₹${Number(w.amount||0).toLocaleString()}</td>
-            <td>${w.status||'pending'}</td>
-            <td>${created}</td>
-            <td class="action-row">
-              <button class="approve small" data-id="${it.id}" data-col="withdrawals" data-action="approved">Approve</button>
-              <button class="reject small" data-id="${it.id}" data-col="withdrawals" data-action="rejected">Reject</button>
-            </td>
-          </tr>`;
-        }).join('');
-
-        attachActionHandlers();
-      } catch (err) {
-        console.error('Load withdrawals error', err);
-        withdrawalsTableBody.innerHTML = `<tr><td colspan="5" class="no-data">Error loading withdrawals</td></tr>`;
-        withdrawalsListMobile.innerHTML = `<div class="no-data">Error loading withdrawals</div>`;
-      }
-    }
-
-    function attachActionHandlers(){
-      document.querySelectorAll('button[data-id]').forEach(btn=>{
-        btn.onclick = async (e)=>{
-          const id = btn.getAttribute('data-id');
-          const col = btn.getAttribute('data-col');
-          const action = btn.getAttribute('data-action');
-          btn.disabled = true;
-          try{
-            await db.collection(col).doc(id).update({ status: action, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-            await loadAll();
-          }catch(err){
-            console.error('action error', err); alert('Error updating: '+(err?.message||err));
-          } finally { btn.disabled = false; }
-        };
-      });
-    }
-
-    // compute balances
-    async function computeBalances(){
-      balancesTableBody.innerHTML = `<tr><td colspan="4" class="no-data">Loading…</td></tr>`;
-      balancesListMobile.innerHTML = '';
-      try{
-        const [depSnap, witSnap] = await Promise.all([
-          db.collection('deposits').where('status','==','approved').get(),
-          db.collection('withdrawals').where('status','==','approved').get()
-        ]);
-        const totals = new Map();
-        depSnap.forEach(doc=>{
-          const d = doc.data();
-          const e = d.email || '—';
-          const amt = Number(d.amount||0);
-          const cur = totals.get(e) || {dep:0,wit:0}; cur.dep += amt; totals.set(e,cur);
-        });
-        witSnap.forEach(doc=>{
-          const w = doc.data();
-          const e = w.email || '—';
-          const amt = Number(w.amount||0);
-          const cur = totals.get(e) || {dep:0,wit:0}; cur.wit += amt; totals.set(e,cur);
-        });
-
-        const rows = Array.from(totals.entries()).map(([email,t])=>{
-          const bal = t.dep - t.wit;
-          return { email, dep: t.dep, wit: t.wit, bal };
-        }).sort((a,b)=>b.bal - a.bal);
-
-        if(rows.length===0){
-          balancesTableBody.innerHTML = `<tr><td colspan="4" class="no-data">No approved transactions</td></tr>`;
-          balancesListMobile.innerHTML = `<div class="no-data">No approved balances</div>`;
-        } else {
-          balancesTableBody.innerHTML = rows.map(r=>`
-            <tr>
-              <td>${r.email}</td>
-              <td>₹${r.dep.toLocaleString()}</td>
-              <td>₹${r.wit.toLocaleString()}</td>
-              <td>₹${r.bal.toLocaleString()}</td>
-            </tr>`).join('');
-
-          balancesListMobile.innerHTML = rows.map(r=>`
-            <article class="list-card mobile-only">
-              <div class="row-title"><div style="font-weight:800">${r.email}</div><div style="text-align:right;font-weight:800">₹${r.bal.toLocaleString()}</div></div>
-              <div class="row-meta">Deposits ₹${r.dep.toLocaleString()} • Withdrawals ₹${r.wit.toLocaleString()}</div>
-            </article>`).join('');
-        }
-      }catch(err){
-        console.error('compute balances error', err);
-        balancesTableBody.innerHTML = `<tr><td colspan="4" class="no-data">Error computing balances</td></tr>`;
-        balancesListMobile.innerHTML = `<div class="no-data">Error computing balances</div>`;
-      }
-    }
-
-    // stats
-    async function computeStats(){
-      try{
-        const [depPending, witPending] = await Promise.all([
-          db.collection('deposits').where('status','==','pending').get(),
-          db.collection('withdrawals').where('status','==','pending').get()
-        ]);
-        statDepositsPending.textContent = depPending.size;
-        statWithdrawalsPending.textContent = witPending.size;
-
-        const [depApproved, witApproved] = await Promise.all([
-          db.collection('deposits').where('status','==','approved').get(),
-          db.collection('withdrawals').where('status','==','approved').get()
-        ]);
-        // approximate "approved today"
-        const today = new Date(); const yyyy = today.getFullYear(), mm = today.getMonth(), dd = today.getDate();
-        const start = new Date(yyyy,mm,dd,0,0,0), end = new Date(yyyy,mm,dd,23,59,59);
-        const inRange = (ts, clientStr) => {
-          if(ts?.toDate) { const d = ts.toDate(); return d>=start && d<=end; }
-          if(clientStr) { const d = new Date(clientStr); return d>=start && d<=end; }
-          return false;
-        };
-        let ct = 0;
-        depApproved.forEach(doc=>{ const d = doc.data(); if(inRange(d.updatedAt, d.createdAtClient)) ct++; });
-        witApproved.forEach(doc=>{ const w = doc.data(); if(inRange(w.updatedAt, w.createdAtClient)) ct++; });
-        statApprovedToday.textContent = ct;
-      }catch(err){
-        console.error('compute stats error', err);
-        statApprovedToday.textContent = '—';
-      }
-    }
-
-    // main loads
-    async function loadAll(){
-      // small visual hint
-      statDepositsPending.textContent = '…';
-      statWithdrawalsPending.textContent = '…';
-      statApprovedToday.textContent = '…';
-      await Promise.all([loadDeposits(), loadWithdrawals()]);
-      await Promise.all([computeBalances(), computeStats()]);
-    }
-
-    // initial attach (buttons events delegated)
-    document.addEventListener('click', (e)=>{
-      const t = e.target;
-      if(!t) return;
-      const id = t.getAttribute && t.getAttribute('data-id');
-      if(id){
-        // handled in attachActionHandlers (which sets onclick), but ensure fallback here
-        const col = t.getAttribute('data-col');
-        const action = t.getAttribute('data-action');
-        if(col && action){
-          t.disabled = true;
-          db.collection(col).doc(id).update({ status: action, updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
-            .then(()=>loadAll())
-            .catch(err=>{ console.error(err); alert('Error: '+(err?.message||err)); })
-            .finally(()=> t.disabled=false);
-        }
-      }
-    });
-
-    // expose a quick diagnostic function to console if needed
-    window.adminDiag = async ()=> {
-      console.log('projectId', firebase.app().options.projectId);
-      console.log('user', auth.currentUser && { uid: auth.currentUser.uid, email: auth.currentUser.email });
-      try{ const v = await auth.currentUser.getIdTokenResult(true); console.log('claims', v.claims); }catch(e){console.warn('token error',e);}
-      try{ const udoc = await db.collection('users').doc(auth.currentUser.uid).get(); console.log('users doc', udoc.exists, udoc.data()); }catch(e){console.warn('users doc read failed', e);}
+        if(id){ await db.collection('tournaments').doc(id).update(data); document.getElementById('t-status').textContent='Updated'; }
+        else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('tournaments').add(data); document.getElementById('t-status').textContent='Created'; }
+        renderTournamentsAdmin();
+      } catch(e){ console.error(e); document.getElementById('t-status').textContent='Save failed'; }
     };
+    document.getElementById('t-reset').onclick = ()=>{ ['t-id','t-title','t-date','t-host','t-entry','t-max','t-part','t-desc'].forEach(id=>{const el=document.getElementById(id); if(el) el.value=(id==='t-part'?'0':'');}); document.getElementById('t-status').textContent=''; };
+    document.getElementById('t-reload').onclick = renderTournamentsAdmin;
+    document.getElementById('t-clear').onclick = ()=>{ document.getElementById('t-search').value=''; document.getElementById('t-filter-game').value=''; renderTournamentsAdmin(); };
+    document.getElementById('t-search').oninput = debounce(()=>renderTournamentsAdmin(),300);
 
-  </script>
+    try {
+      const snap = await db.collection('tournaments').orderBy('createdAt','desc').get();
+      const items = []; snap.forEach(d=>items.push({id:d.id, ...d.data()}));
+      const search = (document.getElementById('t-search').value||'').trim().toLowerCase(); const gameFilter = document.getElementById('t-filter-game').value;
+      const filtered = items.filter(t=> { if(gameFilter && t.game!==gameFilter) return false; if(!search) return true; const blob = `${t.title||''} ${t.game||''} ${t.host||''}`.toLowerCase(); return blob.includes(search); });
+
+      // MOBILE CARDS WITH INLINE BRACKET SELECT + SAVE
+      document.getElementById('t-list-mobile').innerHTML = filtered.length ? filtered.map(t=>`
+        <div class="card-small card">
+          <div style="display:flex;justify-content:space-between;align-items:center"><strong>${escapeHtml(t.title)}</strong><span>${t.date||'—'}</span></div>
+          <div class="muted">${t.game} • ${t.type} • ${t.bracket}</div>
+          <div class="muted">Host: ${escapeHtml(t.host||'—')} • Entry: ₹${Number(t.entry||0)}</div>
+          <div class="muted">Participants: ${Number(t.participants||t.part||0)} / ${Number(t.maxParticipants||t.max||0)}</div>
+          <div style="margin-top:8px" class="action-row">
+            <select class="inline-select" data-bracket-select="${t.id}">
+              <option value="SINGLE_ELIM"${t.bracket==='SINGLE_ELIM'?' selected':''}>Single Elimination</option>
+              <option value="DOUBLE_ELIM"${t.bracket==='DOUBLE_ELIM'?' selected':''}>Double Elimination</option>
+            </select>
+            <button class="small ok" data-update-bracket="${t.id}">Save Bracket</button>
+            <button class="ok small" data-inc="${t.id}">+1</button>
+            <button class="ghost small" data-dec="${t.id}">-1</button>
+            <button class="ghost small" data-load="${t.id}">Load</button>
+            <button class="danger small" data-del="${t.id}" data-col-del="tournaments">Delete</button>
+          </div>
+        </div>
+      `).join('') : '<div class="no-data">No tournaments</div>';
+
+      // TABLE VIEW: add bracket select + save
+      const tbody = document.getElementById('t-table');
+      tbody.innerHTML = filtered.length ? filtered.map(t=>`<tr>
+          <td>${escapeHtml(t.title)}</td>
+          <td>${escapeHtml(t.game)}<div class="muted">${escapeHtml(t.type)} • ${escapeHtml(t.bracket)}</div></td>
+          <td>${escapeHtml(t.host||'—')}</td>
+          <td>₹${Number(t.entry||0)}</td>
+          <td>${Number(t.participants||t.part||0)} / ${Number(t.maxParticipants||t.max||0)}</td>
+          <td>${t.date||'—'}</td>
+          <td>${fmtDate(t.createdAt)}</td>
+          <td class="action-row">
+            <select class="inline-select" data-bracket-select="${t.id}">
+              <option value="SINGLE_ELIM"${t.bracket==='SINGLE_ELIM'?' selected':''}>Single Elimination</option>
+              <option value="DOUBLE_ELIM"${t.bracket==='DOUBLE_ELIM'?' selected':''}>Double Elimination</option>
+            </select>
+            <button class="small ok" data-update-bracket="${t.id}">Save Bracket</button>
+            <button class="ok small" data-inc="${t.id}">+1</button>
+            <button class="ghost small" data-dec="${t.id}">-1</button>
+            <button class="ghost small" data-load="${t.id}">Load</button>
+            <button class="danger small" data-del="${t.id}" data-col-del="tournaments">Delete</button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="8" class="no-data">No tournaments</td></tr>';
+    } catch(e){ console.error(e); document.getElementById('t-list-mobile').innerHTML='<div class="no-data">Error loading tournaments</div>'; document.getElementById('t-table').innerHTML = '<tr><td colspan="8" class="no-data">Error</td></tr>'; }
+  }
+
+  // users admin
+  async function renderUsersAdmin(){
+    content.innerHTML = `<div class="card"><h2>Users</h2><div class="row"><input id="u-search" class="search" placeholder="Search email or UID" /><button id="u-reload" class="small">Reload</button></div><div id="users-list" style="margin-top:12px"></div><div style="overflow:auto"><table><thead><tr><th>Email</th><th>Role</th><th>UID</th><th>Action</th></tr></thead><tbody id="users-table"></tbody></table></div></div>`;
+    document.getElementById('u-reload').onclick = renderUsersAdmin;
+    document.getElementById('u-search').oninput = debounce(()=>renderUsersAdmin(),300);
+    try {
+      const snap = await db.collection('users').get(); const items=[]; snap.forEach(d=>items.push({uid:d.id, ...d.data()}));
+      const q=(document.getElementById('u-search').value||'').trim().toLowerCase();
+      const filtered = items.filter(u=> !q || (`${u.email||''} ${u.uid||''} ${u.role||''}`).toLowerCase().includes(q));
+      document.getElementById('users-list').innerHTML = filtered.length ? filtered.map(u=>`<div class="card-small"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(u.email)}</strong><div class="muted">${escapeHtml(u.role||'user')}</div></div><div class="muted">UID: ${u.uid}</div><div style="margin-top:8px" class="action-row"><button class="ghost small" data-prom="${u.uid}">Promote</button><button class="danger small" data-dem="${u.uid}">Demote</button></div></div>`).join('') : '<div class="no-data">No users</div>';
+      const tbody = document.getElementById('users-table'); tbody.innerHTML = filtered.length ? filtered.map(u=>`<tr><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.role||'user')}</td><td>${u.uid}</td><td class="action-row"><button class="ghost small" data-prom="${u.uid}">Promote</button><button class="danger small" data-dem="${u.uid}">Demote</button></td></tr>`).join('') : '<tr><td colspan="4" class="no-data">No users</td></tr>';
+    } catch(e){ console.error(e); document.getElementById('users-list').innerHTML='<div class="no-data">Error loading users</div>'; document.getElementById('users-table').innerHTML='<tr><td colspan="4" class="no-data">Error</td></tr>'; }
+  }
+
+  // deposits admin (with status tabs)
+  async function renderDepositsAdmin(){
+    activeTab='deposits';
+    content.innerHTML = `<div class="card"><h2>Deposits</h2>
+      <div class="status-tabs" id="depStatusTabs">
+        <div class="status-tab${depositFilterStatus==='all'?' active':''}" data-status="all">All</div>
+        <div class="status-tab${depositFilterStatus==='pending'?' active':''}" data-status="pending">Pending</div>
+        <div class="status-tab${depositFilterStatus==='approved'?' active':''}" data-status="approved">Complete</div>
+        <div class="status-tab${depositFilterStatus==='rejected'?' active':''}" data-status="rejected">Rejected</div>
+      </div>
+
+      <div class="row" style="margin-top:10px"><div class="col"><label class="muted">Quick create deposit (admin)</label><input id="dep-create-email" placeholder="user email" /></div><div class="col"><label class="muted">&nbsp;</label><button data-create="deposit" class="ghost small">Create (approve)</button></div></div>
+
+      <div id="dep-list-mobile" class="grid cards"></div>
+      <div style="overflow:auto"><table><thead><tr><th>Email</th><th>Amount</th><th>Status</th><th>UTR</th><th>Created</th><th>Action</th></tr></thead><tbody id="dep-table"></tbody></table></div>
+      </div>`;
+
+    // wire up status tabs click
+    document.querySelectorAll('#depStatusTabs .status-tab').forEach(el=>{
+      el.addEventListener('click', ()=>{ depositFilterStatus = el.dataset.status; renderDepositsAdmin(); });
+    });
+
+    try {
+      const filter = depositFilterStatus;
+      let items=[];
+      if(filter==='all'){ const snap = await db.collection('deposits').orderBy('createdAt','desc').get(); snap.forEach(d=>items.push({id:d.id,...d.data()})); }
+      else { const qsnap = await db.collection('deposits').where('status','==',filter).get(); qsnap.forEach(d=>items.push({id:d.id,...d.data()})); items.sort((a,b)=>tsToMs(b.createdAt)-tsToMs(a.createdAt)); }
+      const filtered = items.filter(i=> !searchQuery || (`${i.email||''} ${i.utr||''} ${i.status||''} ${i.amount||''}`).toLowerCase().includes(searchQuery));
+      document.getElementById('dep-list-mobile').innerHTML = filtered.length ? filtered.map(d=>`<div class="card-small card"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(d.email)}</strong><div>₹${Number(d.amount||0)}</div></div><div class="muted">Status: ${escapeHtml(d.status||'pending')} • UTR: ${escapeHtml(d.utr||'—')}</div><div class="muted">Created: ${fmtDate(d.createdAt) || (d.createdAtClient||'—')}</div><div style="margin-top:8px" class="action-row"><button class="ok small" data-action="approve" data-id="${d.id}" data-col="deposits">Approve</button><button class="danger small" data-action="reject" data-id="${d.id}" data-col="deposits">Reject</button></div></div>`).join('') : '<div class="no-data">No deposits</div>';
+      const tbody = document.getElementById('dep-table'); tbody.innerHTML = filtered.length ? filtered.map(d=>`<tr><td>${escapeHtml(d.email)}</td><td>₹${Number(d.amount||0)}</td><td>${escapeHtml(d.status||'pending')}</td><td>${escapeHtml(d.utr||'—')}</td><td>${fmtDate(d.createdAt) || (d.createdAtClient||'—')}</td><td class="action-row"><button class="ok small" data-action="approve" data-id="${d.id}" data-col="deposits">Approve</button><button class="danger small" data-action="reject" data-id="${d.id}" data-col="deposits">Reject</button></td></tr>`).join('') : '<tr><td colspan="6" class="no-data">No deposits</td></tr>';
+    } catch(e){ console.error(e); document.getElementById('dep-list-mobile').innerHTML='<div class="no-data">Error loading deposits</div>'; document.getElementById('dep-table').innerHTML='<tr><td colspan="6" class="no-data">Error</td></tr>'; }
+  }
+
+  // withdrawals admin (with status tabs)
+  async function renderWithdrawalsAdmin(){
+    activeTab='withdrawals';
+    content.innerHTML = `<div class="card"><h2>Withdrawals</h2>
+      <div class="status-tabs" id="witStatusTabs">
+        <div class="status-tab${withdrawalFilterStatus==='all'?' active':''}" data-status="all">All</div>
+        <div class="status-tab${withdrawalFilterStatus==='pending'?' active':''}" data-status="pending">Pending</div>
+        <div class="status-tab${withdrawalFilterStatus==='approved'?' active':''}" data-status="approved">Complete</div>
+        <div class="status-tab${withdrawalFilterStatus==='rejected'?' active':''}" data-status="rejected">Rejected</div>
+      </div>
+
+      <div class="row" style="margin-top:10px"><div class="col"><label class="muted">Quick create withdrawal (admin)</label><input id="wit-create-email" placeholder="user email" /></div><div class="col"><label class="muted">&nbsp;</label><button data-create="withdraw" class="ghost small">Create (pending)</button></div></div>
+
+      <div id="wit-list-mobile" class="grid cards"></div>
+      <div style="overflow:auto"><table><thead><tr><th>Email</th><th>Amount</th><th>Status</th><th>Details</th><th>Created</th><th>Action</th></tr></thead><tbody id="wit-table"></tbody></table></div>
+      </div>`;
+
+    // wire up status tabs click
+    document.querySelectorAll('#witStatusTabs .status-tab').forEach(el=>{
+      el.addEventListener('click', ()=>{ withdrawalFilterStatus = el.dataset.status; renderWithdrawalsAdmin(); });
+    });
+
+    try {
+      const filter = withdrawalFilterStatus;
+      let items=[];
+      if(filter==='all'){ const snap = await db.collection('withdrawals').orderBy('createdAt','desc').get(); snap.forEach(d=>items.push({id:d.id,...d.data()})); }
+      else { const qsnap = await db.collection('withdrawals').where('status','==',filter).get(); qsnap.forEach(d=>items.push({id:d.id,...d.data()})); items.sort((a,b)=>tsToMs(b.createdAt)-tsToMs(a.createdAt)); }
+      const filtered = items.filter(i=> !searchQuery || (`${i.email||''} ${i.details||''} ${i.status||''} ${i.amount||''}`).toLowerCase().includes(searchQuery));
+      document.getElementById('wit-list-mobile').innerHTML = filtered.length ? filtered.map(w=>`<div class="card-small card"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(w.email)}</strong><div>₹${Number(w.amount||0)}</div></div><div class="muted">Status: ${escapeHtml(w.status||'pending')} • ${escapeHtml(w.details||'—')}</div><div class="muted">Created: ${fmtDate(w.createdAt) || (w.createdAtClient||'—')}</div><div style="margin-top:8px" class="action-row"><button class="ok small" data-action="approve" data-id="${w.id}" data-col="withdrawals">Approve</button><button class="danger small" data-action="reject" data-id="${w.id}" data-col="withdrawals">Reject</button></div></div>`).join('') : '<div class="no-data">No withdrawals</div>';
+      const tbody = document.getElementById('wit-table'); tbody.innerHTML = filtered.length ? filtered.map(w=>`<tr><td>${escapeHtml(w.email)}</td><td>₹${Number(w.amount||0)}</td><td>${escapeHtml(w.status||'pending')}</td><td>${escapeHtml(w.details||'—')}</td><td>${fmtDate(w.createdAt) || (w.createdAtClient||'—')}</td><td class="action-row"><button class="ok small" data-action="approve" data-id="${w.id}" data-col="withdrawals">Approve</button><button class="danger small" data-action="reject" data-id="${w.id}" data-col="withdrawals">Reject</button></td></tr>`).join('') : '<tr><td colspan="6" class="no-data">No withdrawals</td></tr>';
+    } catch(e){ console.error(e); document.getElementById('wit-list-mobile').innerHTML='<div class="no-data">Error loading withdrawals</div>'; document.getElementById('wit-table').innerHTML='<tr><td colspan="6" class="no-data">Error</td></tr>'; }
+  }
+
+  // settings
+  function renderSettings(){ content.innerHTML = `<div class="card"><h2>Settings</h2><div class="muted">Administrative helpers</div><div class="row"><div class="col"><button id="openIndexes" class="ghost small">Open Firestore Indexes</button></div></div></div>`; document.getElementById('openIndexes').onclick = ()=> alert('Open Firebase Console → Firestore → Indexes to create composite indexes if needed.'); }
+
+  // initialize route (optional)
+  (function initRoute(){ const hash = location.hash.replace('#',''); if(hash && document.querySelector(`[data-tab="${hash}"]`)){ activeTab = hash; tabs.forEach(x=>x.classList.remove('active')); document.querySelector(`[data-tab="${hash}"]`).classList.add('active'); } })();
+</script>
 </body>
 </html>

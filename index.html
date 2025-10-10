@@ -1,24 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-    authDomain: "authapp-386ee.firebaseapp.com",
-    projectId: "authapp-386ee",
-    storageBucket: "authapp-386ee.firebasestorage.app",
-    messagingSenderId: "809698525310",
-    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-    measurementId: "G-EJZTSBSGQT"
-  };
-  firebase.initializeApp(firebaseConfig);
-</script>
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TourneyHub — Play, Compete, Win</title>
+  <link rel="stylesheet" href="style.css" />
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
@@ -35,8 +21,6 @@
     };
     firebase.initializeApp(firebaseConfig);
   </script>
-
-  <link rel="stylesheet" href="style.css" />
   <script defer src="script.js"></script>
 </head>
 
@@ -107,20 +91,12 @@
   </section>
 
   <!-- Bottom Navigation (Mobile) -->
-  <nav class="bottom-nav" aria-label="Mobile navigation">
-<<<<<<< HEAD
-    <a href="tournaments.html" aria-label="Tournaments">🏆</a>
-    <a href="wallet.html" aria-label="Wallet">💰</a>
-    <a href="admin.html" aria-label="Organizer Panel">⚙️</a>
-    <a href="login.html" aria-label="Sign in / Join">🔑</a>
-       <a href="dashboard.html" aria-label="My Dashboard">👤</a>
-=======
-    <a href="tournaments.html" class="nav-item">🏆<span>Tournaments</span></a>
-    <a href="wallet.html" class="nav-item">💰<span>Wallet</span></a>
-    <a href="admin.html" class="nav-item">⚙️<span>Organizer</span></a>
-    <a href="login.html" class="nav-item">🔑<span>Login</span></a>
-    <a href="dashboard.html" class="nav-item">👤<span>Dashboard</span></a>
->>>>>>> 7ab0dea (Initial site)
+<nav class="bottom-nav" aria-label="Mobile navigation">
+  <a href="tournaments.html" class="nav-item">🏆<span style="display:block;font-size:12px">Tournaments</span></a>
+  <a href="wallet.html" class="nav-item">💰<span style="display:block;font-size:12px">Wallet</span></a>
+  <a href="admin.html" class="nav-item active">⚙️<span style="display:block;font-size:12px">Organizer</span></a>
+  <a href="dashboard.html" class="nav-item">👤<span style="display:block;font-size:12px">Profile</span></a>
+</nav>
   </nav>
 </body>
 </html>

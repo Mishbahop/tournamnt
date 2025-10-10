@@ -8,12 +8,10 @@
       <!-- Bottom Navigation (Mobile) -->
    <nav class="bottom-nav" aria-label="Mobile navigation">
          <a href="index.html" class="nav-item">🏠<span>Home</span></a>
-    <a href="tournaments.html" class="nav-item">🏆<span>Tournaments</span></a>
     <a href="wallet.html" class="nav-item">💰<span>Wallet</span></a>
-    <a href="admin.html" class="nav-item">⚙️<span>Organizer</span></a>
-    <a href="login.html" class="nav-item">🔑<span>Login</span></a>
-    <a href="dashboard.html" class="nav-item">👤<span>Dashboard</span></a>
-  </nav>
+    <a href="dashboard.html" class="nav-item">👤<span style="display:block;font-size:12px">Profile</span></a>
+</nav>
+
 <style>
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;background:#0b0f1a;color:#f1f5f9}
   header{padding:12px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
@@ -331,7 +329,22 @@
       myJoined.innerHTML = '<div class="no-data">Error loading joined tournaments</div>';
     }
   }
+    const tableBody = document.getElementById("tournament-table");
 
-</script>
+    db.collection("tournaments").get().then(snapshot => {
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.game}</td>
+          <td>${data.player1}</td>
+          <td>${data.player2}</td>
+          <td>${data.bracket || 0}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    });
+  </script>
+
 </body>
 </html>

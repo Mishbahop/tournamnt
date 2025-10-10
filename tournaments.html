@@ -1,350 +1,415 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>TourneyHub — Tournaments</title>
- <link rel="stylesheet" href="style.css" />
-      <!-- Bottom Navigation (Mobile) -->
-   <nav class="bottom-nav" aria-label="Mobile navigation">
-         <a href="index.html" class="nav-item">🏠<span>Home</span></a>
-    <a href="wallet.html" class="nav-item">💰<span>Wallet</span></a>
-    <a href="dashboard.html" class="nav-item">👤<span style="display:block;font-size:12px">Profile</span></a>
-</nav>
-
-<style>
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;background:#0b0f1a;color:#f1f5f9}
-  header{padding:12px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
-  .logo{color:#38bdf8;font-weight:700;text-decoration:none}
-  main{padding:16px;max-width:1000px;margin:0 auto}
-  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-  input,select,button{font-family:inherit}
-  input,select{padding:8px;border-radius:6px;border:none;background:#0f1724;color:#e6eef8}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-  .card{background:#1e293b;padding:12px;border-radius:8px}
-  .muted{color:#94a3b8;font-size:13px}
-  .btn{padding:8px 10px;border-radius:8px;border:0;background:#3b82f6;color:white;cursor:pointer}
-  .btn.ghost{background:transparent;border:1px solid #334155}
-  .joined{background:#16a34a}
-  .no-data{color:#94a3b8;text-align:center;padding:12px}
-  .section-title{color:#38bdf8;font-weight:700;margin:18px 0 8px}
-  .dashboard{margin-top:20px}
-  .card-meta{margin-top:6px;color:#cbd5e1;font-size:13px}
-  .action-row{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-  a.link{color:#93c5fd;text-decoration:none;padding:6px;border-radius:6px}
-  body{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
-  .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#0b0f1a;border-top:1px solid #1e293b;display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom);z-index:100}
-  .bottom-nav a{font-size:1.6rem;color:#64748b;text-decoration:none}
-  .bottom-nav a.active,.bottom-nav a:hover{color:#38bdf8}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TourneyHub — Tournaments</title>
+  <style>
+    :root{
+      --bg:#0b0f1a; --panel:#0f1724; --card:#1e293b; --muted:#94a3b8; --text:#f1f5f9; --accent:#38bdf8;
+      --ok:#16a34a; --danger:#ef4444; --radius:10px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;background:var(--bg);color:var(--text)}
+    header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--panel)}
+    .logo{color:var(--accent);font-weight:700;text-decoration:none}
+    .filters{display:flex;gap:8px;padding:12px;flex-wrap:wrap}
+    .filters input,.filters select,.filters button{padding:8px;border-radius:8px;border:none;background:#0f1724;color:var(--text)}
+    main{padding:12px;max-width:1100px;margin:0 auto}
+    .card{background:var(--card);padding:12px;border-radius:12px;margin-bottom:12px}
+    .action-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .btn{padding:8px 12px;border-radius:8px;border:0;background:#3b82f6;color:white;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid #233040;color:var(--muted)}
+    .btn.joined{background:var(--ok);color:#06270f}
+    .no-data{color:var(--muted);padding:12px}
+    .meta{color:var(--muted);font-size:13px;margin-top:6px}
+    nav.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:8px 0;background:var(--panel);border-top:1px solid #15202a}
+    nav.bottom-nav a{color:var(--muted);text-decoration:none;font-size:14px;display:flex;flex-direction:column;align-items:center}
+    h4{margin:0 0 6px}
+    .error { color:#ffbaba; background: rgba(255,0,0,0.04); padding:8px; border-radius:6px; }
+    .success { color:#b7f5d0; background: rgba(0,128,0,0.04); padding:8px; border-radius:6px; }
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  </style>
 </head>
 <body>
-<header>
-  <a class="logo" href="index.html">TourneyHub</a>
-  <div id="userArea" class="muted">Checking…</div>
-</header>
+  <header>
+    <a class="logo" href="index.html">TourneyHub</a>
+    <div id="userArea" class="meta">Checking…</div>
+  </header>
 
-<main>
   <div class="filters">
     <input id="search" placeholder="Search title, game or host" />
-    <select id="filterGame"><option value="">All games</option><option>BGMI</option><option>Free Fire</option><option>Valorant</option><option>PUBG</option><option>Other</option></select>
-    <select id="filterType"><option value="">All types</option><option value="SOLO">Solo</option><option value="TEAM">Team</option></select>
+    <select id="filterGame">
+      <option value="">All games</option>
+      <option>BGMI</option><option>Free Fire</option><option>Valorant</option><option>PUBG</option><option>Other</option>
+    </select>
+    <select id="filterType">
+      <option value="">All types</option>
+      <option value="SOLO">Solo</option>
+      <option value="TEAM">Team</option>
+    </select>
     <button id="reload" class="btn">Reload</button>
   </div>
 
-  <section id="allSections"></section>
+  <main>
+    <section id="allSections" class="card">
+      <h3>All tournaments</h3>
+      <div id="tournamentsList" class="no-data">Loading…</div>
+    </section>
 
-  <div class="dashboard card">
-    <h3 class="section-title">My Joined Tournaments</h3>
-    <div id="myJoined"></div>
-  </div>
-</main>
+    <section class="card">
+      <h3>🎟️ My Tournaments</h3>
+      <div id="myJoined" class="no-data">Loading…</div>
+    </section>
 
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+    <section class="card">
+      <h3>📅 My Matches</h3>
+      <div id="myMatches" class="no-data">Loading…</div>
+    </section>
+
+    <section class="card">
+      <h3>💰 Wallet</h3>
+      <div id="walletBalance" class="meta">Loading…</div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html">🏠<span>Home</span></a>
+    <a href="wallet.html">💰<span>Wallet</span></a>
+    <a href="dashboard.html">👤<span>Profile</span></a>
+  </nav>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
 <script>
-  // ===== Replace with your Firebase project config =====
-  const firebaseConfig = {
-    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-    authDomain: "authapp-386ee.firebaseapp.com",
-    projectId: "authapp-386ee",
-    storageBucket: "authapp-386ee.firebasestorage.app",
-    messagingSenderId: "809698525310",
-    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-    measurementId: "G-EJZTSBSGQT"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+/* ---------- CONFIG & INIT ----------
+   Replace firebaseConfig values with your project config if different.
+*/
+const firebaseConfig = {
+  apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+  authDomain: "authapp-386ee.firebaseapp.com",
+  projectId: "authapp-386ee",
+  storageBucket: "authapp-386ee.appspot.com",
+  messagingSenderId: "809698525310",
+  appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+  measurementId: "G-EJZTSBSGQT"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  // UI references
-  const userArea = document.getElementById('userArea');
-  const allSections = document.getElementById('allSections');
-  const myJoined = document.getElementById('myJoined');
+/* ---------- UTIL & UI refs ---------- */
+const userArea = document.getElementById('userArea');
+const tournamentsList = document.getElementById('tournamentsList');
+const myJoined = document.getElementById('myJoined');
+const myMatches = document.getElementById('myMatches');
+const walletBalance = document.getElementById('walletBalance');
 
-  let currentUser = null;
+let currentUser = null;
 
-  // debounce helper
-  function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t = setTimeout(()=>fn(...a), ms); }; }
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(v){
+  try{
+    if(!v) return '—';
+    if(typeof v.toDate === 'function') return v.toDate().toLocaleString();
+    if(v.seconds) return new Date(v.seconds*1000).toLocaleString();
+    return new Date(v).toLocaleString();
+  }catch(e){return '—'}
+}
 
-  // format helpers
-  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function fmtDate(t){ try { if (!t) return '—'; if (t.toDate) return t.toDate().toLocaleString(); if (t.seconds) return new Date(t.seconds*1000).toLocaleString(); return new Date(t).toLocaleString(); } catch(e){ return '—'; } }
+/* ---------- AUTH ---------- */
+auth.onAuthStateChanged(async user => {
+  if(!user) return location.href = 'login.html';
+  currentUser = user;
+  userArea.textContent = user.email;
+  await loadPage();
+});
 
-  // auth state
-  auth.onAuthStateChanged(async user => {
-    if (!user) return location.href = 'login.html';
-    currentUser = user;
-    userArea.textContent = user.email;
-    await loadPage();
-  });
+/* ---------- CONTROLS ---------- */
+document.getElementById('reload').onclick = loadPage;
+document.getElementById('search').oninput = debounce(loadPage, 300);
+document.getElementById('filterGame').onchange = loadPage;
+document.getElementById('filterType').onchange = loadPage;
 
-  // controls
-  document.getElementById('reload').onclick = loadPage;
-  document.getElementById('search').oninput = debounce(loadPage, 300);
-  document.getElementById('filterGame').onchange = loadPage;
-  document.getElementById('filterType').onchange = loadPage;
+/* ---------- MAIN LOAD ---------- */
+async function loadPage(){
+  await Promise.all([
+    renderAllTournaments(),
+    renderMyJoined(),
+    renderMyMatches(),
+    loadWallet()
+  ]);
+}
 
-  async function loadPage(){
-    await Promise.all([renderAllTournaments(), renderMyJoined()]);
+/* ---------- WALLET ---------- */
+async function loadWallet(){
+  try{
+    const ref = db.collection('wallets').doc(currentUser.uid);
+    const doc = await ref.get();
+    const bal = doc.exists && typeof doc.data().balance === 'number' ? doc.data().balance : 0;
+    walletBalance.textContent = `₹${bal}`;
+  }catch(e){
+    console.error('loadWallet', e);
+    walletBalance.textContent = 'Error';
   }
+}
 
-  // Render all tournaments grouped by game
-  async function renderAllTournaments(){
-    allSections.innerHTML = '<div class="no-data">Loading…</div>';
+/* ---------- UTILITY: compute tournament status ---------- */
+function computeStatus(t, nowMs = Date.now()){
+  try {
+    const start = t.startTime && typeof t.startTime.toMillis === 'function'
+      ? t.startTime.toMillis()
+      : (t.startTime ? new Date(t.startTime).getTime() : null);
+    const end = t.endTime && typeof t.endTime.toMillis === 'function'
+      ? t.endTime.toMillis()
+      : (t.endTime ? new Date(t.endTime).getTime() : null);
+    if (!start) return 'UPCOMING';
+    if (nowMs < start) return 'UPCOMING';
+    if (end && nowMs > end) return 'COMPLETED';
+    return 'ONGOING';
+  } catch (e) {
+    return 'UPCOMING';
+  }
+}
+
+/* ---------- RENDER ALL TOURNAMENTS (excludes joined) ---------- */
+async function renderAllTournaments(){
+  tournamentsList.innerHTML = 'Loading…';
+  try {
     const search = (document.getElementById('search').value || '').trim().toLowerCase();
     const gameFilter = document.getElementById('filterGame').value;
     const typeFilter = document.getElementById('filterType').value;
 
-    try {
-      const snap = await db.collection('tournaments').orderBy('createdAt','desc').get();
-      const items = [];
-      snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+    // fetch user's joined ids to exclude them from live list
+    const joinedSnap = await db.collection('userTournaments').doc(currentUser.uid).collection('joined').get();
+    const joinedIds = new Set(joinedSnap.docs.map(d => d.id));
 
-      // group
-      const groups = {};
-      items.forEach(t => {
-        if (gameFilter && t.game !== gameFilter) return;
-        if (typeFilter && t.type !== typeFilter) return;
-        if (search) {
-          const blob = `${t.title||''} ${t.game||''} ${t.host||''}`.toLowerCase();
-          if (!blob.includes(search)) return;
-        }
-        const g = t.game || 'Other';
-        groups[g] = groups[g] || [];
-        groups[g].push(t);
-      });
+    const snap = await db.collection('tournaments').get();
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      allSections.innerHTML = '';
-      if (Object.keys(groups).length === 0) {
-        allSections.innerHTML = '<div class="no-data">No tournaments</div>';
-        return;
-      }
-
-      for (const game of Object.keys(groups)) {
-        const section = document.createElement('section');
-        section.innerHTML = `<h3 class="section-title">${escapeHtml(game)}</h3><div class="grid" id="grid-${escapeHtml(game)}"></div>`;
-        allSections.appendChild(section);
-        const grid = section.querySelector('.grid');
-
-        groups[game].forEach(t => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div><strong>${escapeHtml(t.title)}</strong></div>
-            <div class="card-meta">${escapeHtml(t.type||'')} • ${escapeHtml(t.bracket||'')}</div>
-            <div class="card-meta">Host: ${escapeHtml(t.host||'—')}</div>
-            <div class="card-meta">Entry: ₹${Number(t.entryFee||t.entry||0)}</div>
-            <div class="card-meta">Participants: <span id="count-${t.id}">${Number(t.participants||t.part||0)}</span> / ${Number(t.maxParticipants||t.max||0)}</div>
-            <div class="action-row" id="btnwrap-${t.id}"><button class="btn" disabled>Loading</button></div>
-          `;
-          grid.appendChild(card);
-          renderJoinButton(t);
-        });
-      }
-    } catch (err) {
-      console.error('Error loading tournaments', err);
-      allSections.innerHTML = '<div class="no-data">Error loading tournaments</div>';
-    }
-  }
-
-  // Renders join/leave button and handles click for tournament t
-  async function renderJoinButton(t){
-    const btnWrap = document.getElementById('btnwrap-' + t.id);
-    if (!btnWrap) return;
-    btnWrap.innerHTML = `<button class="btn" disabled>Loading</button>`;
-    try {
-      // check whether current user joined
-      const partRef = db.collection('tournaments').doc(t.id).collection('participants').doc(currentUser.uid);
-      const partDoc = await partRef.get();
-      const joined = partDoc.exists;
-
-      // update participants count display
-      const countEl = document.getElementById('count-' + t.id);
-      if (countEl) countEl.textContent = Number(t.participants || t.part || 0);
-
-      // create actual button
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.textContent = joined ? 'Leave' : 'Join';
-      if (joined) btn.classList.add('joined');
-      btn.disabled = false;
-      btnWrap.innerHTML = '';
-      btnWrap.appendChild(btn);
-
-      btn.onclick = async () => {
-        btn.disabled = true;
-        try {
-          if (!joined) {
-            // Join: transaction to add participant, pointer, increment
-            await db.runTransaction(async tx => {
-              const tRef = db.collection('tournaments').doc(t.id);
-              const tSnap = await tx.get(tRef);
-              if (!tSnap.exists) throw new Error('Tournament removed');
-              const data = tSnap.data();
-              const cur = Number(data.participants || data.part || 0);
-              const max = Number(data.maxParticipants || data.max || 0);
-              if (max > 0 && cur >= max) throw new Error('Tournament is full');
-
-              // set participant under tournament
-              tx.set(tRef.collection('participants').doc(currentUser.uid), {
-                uid: currentUser.uid,
-                email: currentUser.email,
-                joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-              });
-
-              // set user pointer
-              tx.set(db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(t.id), {
-                tournamentId: t.id,
-                title: t.title || '',
-                game: t.game || '',
-                joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                uid: currentUser.uid
-              });
-
-              // increment participants
-              tx.update(tRef, { participants: cur + 1 });
-            });
-          } else {
-            // Leave: transaction to remove participant, pointer, decrement
-            await db.runTransaction(async tx => {
-              const tRef = db.collection('tournaments').doc(t.id);
-              const tSnap = await tx.get(tRef);
-              if (!tSnap.exists) throw new Error('Tournament removed');
-              const data = tSnap.data();
-              const cur = Number(data.participants || data.part || 0);
-
-              tx.delete(tRef.collection('participants').doc(currentUser.uid));
-              tx.delete(db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(t.id));
-              tx.update(tRef, { participants: Math.max(0, cur - 1) });
-            });
-          }
-
-          // re-fetch tournament for accurate count and re-render button
-          const tDoc = await db.collection('tournaments').doc(t.id).get();
-          const fresh = tDoc.exists ? { id: t.id, ...tDoc.data() } : t;
-          await renderAllCountsAndButtons(t.id, fresh);
-          await renderMyJoined();
-        } catch (err) {
-          // permission or other errors surface here
-          console.error(err);
-          alert(err.message || 'Action failed');
-        } finally {
-          btn.disabled = false;
-        }
-      };
-    } catch (err) {
-      console.error('renderJoinButton error', err);
-      btnWrap.innerHTML = `<div class="muted">Error</div>`;
-    }
-  }
-
-  // Refresh counts and button for a single tournament id
-  async function renderAllCountsAndButtons(tid, optionalData){
-    try {
-      const tDoc = optionalData ? { exists: true, data: () => optionalData } : await db.collection('tournaments').doc(tid).get();
-      if (!tDoc || !tDoc.exists) return;
-      const data = optionalData || tDoc.data();
-      const countEl = document.getElementById('count-' + tid);
-      if (countEl) countEl.textContent = Number(data.participants || data.part || 0);
-      await renderJoinButton({ id: tid, ...data });
-    } catch (e) { console.error(e); }
-  }
-
-  // Render user's joined tournaments (dashboard)
-  async function renderMyJoined(){
-    myJoined.innerHTML = 'Loading…';
-    try {
-      const joinedSnap = await db.collection('userTournaments').doc(currentUser.uid).collection('joined').orderBy('joinedAt','desc').get();
-      const items = [];
-      joinedSnap.forEach(d => items.push({ id: d.id, ...d.data() }));
-      if (items.length === 0) {
-        myJoined.innerHTML = '<div class="no-data">You have not joined any tournaments yet.</div>';
-        return;
-      }
-
-      myJoined.innerHTML = items.map(i => `
-        <div class="card">
-          <div><strong>${escapeHtml(i.title)}</strong></div>
-          <div class="muted">${escapeHtml(i.game||'')}</div>
-          <div class="action-row">
-            <button class="btn ghost" data-leave="${i.tournamentId}">Leave</button>
-            <a class="link" href="tournament.html?id=${encodeURIComponent(i.tournamentId)}">View</a>
-          </div>
-        </div>
-      `).join('');
-
-      // attach leave handlers
-      document.querySelectorAll('[data-leave]').forEach(btn => {
-        btn.onclick = async () => {
-          const tid = btn.getAttribute('data-leave');
-          if (!confirm('Leave this tournament?')) return;
-          btn.disabled = true;
-          try {
-            await db.runTransaction(async tx => {
-              const tRef = db.collection('tournaments').doc(tid);
-              const tSnap = await tx.get(tRef);
-              if (!tSnap.exists) throw new Error('Tournament removed');
-              const data = tSnap.data();
-              const cur = Number(data.participants || data.part || 0);
-
-              tx.delete(tRef.collection('participants').doc(currentUser.uid));
-              tx.delete(db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(tid));
-              tx.update(tRef, { participants: Math.max(0, cur - 1) });
-            });
-
-            await renderMyJoined();
-            await renderAllCountsAndButtons(tid);
-          } catch (err) {
-            console.error(err);
-            alert(err.message || 'Error leaving tournament');
-          } finally {
-            btn.disabled = false;
-          }
-        };
-      });
-    } catch (err) {
-      console.error('renderMyJoined error', err);
-      myJoined.innerHTML = '<div class="no-data">Error loading joined tournaments</div>';
-    }
-  }
-    const tableBody = document.getElementById("tournament-table");
-
-    db.collection("tournaments").get().then(snapshot => {
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.game}</td>
-          <td>${data.player1}</td>
-          <td>${data.player2}</td>
-          <td>${data.bracket || 0}</td>
-        `;
-        tableBody.appendChild(row);
-      });
+    // sort newest first
+    items.sort((a, b) => {
+      const ta = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis()
+               : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const tb = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis()
+               : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+      return tb - ta;
     });
-  </script>
+
+    const groups = { UPCOMING: [], ONGOING: [], COMPLETED: [] };
+    const now = Date.now();
+
+    items.forEach(t => {
+      if (joinedIds.has(t.id)) return;
+      if (gameFilter && (t.game || '').toString() !== gameFilter) return;
+      if (typeFilter && (t.type || '').toString() !== typeFilter) return;
+      if (search) {
+        const hay = `${t.title || ''} ${t.game || ''} ${t.host || ''}`.toLowerCase();
+        if (!hay.includes(search)) return;
+      }
+      const status = computeStatus(t, now);
+      groups[status].push(t);
+    });
+
+    tournamentsList.innerHTML = '';
+    const order = ['UPCOMING','ONGOING','COMPLETED'];
+    let any = false;
+    order.forEach(status => {
+      const list = groups[status];
+      if (!list.length) return;
+      any = true;
+      const section = document.createElement('div');
+      section.innerHTML = `<h4>${status === 'UPCOMING' ? '⏳ Upcoming' : status === 'ONGOING' ? '🔥 Ongoing' : '✅ Completed'}</h4>`;
+      const grid = document.createElement('div'); grid.className = 'grid';
+      list.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h4>${escapeHtml(t.title || 'Untitled')}</h4>
+          <div class="meta">Game: ${escapeHtml(t.game || '—')} • Type: ${escapeHtml(t.type || '—')} • Host: ${escapeHtml(t.host || '—')}</div>
+          <div class="meta">Starts: ${fmtDate(t.startTime)} • Ends: ${fmtDate(t.endTime)} • Entry: ₹${Number(t.entryFee||0)}</div>
+          <div class="meta">Participants: <span id="count-${t.id}">${Number(t.participants||0)}</span> / ${Number(t.maxParticipants||t.max||0)}</div>
+          <div class="action-row">
+            <a class="btn ghost" href="tournament.html?id=${encodeURIComponent(t.id)}">View</a>
+            <button class="btn join-btn" data-id="${t.id}" data-entry="${Number(t.entryFee||0)}">Join</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      section.appendChild(grid);
+      tournamentsList.appendChild(section);
+    });
+
+    if (!any) tournamentsList.innerHTML = '<div class="no-data">No tournaments found.</div>';
+  } catch(e){
+    console.error('renderAllTournaments', e);
+    tournamentsList.innerHTML = '<div class="no-data">Error loading tournaments</div>';
+  }
+}
+
+/* ---------- JOIN / LEAVE HANDLERS (event delegation) ---------- */
+document.addEventListener('click', async ev => {
+  const joinBtn = ev.target.closest && ev.target.closest('.join-btn');
+  if (joinBtn) {
+    ev.preventDefault();
+    const tid = joinBtn.dataset.id;
+    const fee = Number(joinBtn.dataset.entry||0);
+    await handleJoinFromList(tid, fee, joinBtn);
+    return;
+  }
+  const leaveBtn = ev.target.closest && ev.target.closest('.leave-btn');
+  if (leaveBtn) {
+    ev.preventDefault();
+    const tid = leaveBtn.dataset.id;
+    await handleLeaveFromMyLists(tid, leaveBtn);
+    return;
+  }
+});
+
+/* join: transactional, reads before writes */
+async function handleJoinFromList(tid, entryFee, btn){
+  btn.disabled = true;
+  const prevText = btn.textContent;
+  btn.textContent = 'Joining…';
+  try{
+    await db.runTransaction(async tx => {
+      const tRef = db.collection('tournaments').doc(tid);
+      const walletRef = db.collection('wallets').doc(currentUser.uid);
+      const partRef = tRef.collection('participants').doc(currentUser.uid);
+      const userPtr = db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(tid);
+
+      // read all necessary docs first
+      const [tSnap, walletSnap, existingParticipant] = await Promise.all([
+        tx.get(tRef),
+        tx.get(walletRef),
+        tx.get(partRef)
+      ]);
+
+      if (!tSnap.exists) throw new Error('Tournament removed');
+      if (existingParticipant.exists) throw new Error('Already joined');
+
+      const tData = tSnap.data();
+      const cur = Number(tData.participants || 0);
+      const max = Number(tData.maxParticipants || tData.max || 0);
+      if (max > 0 && cur >= max) throw new Error('Tournament full');
+
+      const balance = walletSnap.exists ? (walletSnap.data().balance || 0) : 0;
+      if (balance < entryFee) throw new Error('Insufficient balance');
+
+      // all reads done — now writes
+      tx.set(partRef, {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      tx.set(userPtr, {
+        tournamentId: tid,
+        title: tData.title || '',
+        game: tData.game || '',
+        type: tData.type || '',
+        host: tData.host || '',
+        entryFee: entryFee || 0,
+        joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        startTime: tData.startTime || null,
+        endTime: tData.endTime || null
+      });
+
+      tx.update(tRef, { participants: cur + 1 });
+      tx.set(walletRef, { balance: balance - entryFee }, { merge: true });
+    });
+
+    // redirect after successful join
+    window.location.href = 'dashboard.html';
+  } catch(e){
+    console.error('handleJoinFromList', e);
+    alert(e.message || 'Failed to join tournament');
+    btn.disabled = false;
+    btn.textContent = prevText;
+  }
+}
+
+/* leave handler used from "My Tournaments" list */
+async function handleLeaveFromMyLists(tid, btn){
+  if (!confirm('Leave this tournament?')) return;
+  btn.disabled = true;
+  try {
+    await db.runTransaction(async tx => {
+      const tRef = db.collection('tournaments').doc(tid);
+      const partRef = tRef.collection('participants').doc(currentUser.uid);
+      const userPtr = db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(tid);
+
+      const [tSnap] = await Promise.all([tx.get(tRef)]);
+      if (!tSnap.exists) throw new Error('Tournament removed');
+
+      const tData = tSnap.data();
+      const cur = Number(tData.participants || 0);
+
+      tx.delete(partRef);
+      tx.delete(userPtr);
+      tx.update(tRef, { participants: Math.max(0, cur - 1) });
+    });
+    await renderMyJoined();
+    await renderAllTournaments();
+  } catch(e) {
+    console.error('handleLeaveFromMyLists', e);
+    alert(e.message || 'Failed to leave tournament');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ---------- MY JOINED ---------- */
+async function renderMyJoined(){
+  myJoined.innerHTML = 'Loading…';
+  try{
+    const snap = await db.collection('userTournaments').doc(currentUser.uid).collection('joined').orderBy('joinedAt','desc').get();
+    if(snap.empty){ myJoined.innerHTML = '<div class="no-data">No joined tournaments</div>'; return; }
+    myJoined.innerHTML = '';
+    snap.docs.forEach(d=>{
+      const t = d.data();
+      const card = document.createElement('div'); card.className='card';
+      card.innerHTML = `
+        <h4>${escapeHtml(t.title||'Untitled')}</h4>
+        <div class="meta">Game: ${escapeHtml(t.game||'—')} • Type: ${escapeHtml(t.type||'—')} • Host: ${escapeHtml(t.host||'—')}</div>
+        <div class="meta">Entry: ₹${Number(t.entryFee||0)}</div>
+        <div class="action-row">
+          <a class="btn ghost" href="tournament.html?id=${encodeURIComponent(t.tournamentId)}">View</a>
+          <button class="btn leave-btn" data-id="${t.tournamentId}">Leave</button>
+        </div>
+      `;
+      myJoined.appendChild(card);
+    });
+  }catch(e){ console.error('renderMyJoined',e); myJoined.innerHTML='<div class="no-data">Error</div>'; }
+}
+
+/* ---------- MY MATCHES ---------- */
+async function renderMyMatches(){
+  myMatches.innerHTML='Loading…';
+  try{
+    const snap = await db.collectionGroup('matches')
+      .where('participants','array-contains',currentUser.uid)
+      .get();
+    if(snap.empty){ myMatches.innerHTML='<div class="no-data">No matches yet</div>'; return; }
+    myMatches.innerHTML='';
+    snap.docs.forEach(d=>{
+      const m=d.data();
+      const card=document.createElement('div'); card.className='card';
+      card.innerHTML=`
+        <h4>${escapeHtml(m.title||'Untitled Match')}</h4>
+        <div class="meta">Tournament: ${escapeHtml(m.tournamentTitle||'—')}</div>
+        <div class="meta">Time: ${fmtDate(m.startTime)} - ${fmtDate(m.endTime)}</div>
+        <div class="meta">Participants: ${Array.isArray(m.participants)?m.participants.length:0}</div>
+      `;
+      myMatches.appendChild(card);
+    });
+  }catch(e){console.error('renderMyMatches',e); myMatches.innerHTML='<div class="no-data">Error loading matches</div>';}
+}
+</script>
 
 </body>
 </html>

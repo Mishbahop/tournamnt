@@ -173,7 +173,7 @@ function joinTournament(tournamentId) {
   const user = auth.currentUser;
   if (!user) {
     // Redirect to login page
-    window.location.href = 'login.html?redirect=tournaments';
+    window.location.href = 'login.html';
     return;
   }
   

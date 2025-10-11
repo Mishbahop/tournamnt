@@ -4,74 +4,185 @@
   <meta charset="UTF-8" />
   <title>Signup — TourneyHub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="sty.css">
+  <link rel="stylesheet" href="singup.css" />
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <span class="logo-icon">🏆</span>
+        <span class="logo-text">TourneyHub</span>
+      </div>
+      <div class="loading-spinner"></div>
+      <div class="loading-subtitle">Creating Your Arena...</div>
+    </div>
+  </div>
 
-  <!-- Firebase SDKs (compat version for browser) -->
+  <!-- Background Elements -->
+  <div class="background-animation">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="signup-container" id="mainContent">
+    <div class="signup-card">
+      <!-- Header Section -->
+      <div class="signup-header">
+        <div class="logo">
+          <span class="logo-icon">🏆</span>
+          <span class="logo-text">TourneyHub</span>
+        </div>
+        <h1 class="signup-title">Join The Arena!</h1>
+        <p class="signup-subtitle">Create your account and start your competitive journey</p>
+      </div>
+
+      <!-- Signup Form -->
+      <form class="signup-form" id="signupForm">
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-icon">📧</span>
+            Email Address
+          </label>
+          <div class="input-container">
+            <input 
+              id="signup-email" 
+              type="email" 
+              class="form-input" 
+              placeholder="Enter your email" 
+              required
+            />
+            <span class="input-icon">@</span>
+          </div>
+          <div class="input-hint" id="emailHint">We'll never share your email</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-icon">🔒</span>
+            Password
+          </label>
+          <div class="input-container">
+            <input 
+              id="signup-password" 
+              type="password" 
+              class="form-input" 
+              placeholder="Create a strong password" 
+              required
+            />
+            <span class="input-icon">••••</span>
+            <button type="button" class="password-toggle" id="passwordToggle">
+              <span class="toggle-icon">👁️</span>
+            </button>
+          </div>
+          <div class="password-strength" id="passwordStrength">
+            <div class="strength-bar">
+              <div class="strength-fill" id="strengthFill"></div>
+            </div>
+            <div class="strength-text" id="strengthText">Password strength</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-icon">🔒</span>
+            Confirm Password
+          </label>
+          <div class="input-container">
+            <input 
+              id="confirm-password" 
+              type="password" 
+              class="form-input" 
+              placeholder="Confirm your password" 
+              required
+            />
+            <span class="input-icon">✓</span>
+            <button type="button" class="password-toggle" id="confirmPasswordToggle">
+              <span class="toggle-icon">👁️</span>
+            </button>
+          </div>
+          <div class="input-hint" id="confirmHint">Passwords must match</div>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-container">
+            <input type="checkbox" id="agreeTerms" required />
+            <span class="checkmark"></span>
+            I agree to the <a href="#" class="link">Terms of Service</a> and <a href="#" class="link">Privacy Policy</a>
+          </label>
+          
+          <label class="checkbox-container">
+            <input type="checkbox" id="newsletter" checked />
+            <span class="checkmark"></span>
+            Send me tournament updates and news
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-signup" id="signupBtn">
+          <span class="btn-icon">🚀</span>
+          <span class="btn-text">Create Account</span>
+          <div class="btn-spinner" id="signupSpinner"></div>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>or sign up with</span>
+      </div>
+
+      <!-- Social Signup (Placeholder) -->
+      <div class="social-signup">
+        <button type="button" class="btn btn-social btn-google" disabled>
+          <span class="social-icon">🔍</span>
+          Google (Coming Soon)
+        </button>
+        <button type="button" class="btn btn-social btn-discord" disabled>
+          <span class="social-icon">💬</span>
+          Discord (Coming Soon)
+        </button>
+      </div>
+
+      <!-- Login Link -->
+      <div class="login-section">
+        <p>Already have an account? <a href="login.html" class="login-link">Sign in here</a></p>
+      </div>
+
+      <!-- Features Preview -->
+      <div class="features-preview">
+        <div class="feature-item">
+          <span class="feature-icon">⚔️</span>
+          <span class="feature-text">Compete in Tournaments</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">💰</span>
+          <span class="feature-text">Win Cash Prizes</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🏆</span>
+          <span class="feature-text">Build Your Legacy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="notification-toast" id="notificationToast">
+      <div class="toast-content">
+        <span class="toast-icon" id="toastIcon">⚠️</span>
+        <span class="toast-message" id="toastMessage"></span>
+      </div>
+      <button class="toast-close" id="toastClose">×</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-      authDomain: "authapp-386ee.firebaseapp.com",
-      projectId: "authapp-386ee",
-      storageBucket: "authapp-386ee.firebasestorage.app",
-      messagingSenderId: "809698525310",
-      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-      measurementId: "G-EJZTSBSGQT"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-</head>
-<body class="auth-body">
-  <main class="auth-card">
-    <h1>Create Account</h1>
-    <p class="muted">Join TourneyHub and start competing.</p>
-
-    <label class="input">
-      <span>Email</span>
-      <input id="signup-email" type="email" placeholder="you@example.com" />
-    </label>
-    <label class="input">
-      <span>Password</span>
-      <input id="signup-password" type="password" placeholder="••••••••" />
-    </label>
-    <button id="signup-btn" class="btn btn-primary">Sign Up</button>
-
-    <p class="tiny muted">
-      Already have an account? <a href="login.html" class="link">Login</a>
-    </p>
-  </main>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const auth = firebase.auth();
-
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          window.location.href = "dashboard.html";
-        }
-      });
-
-      document.getElementById("signup-btn").addEventListener("click", async () => {
-        const email = document.getElementById("signup-email").value.trim();
-        const password = document.getElementById("signup-password").value.trim();
-
-        if (!email || !password) {
-          alert("Please enter both email and password.");
-          return;
-        }
-
-        try {
-          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-          alert("Signup successful: " + userCredential.user.email);
-          window.location.href = "dashboard.html";
-        } catch (error) {
-          alert("Signup failed: " + error.message);
-        }
-      });
-    });
-  </script>
+  <!-- Signup JS -->
+  <script src="signup.js"></script>
 </body>
 </html>

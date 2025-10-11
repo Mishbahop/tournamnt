@@ -4,99 +4,257 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TourneyHub — Play, Compete, Win</title>
-<link rel="stylesheet" href="index.css">
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-      authDomain: "authapp-386ee.firebaseapp.com",
-      projectId: "authapp-386ee",
-      storageBucket: "authapp-386ee.firebasestorage.app",
-      messagingSenderId: "809698525310",
-      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-      measurementId: "G-EJZTSBSGQT"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-  <script defer src="script.js"></script>
+  <link rel="stylesheet" href="index.css" />
 </head>
-
 <body>
-  <!-- Header -->
-  <header class="site-header">
-    <div class="header-bar">
-      <a class="logo" href="index.html">TourneyHub</a>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <span class="logo-icon">🏆</span>
+        <span class="logo-text">TourneyHub</span>
+      </div>
+      <div class="loading-spinner"></div>
+      <div class="loading-subtitle">Loading Arena...</div>
     </div>
-  </header>
+  </div>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Compete. Conquer. Celebrate.</h1>
-      <p>Join thrilling tournaments, track live brackets, and prove your skills. Whether you’re solo or in a squad, TourneyHub is your arena.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="tournaments.html">Find a Tournament</a>
-        <a class="btn btn-ghost" href="admin.html">Host Your Own</a>
+  <!-- Main Content -->
+  <div class="main-container" id="mainContent">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="header-container">
+        <div class="logo">
+          <span class="logo-icon">🏆</span>
+          <span class="logo-text">TourneyHub</span>
+        </div>
+        <nav class="header-nav">
+          <a href="tournaments.html" class="nav-link">Tournaments</a>
+          <a href="wallet.html" class="nav-link">Wallet</a>
+          <a href="dashboard.html" class="nav-link">Profile</a>
+        </nav>
       </div>
-    </div>
-    <div class="hero-art" aria-hidden="true"></div>
-  </section>
+    </header>
 
-  <!-- Trending Tournaments -->
-  <section class="section">
-    <div class="section-header">
-      <h2>🔥 Trending Right Now</h2>
-      <a href="tournaments.html" class="link">View all tournaments</a>
-    </div>
-    <div id="featured-grid" class="grid cards">
-      <!-- Sample Cards -->
-      <div class="card">
-        <h3>Valorant Showdown</h3>
-        <p>Prize Pool: ₹50,000 | Solo & Team</p>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-background">
+        <div class="hero-glow"></div>
       </div>
-      <div class="card">
-        <h3>Free Fire Clash</h3>
-        <p>Prize Pool: ₹25,000 | Squad Only</p>
+      <div class="hero-container">
+        <div class="hero-content">
+          <div class="hero-badge">🎮 Competitive Gaming Platform</div>
+          <h1 class="hero-title">
+            Compete. 
+            <span class="gradient-text">Conquer.</span> 
+            Celebrate.
+          </h1>
+          <p class="hero-description">
+            Join thrilling tournaments, track live brackets, and prove your skills. 
+            Whether you're solo or in a squad, TourneyHub is your arena.
+          </p>
+          <div class="hero-actions">
+            <a href="tournaments.html" class="btn btn-primary">
+              <span class="btn-icon">⚔️</span>
+              Find Tournament
+            </a>
+            <a href="admin.html" class="btn btn-secondary">
+              <span class="btn-icon">🎯</span>
+              Host Tournament
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-number">500+</div>
+              <div class="stat-label">Active Players</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">50+</div>
+              <div class="stat-label">Tournaments</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">₹2L+</div>
+              <div class="stat-label">Prize Money</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="floating-card card-1">
+            <div class="card-header">
+              <span class="game-icon">🎯</span>
+              <span class="live-badge">LIVE</span>
+            </div>
+            <div class="card-title">Valorant Showdown</div>
+            <div class="card-prize">₹50,000</div>
+          </div>
+          <div class="floating-card card-2">
+            <div class="card-header">
+              <span class="game-icon">🔥</span>
+              <span class="players">24/32</span>
+            </div>
+            <div class="card-title">Free Fire Clash</div>
+            <div class="card-prize">₹25,000</div>
+          </div>
+          <div class="floating-card card-3">
+            <div class="card-header">
+              <span class="game-icon">🎮</span>
+              <span class="upcoming">SOON</span>
+            </div>
+            <div class="card-title">COD Mobile Cup</div>
+            <div class="card-prize">₹40,000</div>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <h3>COD Mobile Cup</h3>
-        <p>Prize Pool: ₹40,000 | Duo & Squad</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Features Section -->
-  <section class="section">
-    <h2>Why TourneyHub?</h2>
-    <div class="grid features">
-      <div class="feature">
-        <div class="icon">🏁</div>
-        <h3>Brackets that feel good</h3>
-        <p>Single or double elimination, seeded or shuffled—your choice.</p>
+    <!-- Trending Tournaments -->
+    <section class="section trending-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="fire-icon">🔥</span>
+            Trending Tournaments
+          </h2>
+          <a href="tournaments.html" class="view-all">
+            View All
+            <span class="arrow">→</span>
+          </a>
+        </div>
+        <div class="tournaments-grid" id="trendingTournaments">
+          <!-- Dynamic content will be loaded here -->
+        </div>
       </div>
-      <div class="feature">
-        <div class="icon">💳</div>
-        <h3>Smooth registrations</h3>
-        <p>Join solo or as a team. Instant confirmations and easy payments.</p>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section features-section">
+      <div class="container">
+        <div class="section-header center">
+          <h2 class="section-title">Why Choose TourneyHub?</h2>
+          <p class="section-subtitle">Built for gamers, by gamers</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🏁</div>
+            <h3>Advanced Brackets</h3>
+            <p>Single or double elimination, seeded or shuffled—your choice. Professional tournament management.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💳</div>
+            <h3>Easy Payments</h3>
+            <p>Secure wallet system, instant deposits, and quick withdrawals. Focus on gaming, not payments.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔔</div>
+            <h3>Smart Notifications</h3>
+            <p>Get reminders and updates so nobody misses a match. Stay informed in real-time.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Live Tracking</h3>
+            <p>Real-time bracket updates, live scores, and match progress. Never miss the action.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🛡️</div>
+            <h3>Fair Play</h3>
+            <p>Advanced anti-cheat monitoring and dedicated support to ensure fair competition.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <h3>Big Prizes</h3>
+            <p>Compete for substantial prize pools and build your reputation in the gaming community.</p>
+          </div>
+        </div>
       </div>
-      <div class="feature">
-        <div class="icon">🔔</div>
-        <h3>Stay in the loop</h3>
-        <p>Get reminders and updates so nobody misses a match.</p>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-content">
+          <h2>Ready to Compete?</h2>
+          <p>Join thousands of gamers who trust TourneyHub for their competitive journey.</p>
+          <div class="cta-actions">
+            <a href="tournaments.html" class="btn btn-primary btn-large">
+              <span class="btn-icon">🎮</span>
+              Start Playing
+            </a>
+            <a href="admin.html" class="btn btn-secondary btn-large">
+              <span class="btn-icon">🚀</span>
+              Host Tournament
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="logo">
+              <span class="logo-icon">🏆</span>
+              <span class="logo-text">TourneyHub</span>
+            </div>
+            <p class="footer-description">
+              The ultimate platform for competitive gaming tournaments and esports events.
+            </p>
+          </div>
+          <div class="footer-links">
+            <div class="footer-column">
+              <h4>Platform</h4>
+              <a href="tournaments.html">Tournaments</a>
+              <a href="wallet.html">Wallet</a>
+              <a href="dashboard.html">Profile</a>
+            </div>
+            <div class="footer-column">
+              <h4>Support</h4>
+              <a href="#">Help Center</a>
+              <a href="#">Contact Us</a>
+              <a href="#">FAQ</a>
+            </div>
+            <div class="footer-column">
+              <h4>Legal</h4>
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms of Service</a>
+              <a href="#">Refund Policy</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2024 TourneyHub. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
 
   <!-- Bottom Navigation (Mobile) -->
-<nav class="bottom-nav" aria-label="Mobile navigation">
-  <a href="tournaments.html" class="nav-item">🏆<span style="display:block;font-size:12px">Tournaments</span></a>
-  <a href="wallet.html" class="nav-item">💰<span style="display:block;font-size:12px">Wallet</span></a>
-  <a href="admin.html" class="nav-item active">⚙️<span style="display:block;font-size:12px">Organizer</span></a>
-  <a href="dashboard.html" class="nav-item">👤<span style="display:block;font-size:12px">Profile</span></a>
-</nav>
+  <nav class="bottom-nav">
+    <a href="tournaments.html" class="nav-item">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-text">Tournaments</span>
+    </a>
+    <a href="wallet.html" class="nav-item">
+      <span class="nav-icon">💰</span>
+      <span class="nav-text">Wallet</span>
+    </a>
+    <a href="admin.html" class="nav-item">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-text">Organizer</span>
+    </a>
+    <a href="dashboard.html" class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span class="nav-text">Profile</span>
+    </a>
   </nav>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+  <!-- App JS -->
+  <script src="index.js"></script>
 </body>
 </html>

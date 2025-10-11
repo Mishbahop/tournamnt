@@ -4,261 +4,106 @@
   <meta charset="utf-8" />
   <title>Wallet — TourneyHub</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="wallet.css">
-  
-  
+  <link rel="stylesheet" href="wallet.css" />
+</head>
 <body>
-  <nav class="bottom-nav" aria-label="Mobile navigation">
-         <a href="index.html" class="nav-item">🏠<span>Home</span></a>
-    <a href="tournaments.html" class="nav-item">🏆<span>Tournaments</span></a>
-    <a href="dashboard.html" class="nav-item">👤<span style="display:block;font-size:12px">Profile</span></a>
-  </nav>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-logo">TourneyHub Wallet</div>
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading your wallet...</div>
+  </div>
 
-  <main class="container">
-    <div class="card">
-      <h2>💰 Wallet</h2>
-      <div id="wallet-balance" class="balance">Balance: —</div>
-
-      <div class="tab-bar">
-        <button id="tab-deposit" class="tab active">Deposit</button>
-        <button id="tab-withdraw" class="tab">Withdraw</button>
-        <button id="tab-history" class="tab">History</button>
+  <!-- Main Content -->
+  <div class="wallet-container" id="mainContent" style="display: none;">
+    <!-- Header -->
+    <header class="wallet-header">
+      <div class="header-content">
+        <h1>💰 Wallet</h1>
+        <div class="user-badge" id="userBadge">Loading...</div>
       </div>
+    </header>
 
-      <div id="wallet-content"></div>
-      <div id="wallet-status" class="status"></div>
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="balance-info">
+        <div class="balance-label">Available Balance</div>
+        <div class="balance-amount" id="balanceAmount">₹0.00</div>
+        <div class="balance-subtitle" id="balanceSubtitle">Total funds available</div>
+      </div>
+      <div class="balance-graphic">
+        <div class="wallet-icon">💳</div>
+      </div>
     </div>
-  </main>
 
-  <!-- QR modal (hidden) -->
-  <div id="qrModal" class="qr-modal" style="display:none">
-    <div class="qr-card">
-      <div id="qrTitle" style="font-weight:800;margin-bottom:8px">Scan to pay</div>
-      <img id="qrImg" src="" alt="QR" style="width:240px;height:240px;border-radius:8px;border:1px solid #102033"/>
-      <div class="small" id="qrNote" style="margin-top:8px"></div>
-      <div style="margin-top:12px">
-        <button id="closeQr" class="ghost">Close</button>
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button class="action-btn primary" onclick="switchTab('deposit')">
+        <span class="action-icon">⬇️</span>
+        <span class="action-text">Deposit</span>
+      </button>
+      <button class="action-btn secondary" onclick="switchTab('withdraw')">
+        <span class="action-icon">⬆️</span>
+        <span class="action-text">Withdraw</span>
+      </button>
+      <button class="action-btn ghost" onclick="switchTab('history')">
+        <span class="action-icon">📊</span>
+        <span class="action-text">History</span>
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="tabContent">
+      <!-- Content will be dynamically loaded here -->
+    </div>
+
+    <!-- Status Messages -->
+    <div class="status-message" id="statusMessage"></div>
+  </div>
+
+  <!-- QR Modal -->
+  <div class="modal-overlay" id="qrModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="qrTitle">Scan to Pay</h3>
+        <button class="modal-close" onclick="closeQRModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="qr-container">
+          <img id="qrImg" src="" alt="Payment QR Code" class="qr-image">
+        </div>
+        <div class="qr-instructions" id="qrNote">
+          Scan this QR code with your UPI app to make payment
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeQRModal()">Close</button>
       </div>
     </div>
   </div>
 
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Home</span>
+    </a>
+    <a href="tournaments.html" class="nav-item">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-text">Tournaments</span>
+    </a>
+    <a href="dashboard.html" class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span class="nav-text">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 
-  <script>
-    // Replace with your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-      authDomain: "authapp-386ee.firebaseapp.com",
-      projectId: "authapp-386ee",
-      storageBucket: "authapp-386ee.firebasestorage.app",
-      messagingSenderId: "809698525310",
-      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-      measurementId: "G-EJZTSBSGQT"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    const balanceBox = document.getElementById('wallet-balance');
-    const contentBox = document.getElementById('wallet-content');
-    const statusBox = document.getElementById('wallet-status');
-
-    const qrModal = document.getElementById('qrModal');
-    const qrImg = document.getElementById('qrImg');
-    const qrNote = document.getElementById('qrNote');
-    const qrTitle = document.getElementById('qrTitle');
-    document.getElementById('closeQr').onclick = () => qrModal.style.display = 'none';
-
-    let userEmail = null;
-    let cachedBalance = 0;
-
-    auth.onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-      userEmail = user.email;
-      updateWalletBalance();
-      renderTab('deposit');
-    });
-
-    document.getElementById('tab-deposit').onclick = () => renderTab('deposit');
-    document.getElementById('tab-withdraw').onclick = () => renderTab('withdraw');
-    document.getElementById('tab-history').onclick = () => renderTab('history');
-
-    async function updateWalletBalance(){
-      if (!userEmail) return;
-      try {
-        const depSnap = await db.collection('deposits').where('email','==',userEmail).where('status','==','approved').get();
-        let totalD = 0;
-        depSnap.forEach(d => totalD += Number(d.data().amount) || 0);
-
-        const witSnap = await db.collection('withdrawals').where('email','==',userEmail).where('status','==','approved').get();
-        let totalW = 0;
-        witSnap.forEach(w => totalW += Number(w.data().amount) || 0);
-
-        cachedBalance = totalD - totalW;
-        balanceBox.textContent = `Balance: ₹${cachedBalance.toLocaleString()} — ${userEmail}`;
-      } catch (err) {
-        console.error('Balance calc error', err);
-        balanceBox.textContent = `Balance: unavailable — ${userEmail}`;
-      }
-    }
-
-    function renderTab(tab){
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById('tab-'+tab).classList.add('active');
-      statusBox.textContent = '';
-
-      if (tab === 'deposit') {
-        contentBox.innerHTML = `
-          <label class="small">Amount (₹)</label>
-          <input id="deposit-amount" type="number" min="1" step="1" placeholder="Enter amount" />
-          <label class="small" style="margin-top:8px">TRN / UTR / Reference</label>
-          <input id="deposit-utr" type="text" placeholder="Enter bank UTR or transaction reference" />
-          <div style="display:flex;gap:8px;margin-top:12px">
-            <button id="deposit-btn">Submit deposit</button>
-            <button id="show-qr" class="ghost">Show QR for payment</button>
-          </div>
-        `;
-        document.getElementById('deposit-btn').onclick = submitDeposit;
-        document.getElementById('show-qr').onclick = showPaymentQr;
-      }
-
-      if (tab === 'withdraw') {
-        contentBox.innerHTML = `
-          <label class="small">Amount to withdraw (₹)</label>
-          <input id="withdraw-amount" type="number" min="1" step="1" placeholder="Enter amount" />
-          <label class="small" style="margin-top:8px">Payment details (UPI/Account)</label>
-          <input id="withdraw-detail" type="text" placeholder="Enter UPI ID or account details" />
-          <div style="display:flex;gap:8px;margin-top:12px">
-            <button id="withdraw-btn">Request withdraw</button>
-            <button id="max-btn" class="ghost">Use max</button>
-          </div>
-        `;
-        document.getElementById('withdraw-btn').onclick = submitWithdraw;
-        document.getElementById('max-btn').onclick = () => {
-          const el = document.getElementById('withdraw-amount');
-          if (el) el.valueAsNumber = cachedBalance;
-        };
-      }
-
-      if (tab === 'history') {
-        contentBox.innerHTML = `<p class="muted">Loading history…</p>`;
-        loadHistory();
-      }
-    }
-
-    async function submitDeposit(){
-      const amtEl = document.getElementById('deposit-amount');
-      const utrEl = document.getElementById('deposit-utr');
-      const amt = Number(amtEl?.value ?? 0);
-      const utr = (utrEl?.value || '').trim();
-
-      if (amt <= 0) { statusBox.textContent = 'Enter a valid deposit amount.'; return; }
-      if (!utr) {
-        // allow empty UTR but warn
-        if (!confirm('No UTR entered. Submit deposit without reference?')) return;
-      }
-
-      try {
-        await db.collection('deposits').add({
-          email: userEmail,
-          amount: amt,
-          utr: utr || null,
-          status: 'pending',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          createdAtClient: new Date().toISOString(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        statusBox.textContent = `Deposit of ₹${amt} submitted. Add UTR later from profile if needed.`;
-        amtEl.value = ''; utrEl.value = '';
-      } catch (err) {
-        console.error('Deposit error', err);
-        statusBox.textContent = 'Error submitting deposit.';
-      }
-    }
-
-    // Payment QR modal: you can customize paymentText (UPI/other)
-    function showPaymentQr(){
-      // Replace this with your actual payment string (UPI or payment URL)
-      const paymentText = prompt('Enter payment string for QR (e.g., UPI or payment link):', 'upi://pay?pa=merchant@upi&pn=TourneyHub&am=0');
-      if (!paymentText) return;
-
-      // Create QR via Google Chart API (simple)
-      const encoded = encodeURIComponent(paymentText);
-      const qrSrc = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encoded}&choe=UTF-8`;
-      qrImg.src = qrSrc;
-      qrNote.textContent = 'Scan the QR with your UPI app or scanner. After payment, submit deposit with UTR/reference.';
-      qrTitle.textContent = 'Scan to pay';
-      qrModal.style.display = 'flex';
-    }
-
-    async function submitWithdraw(){
-      const amtEl = document.getElementById('withdraw-amount');
-      const detailEl = document.getElementById('withdraw-detail');
-      const amt = Number(amtEl?.value ?? 0);
-      const detail = (detailEl?.value || '').trim();
-
-      if (amt <= 0) { statusBox.textContent = 'Enter a valid withdraw amount.'; return; }
-      if (amt > cachedBalance) { statusBox.textContent = `You cannot withdraw more than your balance (₹${cachedBalance}).`; return; }
-      if (!detail) { statusBox.textContent = 'Enter payment details (UPI or account).'; return; }
-
-      try {
-        await db.collection('withdrawals').add({
-          email: userEmail,
-          amount: amt,
-          details: detail,
-          status: 'pending',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          createdAtClient: new Date().toISOString(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        statusBox.textContent = `Withdrawal request of ₹${amt} submitted.`;
-        amtEl.value = ''; detailEl.value = '';
-      } catch (err) {
-        console.error('Withdraw error', err);
-        statusBox.textContent = 'Error submitting withdrawal.';
-      }
-    }
-
-    async function loadHistory(){
-      try {
-        const [deps, wits] = await Promise.all([
-          db.collection('deposits').where('email','==',userEmail).get(),
-          db.collection('withdrawals').where('email','==',userEmail).get()
-        ]);
-        const items = [];
-        deps.forEach(doc => {
-          const d = doc.data();
-          const time = d.createdAt?.toDate?.().toLocaleString() || (d.createdAtClient || '—');
-          items.push({ order: d.createdAt?.toDate?.().getTime() || new Date(d.createdAtClient || 0).getTime(), html: `Deposit ₹${d.amount} • ${d.status} • UTR: ${d.utr || '—'} • ${time}` });
-        });
-        wits.forEach(doc => {
-          const w = doc.data();
-          const time = w.createdAt?.toDate?.().toLocaleString() || (w.createdAtClient || '—');
-          items.push({ order: w.createdAt?.toDate?.().getTime() || new Date(w.createdAtClient || 0).getTime(), html: `Withdrawal ₹${w.amount} • ${w.status} • ${time}` });
-        });
-        items.sort((a,b) => b.order - a.order);
-        contentBox.innerHTML = items.length ? `<ul class="history-list">${items.map(i=>`<li>${i.html}</li>`).join('')}</ul>` : '<p class="muted">No transactions yet.</p>';
-      } catch (err) {
-        console.error('History load error', err);
-        contentBox.innerHTML = '<p class="muted">Error loading history.</p>';
-      }
-    }
-
-    // Optional: listen for admin approving deposits/withdrawals and refresh balance automatically
-    // You can enable these listeners for live updates if you prefer
-    // auth.onAuthStateChanged(user => {
-    //   if (user) {
-    //     db.collection('deposits').where('email','==',user.email).onSnapshot(updateWalletBalance);
-    //     db.collection('withdrawals').where('email','==',user.email).onSnapshot(updateWalletBalance);
-    //   }
-    // });
-  </script>
+  <!-- Wallet JS -->
+  <script src="wallet.js"></script>
 </body>
 </html>

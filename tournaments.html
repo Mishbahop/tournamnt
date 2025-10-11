@@ -1,415 +1,235 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TourneyHub — Tournaments</title>
-  <style>
-    :root{
-      --bg:#0b0f1a; --panel:#0f1724; --card:#1e293b; --muted:#94a3b8; --text:#f1f5f9; --accent:#38bdf8;
-      --ok:#16a34a; --danger:#ef4444; --radius:10px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;background:var(--bg);color:var(--text)}
-    header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--panel)}
-    .logo{color:var(--accent);font-weight:700;text-decoration:none}
-    .filters{display:flex;gap:8px;padding:12px;flex-wrap:wrap}
-    .filters input,.filters select,.filters button{padding:8px;border-radius:8px;border:none;background:#0f1724;color:var(--text)}
-    main{padding:12px;max-width:1100px;margin:0 auto}
-    .card{background:var(--card);padding:12px;border-radius:12px;margin-bottom:12px}
-    .action-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-    .btn{padding:8px 12px;border-radius:8px;border:0;background:#3b82f6;color:white;cursor:pointer}
-    .btn.ghost{background:transparent;border:1px solid #233040;color:var(--muted)}
-    .btn.joined{background:var(--ok);color:#06270f}
-    .no-data{color:var(--muted);padding:12px}
-    .meta{color:var(--muted);font-size:13px;margin-top:6px}
-    nav.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;padding:8px 0;background:var(--panel);border-top:1px solid #15202a}
-    nav.bottom-nav a{color:var(--muted);text-decoration:none;font-size:14px;display:flex;flex-direction:column;align-items:center}
-    h4{margin:0 0 6px}
-    .error { color:#ffbaba; background: rgba(255,0,0,0.04); padding:8px; border-radius:6px; }
-    .success { color:#b7f5d0; background: rgba(0,128,0,0.04); padding:8px; border-radius:6px; }
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-  </style>
+    <meta charset="UTF-8">
+    <title>Tournaments — TourneyHub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="tournament.css">
 </head>
 <body>
-  <header>
-    <a class="logo" href="index.html">TourneyHub</a>
-    <div id="userArea" class="meta">Checking…</div>
-  </header>
-
-  <div class="filters">
-    <input id="search" placeholder="Search title, game or host" />
-    <select id="filterGame">
-      <option value="">All games</option>
-      <option>BGMI</option><option>Free Fire</option><option>Valorant</option><option>PUBG</option><option>Other</option>
-    </select>
-    <select id="filterType">
-      <option value="">All types</option>
-      <option value="SOLO">Solo</option>
-      <option value="TEAM">Team</option>
-    </select>
-    <button id="reload" class="btn">Reload</button>
-  </div>
-
-  <main>
-    <section id="allSections" class="card">
-      <h3>All tournaments</h3>
-      <div id="tournamentsList" class="no-data">Loading…</div>
-    </section>
-
-    <section class="card">
-      <h3>🎟️ My Tournaments</h3>
-      <div id="myJoined" class="no-data">Loading…</div>
-    </section>
-
-    <section class="card">
-      <h3>📅 My Matches</h3>
-      <div id="myMatches" class="no-data">Loading…</div>
-    </section>
-
-    <section class="card">
-      <h3>💰 Wallet</h3>
-      <div id="walletBalance" class="meta">Loading…</div>
-    </section>
-  </main>
-
-  <nav class="bottom-nav">
-    <a href="index.html">🏠<span>Home</span></a>
-    <a href="wallet.html">💰<span>Wallet</span></a>
-    <a href="dashboard.html">👤<span>Profile</span></a>
-  </nav>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
-
-<script>
-/* ---------- CONFIG & INIT ----------
-   Replace firebaseConfig values with your project config if different.
-*/
-const firebaseConfig = {
-  apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-  authDomain: "authapp-386ee.firebaseapp.com",
-  projectId: "authapp-386ee",
-  storageBucket: "authapp-386ee.appspot.com",
-  messagingSenderId: "809698525310",
-  appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-  measurementId: "G-EJZTSBSGQT"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* ---------- UTIL & UI refs ---------- */
-const userArea = document.getElementById('userArea');
-const tournamentsList = document.getElementById('tournamentsList');
-const myJoined = document.getElementById('myJoined');
-const myMatches = document.getElementById('myMatches');
-const walletBalance = document.getElementById('walletBalance');
-
-let currentUser = null;
-
-function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function fmtDate(v){
-  try{
-    if(!v) return '—';
-    if(typeof v.toDate === 'function') return v.toDate().toLocaleString();
-    if(v.seconds) return new Date(v.seconds*1000).toLocaleString();
-    return new Date(v).toLocaleString();
-  }catch(e){return '—'}
-}
-
-/* ---------- AUTH ---------- */
-auth.onAuthStateChanged(async user => {
-  if(!user) return location.href = 'login.html';
-  currentUser = user;
-  userArea.textContent = user.email;
-  await loadPage();
-});
-
-/* ---------- CONTROLS ---------- */
-document.getElementById('reload').onclick = loadPage;
-document.getElementById('search').oninput = debounce(loadPage, 300);
-document.getElementById('filterGame').onchange = loadPage;
-document.getElementById('filterType').onchange = loadPage;
-
-/* ---------- MAIN LOAD ---------- */
-async function loadPage(){
-  await Promise.all([
-    renderAllTournaments(),
-    renderMyJoined(),
-    renderMyMatches(),
-    loadWallet()
-  ]);
-}
-
-/* ---------- WALLET ---------- */
-async function loadWallet(){
-  try{
-    const ref = db.collection('wallets').doc(currentUser.uid);
-    const doc = await ref.get();
-    const bal = doc.exists && typeof doc.data().balance === 'number' ? doc.data().balance : 0;
-    walletBalance.textContent = `₹${bal}`;
-  }catch(e){
-    console.error('loadWallet', e);
-    walletBalance.textContent = 'Error';
-  }
-}
-
-/* ---------- UTILITY: compute tournament status ---------- */
-function computeStatus(t, nowMs = Date.now()){
-  try {
-    const start = t.startTime && typeof t.startTime.toMillis === 'function'
-      ? t.startTime.toMillis()
-      : (t.startTime ? new Date(t.startTime).getTime() : null);
-    const end = t.endTime && typeof t.endTime.toMillis === 'function'
-      ? t.endTime.toMillis()
-      : (t.endTime ? new Date(t.endTime).getTime() : null);
-    if (!start) return 'UPCOMING';
-    if (nowMs < start) return 'UPCOMING';
-    if (end && nowMs > end) return 'COMPLETED';
-    return 'ONGOING';
-  } catch (e) {
-    return 'UPCOMING';
-  }
-}
-
-/* ---------- RENDER ALL TOURNAMENTS (excludes joined) ---------- */
-async function renderAllTournaments(){
-  tournamentsList.innerHTML = 'Loading…';
-  try {
-    const search = (document.getElementById('search').value || '').trim().toLowerCase();
-    const gameFilter = document.getElementById('filterGame').value;
-    const typeFilter = document.getElementById('filterType').value;
-
-    // fetch user's joined ids to exclude them from live list
-    const joinedSnap = await db.collection('userTournaments').doc(currentUser.uid).collection('joined').get();
-    const joinedIds = new Set(joinedSnap.docs.map(d => d.id));
-
-    const snap = await db.collection('tournaments').get();
-    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    // sort newest first
-    items.sort((a, b) => {
-      const ta = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis()
-               : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
-      const tb = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis()
-               : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
-      return tb - ta;
-    });
-
-    const groups = { UPCOMING: [], ONGOING: [], COMPLETED: [] };
-    const now = Date.now();
-
-    items.forEach(t => {
-      if (joinedIds.has(t.id)) return;
-      if (gameFilter && (t.game || '').toString() !== gameFilter) return;
-      if (typeFilter && (t.type || '').toString() !== typeFilter) return;
-      if (search) {
-        const hay = `${t.title || ''} ${t.game || ''} ${t.host || ''}`.toLowerCase();
-        if (!hay.includes(search)) return;
-      }
-      const status = computeStatus(t, now);
-      groups[status].push(t);
-    });
-
-    tournamentsList.innerHTML = '';
-    const order = ['UPCOMING','ONGOING','COMPLETED'];
-    let any = false;
-    order.forEach(status => {
-      const list = groups[status];
-      if (!list.length) return;
-      any = true;
-      const section = document.createElement('div');
-      section.innerHTML = `<h4>${status === 'UPCOMING' ? '⏳ Upcoming' : status === 'ONGOING' ? '🔥 Ongoing' : '✅ Completed'}</h4>`;
-      const grid = document.createElement('div'); grid.className = 'grid';
-      list.forEach(t => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <h4>${escapeHtml(t.title || 'Untitled')}</h4>
-          <div class="meta">Game: ${escapeHtml(t.game || '—')} • Type: ${escapeHtml(t.type || '—')} • Host: ${escapeHtml(t.host || '—')}</div>
-          <div class="meta">Starts: ${fmtDate(t.startTime)} • Ends: ${fmtDate(t.endTime)} • Entry: ₹${Number(t.entryFee||0)}</div>
-          <div class="meta">Participants: <span id="count-${t.id}">${Number(t.participants||0)}</span> / ${Number(t.maxParticipants||t.max||0)}</div>
-          <div class="action-row">
-            <a class="btn ghost" href="tournament.html?id=${encodeURIComponent(t.id)}">View</a>
-            <button class="btn join-btn" data-id="${t.id}" data-entry="${Number(t.entryFee||0)}">Join</button>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-      section.appendChild(grid);
-      tournamentsList.appendChild(section);
-    });
-
-    if (!any) tournamentsList.innerHTML = '<div class="no-data">No tournaments found.</div>';
-  } catch(e){
-    console.error('renderAllTournaments', e);
-    tournamentsList.innerHTML = '<div class="no-data">Error loading tournaments</div>';
-  }
-}
-
-/* ---------- JOIN / LEAVE HANDLERS (event delegation) ---------- */
-document.addEventListener('click', async ev => {
-  const joinBtn = ev.target.closest && ev.target.closest('.join-btn');
-  if (joinBtn) {
-    ev.preventDefault();
-    const tid = joinBtn.dataset.id;
-    const fee = Number(joinBtn.dataset.entry||0);
-    await handleJoinFromList(tid, fee, joinBtn);
-    return;
-  }
-  const leaveBtn = ev.target.closest && ev.target.closest('.leave-btn');
-  if (leaveBtn) {
-    ev.preventDefault();
-    const tid = leaveBtn.dataset.id;
-    await handleLeaveFromMyLists(tid, leaveBtn);
-    return;
-  }
-});
-
-/* join: transactional, reads before writes */
-async function handleJoinFromList(tid, entryFee, btn){
-  btn.disabled = true;
-  const prevText = btn.textContent;
-  btn.textContent = 'Joining…';
-  try{
-    await db.runTransaction(async tx => {
-      const tRef = db.collection('tournaments').doc(tid);
-      const walletRef = db.collection('wallets').doc(currentUser.uid);
-      const partRef = tRef.collection('participants').doc(currentUser.uid);
-      const userPtr = db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(tid);
-
-      // read all necessary docs first
-      const [tSnap, walletSnap, existingParticipant] = await Promise.all([
-        tx.get(tRef),
-        tx.get(walletRef),
-        tx.get(partRef)
-      ]);
-
-      if (!tSnap.exists) throw new Error('Tournament removed');
-      if (existingParticipant.exists) throw new Error('Already joined');
-
-      const tData = tSnap.data();
-      const cur = Number(tData.participants || 0);
-      const max = Number(tData.maxParticipants || tData.max || 0);
-      if (max > 0 && cur >= max) throw new Error('Tournament full');
-
-      const balance = walletSnap.exists ? (walletSnap.data().balance || 0) : 0;
-      if (balance < entryFee) throw new Error('Insufficient balance');
-
-      // all reads done — now writes
-      tx.set(partRef, {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      tx.set(userPtr, {
-        tournamentId: tid,
-        title: tData.title || '',
-        game: tData.game || '',
-        type: tData.type || '',
-        host: tData.host || '',
-        entryFee: entryFee || 0,
-        joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        startTime: tData.startTime || null,
-        endTime: tData.endTime || null
-      });
-
-      tx.update(tRef, { participants: cur + 1 });
-      tx.set(walletRef, { balance: balance - entryFee }, { merge: true });
-    });
-
-    // redirect after successful join
-    window.location.href = 'dashboard.html';
-  } catch(e){
-    console.error('handleJoinFromList', e);
-    alert(e.message || 'Failed to join tournament');
-    btn.disabled = false;
-    btn.textContent = prevText;
-  }
-}
-
-/* leave handler used from "My Tournaments" list */
-async function handleLeaveFromMyLists(tid, btn){
-  if (!confirm('Leave this tournament?')) return;
-  btn.disabled = true;
-  try {
-    await db.runTransaction(async tx => {
-      const tRef = db.collection('tournaments').doc(tid);
-      const partRef = tRef.collection('participants').doc(currentUser.uid);
-      const userPtr = db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(tid);
-
-      const [tSnap] = await Promise.all([tx.get(tRef)]);
-      if (!tSnap.exists) throw new Error('Tournament removed');
-
-      const tData = tSnap.data();
-      const cur = Number(tData.participants || 0);
-
-      tx.delete(partRef);
-      tx.delete(userPtr);
-      tx.update(tRef, { participants: Math.max(0, cur - 1) });
-    });
-    await renderMyJoined();
-    await renderAllTournaments();
-  } catch(e) {
-    console.error('handleLeaveFromMyLists', e);
-    alert(e.message || 'Failed to leave tournament');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-/* ---------- MY JOINED ---------- */
-async function renderMyJoined(){
-  myJoined.innerHTML = 'Loading…';
-  try{
-    const snap = await db.collection('userTournaments').doc(currentUser.uid).collection('joined').orderBy('joinedAt','desc').get();
-    if(snap.empty){ myJoined.innerHTML = '<div class="no-data">No joined tournaments</div>'; return; }
-    myJoined.innerHTML = '';
-    snap.docs.forEach(d=>{
-      const t = d.data();
-      const card = document.createElement('div'); card.className='card';
-      card.innerHTML = `
-        <h4>${escapeHtml(t.title||'Untitled')}</h4>
-        <div class="meta">Game: ${escapeHtml(t.game||'—')} • Type: ${escapeHtml(t.type||'—')} • Host: ${escapeHtml(t.host||'—')}</div>
-        <div class="meta">Entry: ₹${Number(t.entryFee||0)}</div>
-        <div class="action-row">
-          <a class="btn ghost" href="tournament.html?id=${encodeURIComponent(t.tournamentId)}">View</a>
-          <button class="btn leave-btn" data-id="${t.tournamentId}">Leave</button>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <div class="logo-icon">🏆</div>
+                <div class="logo-text">TourneyHub</div>
+            </div>
+            <div class="loading-spinner"></div>
+            <div class="loading-subtitle">Loading tournaments...</div>
         </div>
-      `;
-      myJoined.appendChild(card);
-    });
-  }catch(e){ console.error('renderMyJoined',e); myJoined.innerHTML='<div class="no-data">Error</div>'; }
-}
+    </div>
 
-/* ---------- MY MATCHES ---------- */
-async function renderMyMatches(){
-  myMatches.innerHTML='Loading…';
-  try{
-    const snap = await db.collectionGroup('matches')
-      .where('participants','array-contains',currentUser.uid)
-      .get();
-    if(snap.empty){ myMatches.innerHTML='<div class="no-data">No matches yet</div>'; return; }
-    myMatches.innerHTML='';
-    snap.docs.forEach(d=>{
-      const m=d.data();
-      const card=document.createElement('div'); card.className='card';
-      card.innerHTML=`
-        <h4>${escapeHtml(m.title||'Untitled Match')}</h4>
-        <div class="meta">Tournament: ${escapeHtml(m.tournamentTitle||'—')}</div>
-        <div class="meta">Time: ${fmtDate(m.startTime)} - ${fmtDate(m.endTime)}</div>
-        <div class="meta">Participants: ${Array.isArray(m.participants)?m.participants.length:0}</div>
-      `;
-      myMatches.appendChild(card);
-    });
-  }catch(e){console.error('renderMyMatches',e); myMatches.innerHTML='<div class="no-data">Error loading matches</div>';}
-}
-</script>
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-container">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">🏆</div>
+                    <div class="logo-text">TourneyHub</div>
+                </a>
+                <nav class="header-nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="tournaments.html" class="nav-link active">Tournaments</a>
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    <a href="wallet.html" class="nav-link">Wallet</a>
+                </nav>
+                <div id="user-info" class="user-info"></div>
+            </div>
+        </header>
 
+        <!-- Main Content -->
+        <main>
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="hero-background"></div>
+                <div class="hero-glow"></div>
+                <div class="container">
+                    <div class="hero-container">
+                        <div class="hero-content">
+                            <div class="hero-badge">🎯 COMPETE & WIN</div>
+                            <h1 class="hero-title">
+                                Join <span class="gradient-text">Epic Tournaments</span><br>
+                                Win Amazing Prizes
+                            </h1>
+                            <p class="hero-description">
+                                Test your skills against the best players worldwide. 
+                                Join free and paid tournaments with massive prize pools. 
+                                Rise through the ranks and claim your victory!
+                            </p>
+                            <div class="hero-actions">
+                                <a href="#live-tournaments" class="btn btn-primary btn-large">
+                                    <span class="btn-icon">🔥</span>
+                                    Join Live Tournaments
+                                </a>
+                                <button class="btn btn-secondary btn-large" id="createTournamentBtn">
+                                    <span class="btn-icon">⚡</span>
+                                    Create Tournament
+                                </button>
+                            </div>
+                            <div class="hero-stats">
+                                <div class="stat">
+                                    <div class="stat-number" id="liveTournaments">0</div>
+                                    <div class="stat-label">Live Now</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-number" id="totalPlayers">0</div>
+                                    <div class="stat-label">Active Players</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-number" id="totalPrize">$0</div>
+                                    <div class="stat-label">Total Prize Pool</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hero-visual">
+                            <!-- Floating tournament cards will be added by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tournaments Section -->
+            <section class="section" id="live-tournaments">
+                <div class="container">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">
+                                <span class="fire-icon">🔥</span>
+                                Live Tournaments
+                            </h2>
+                            <p class="section-subtitle">Join these tournaments happening right now</p>
+                        </div>
+                        <div class="filter-controls">
+                            <div class="search-box">
+                                <input type="text" id="searchTournaments" placeholder="Search tournaments...">
+                                <span class="search-icon">🔍</span>
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all">All Games</button>
+                                <button class="filter-btn" data-filter="active">Live Now</button>
+                                <button class="filter-btn" data-filter="upcoming">Starting Soon</button>
+                                <button class="filter-btn" data-filter="free">Free Entry</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tournaments Grid -->
+                    <div class="tournaments-grid" id="tournamentsGrid">
+                        <div class="loading-state">Loading tournaments...</div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <div class="empty-icon">🏆</div>
+                        <h3>No tournaments found</h3>
+                        <p>Try adjusting your filters or check back later</p>
+                        <button class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="section trending-section">
+                <div class="container">
+                    <div class="section-header center">
+                        <h2 class="section-title">
+                            <span class="fire-icon">⚡</span>
+                            Why Choose TourneyHub?
+                        </h2>
+                        <p class="section-subtitle">The ultimate platform for competitive gaming</p>
+                    </div>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">💰</div>
+                            <h3>Instant Payouts</h3>
+                            <p>Get your winnings instantly after tournament completion. No delays, no hassles.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🛡️</div>
+                            <h3>Fair Play Guaranteed</h3>
+                            <p>Advanced anti-cheat systems and dedicated moderators ensure fair competition.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🌐</div>
+                            <h3>Global Matchmaking</h3>
+                            <p>Compete with players worldwide with our smart matchmaking system.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <a href="index.html" class="logo">
+                            <div class="logo-icon">🏆</div>
+                            <div class="logo-text">TourneyHub</div>
+                        </a>
+                        <p class="footer-description">
+                            The ultimate platform for competitive gaming tournaments and esports.
+                        </p>
+                    </div>
+                    <div class="footer-links">
+                        <div class="footer-column">
+                            <h4>Platform</h4>
+                            <a href="tournaments.html">Tournaments</a>
+                            <a href="leaderboards.html">Leaderboards</a>
+                            <a href="matches.html">Matches</a>
+                            <a href="wallet.html">Wallet</a>
+                        </div>
+                        <div class="footer-column">
+                            <h4>Support</h4>
+                            <a href="help.html">Help Center</a>
+                            <a href="contact.html">Contact Us</a>
+                            <a href="faq.html">FAQ</a>
+                            <a href="community.html">Community</a>
+                        </div>
+                        <div class="footer-column">
+                            <h4>Legal</h4>
+                            <a href="privacy.html">Privacy Policy</a>
+                            <a href="terms.html">Terms of Service</a>
+                            <a href="rules.html">Tournament Rules</a>
+                            <a href="responsible.html">Responsible Gaming</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2024 TourneyHub. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
+        </a>
+        <a href="tournaments.html" class="nav-item active">
+            <span class="nav-icon">🏆</span>
+            <span class="nav-text">Tournaments</span>
+        </a>
+        <a href="dashboatd\dashboard.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Profile</span>
+        </a>
+        <a href="wallet.html" class="nav-item">
+            <span class="nav-icon">💰</span>
+            <span class="nav-text">Wallet</span>
+        </a>
+    </nav>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Tournament JavaScript -->
+    <script src="tournament.js"></script>
 </body>
 </html>

@@ -1,247 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>My Dashboard — TourneyHub</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="dashboard.css">
-<style>
-:root{
-  --bg:#0b0f1a; --panel:#0f1724; --card:#1e293b; --muted:#94a3b8; --text:#f1f5f9; --accent:#38bdf8;
-  --ok:#16a34a; --danger:#ef4444; --radius:10px;
-}
-html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;background:var(--bg);color:var(--text);}
-.site-header{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-bottom:1px solid #0f1724;padding:12px 16px;position:sticky;top:0;z-index:10}
-.header-bar{display:flex;align-items:center;gap:12px}
-.logo{color:var(--accent);font-weight:700;text-decoration:none;font-size:18px}
-main.container{padding:16px;max-width:980px;margin:0 auto}
-.tabs{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;}
-.tab{background:transparent;border:1px solid #122032;color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;}
-.tab.active{background:#0f1724;border-color:#1f2937;color:var(--accent);font-weight:700;}
-.section{margin-bottom:16px}
-.section-header h2{margin:0 0 8px;font-size:18px}
-.list{display:grid;gap:12px}
-.card{background:var(--card);padding:12px;border-radius:10px;border:1px solid #111827}
-.card h3{margin:0 0 6px;font-size:16px}
-.card-meta{color:var(--muted);font-size:13px;margin-top:6px}
-.action-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.btn{padding:8px 10px;border-radius:8px;border:0;background:#3b82f6;color:white;cursor:pointer}
-.btn.ghost{background:transparent;border:1px solid #233040;color:var(--muted)}
-.btn.joined{background:var(--ok);color:#06270f}
-.muted{color:var(--muted)}
-nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;padding:8px 12px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.6));border-top:1px solid #0f1724}
-nav.bottom-nav a{color:var(--muted);text-decoration:none;font-size:18px;display:flex;flex-direction:column;align-items:center}
-.no-data{color:var(--muted);padding:12px;text-align:center}
-.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:720px){ .profile-grid{grid-template-columns:1fr} nav.bottom-nav{display:flex} }
-</style>
+  <meta charset="UTF-8">
+  <title>My Dashboard — TourneyHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
-<header class="site-header">
-  <div class="header-bar">
-    <a class="logo" href="index.html">TourneyHub</a>
-    <div id="user-info" style="margin-left:auto;color:var(--muted)"></div>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <span class="logo-icon">🏆</span>
+        <span class="logo-text">TourneyHub</span>
+      </div>
+      <div class="loading-spinner"></div>
+      <div class="loading-subtitle">Loading Your Arena...</div>
+    </div>
   </div>
-</header>
 
-<main class="container">
-  <nav class="tabs" role="tablist" aria-label="Dashboard tabs">
-    <button class="tab active" id="tab-my-tournaments">My Tournaments</button>
-    <button class="tab" id="tab-my-matches">My Matches</button>
-    <button class="tab" id="tab-my-wallet">My Wallet</button>
-    <button class="tab" id="tab-my-profile">My Profile</button>
-  </nav>
+  <!-- Main Content -->
+  <div class="dashboard-container" id="mainContent">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-container">
+        <div class="header-left">
+          <div class="logo">
+            <span class="logo-icon">🏆</span>
+            <span class="logo-text">TourneyHub</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="user-info" id="userInfo">
+            <div class="user-avatar">
+              <span class="avatar-icon">👤</span>
+            </div>
+            <div class="user-details">
+              <div class="user-name" id="userName">Loading...</div>
+              <div class="user-email" id="userEmail">user@example.com</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-signout" id="signOutBtn">
+            <span class="btn-icon">🚪</span>
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </header>
 
-  <section id="profile-content">
-    <!-- Tournaments -->
-    <section id="my-registrations-section" class="section">
-      <div class="section-header"><h2>🎟️ My Tournaments</h2></div>
-      <div id="my-registrations" class="list"><div class="no-data">Loading…</div></div>
+    <!-- Stats Overview -->
+    <section class="stats-section">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🎮</div>
+          <div class="stat-info">
+            <div class="stat-number" id="tournamentsJoined">0</div>
+            <div class="stat-label">Tournaments Joined</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-info">
+            <div class="stat-number" id="tournamentsWon">0</div>
+            <div class="stat-label">Tournaments Won</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-info">
+            <div class="stat-number" id="walletBalance">₹0</div>
+            <div class="stat-label">Wallet Balance</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-info">
+            <div class="stat-number" id="winRate">0%</div>
+            <div class="stat-label">Win Rate</div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Matches -->
-    <section id="my-matches-section" class="section" style="display:none;">
-      <div class="section-header"><h2>📅 My Matches</h2></div>
-      <div id="my-matches" class="list"><div class="no-data">No matches yet</div></div>
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+      <h2 class="section-title">Quick Actions</h2>
+      <div class="actions-grid">
+        <a href="tournaments.html" class="action-card">
+          <div class="action-icon">🎯</div>
+          <div class="action-text">Find Tournaments</div>
+          <div class="action-subtext">Join new competitions</div>
+        </a>
+        <a href="wallet.html" class="action-card">
+          <div class="action-icon">💳</div>
+          <div class="action-text">Add Funds</div>
+          <div class="action-subtext">Top up your wallet</div>
+        </a>
+        <a href="admin.html" class="action-card">
+          <div class="action-icon">⚡</div>
+          <div class="action-text">Host Tournament</div>
+          <div class="action-subtext">Create your own</div>
+        </a>
+        <div class="action-card" id="profileSettings">
+          <div class="action-icon">👤</div>
+          <div class="action-text">Profile Settings</div>
+          <div class="action-subtext">Manage your account</div>
+        </div>
+      </div>
     </section>
 
-    <!-- Wallet -->
-    <section id="my-wallet-section" class="section" style="display:none;">
-      <div class="section-header"><h2>💰 My Wallet</h2></div>
-      <div id="wallet-balance" class="list"><div class="no-data">Loading…</div></div>
-    </section>
+    <!-- Tab Navigation -->
+    <nav class="tab-navigation">
+      <div class="tab-list" role="tablist">
+        <button class="tab active" data-tab="tournaments">
+          <span class="tab-icon">🎮</span>
+          <span class="tab-text">My Tournaments</span>
+        </button>
+        <button class="tab" data-tab="matches">
+          <span class="tab-icon">⚔️</span>
+          <span class="tab-text">My Matches</span>
+        </button>
+        <button class="tab" data-tab="wallet">
+          <span class="tab-icon">💰</span>
+          <span class="tab-text">Wallet</span>
+        </button>
+        <button class="tab" data-tab="profile">
+          <span class="tab-icon">👤</span>
+          <span class="tab-text">Profile</span>
+        </button>
+      </div>
+    </nav>
 
-    <!-- Profile -->
-    <section id="my-profile-section" class="section" style="display:none;">
-      <div class="section-header"><h2>👤 My Profile</h2></div>
-      <div id="my-profile" class="list"></div>
-    </section>
-  </section>
-</main>
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Tournaments Tab -->
+      <div class="tab-panel active" id="tournaments-panel">
+        <div class="panel-header">
+          <h3>My Tournament Registrations</h3>
+          <button class="btn btn-primary btn-sm" onclick="refreshTournaments()">
+            <span class="btn-icon">🔄</span>
+            Refresh
+          </button>
+        </div>
+        <div class="tournaments-list" id="tournamentsList">
+          <div class="loading-state">
+            <div class="loading-spinner-small"></div>
+            <p>Loading your tournaments...</p>
+          </div>
+        </div>
+      </div>
 
-<nav class="bottom-nav" aria-label="Mobile navigation">
-  <a href="index.html">🏠<span style="font-size:12px">Home</span></a>
-  <a href="tournaments.html">🏆<span style="font-size:12px">Tournaments</span></a>
-  <a href="wallet.html">💰<span style="font-size:12px">Wallet</span></a>
-  <a href="login.html">🔑<span style="font-size:12px">Login</span></a>
-</nav>
+      <!-- Matches Tab -->
+      <div class="tab-panel" id="matches-panel">
+        <div class="panel-header">
+          <h3>Upcoming & Recent Matches</h3>
+        </div>
+        <div class="matches-list" id="matchesList">
+          <div class="empty-state">
+            <div class="empty-icon">⚔️</div>
+            <h4>No Matches Yet</h4>
+            <p>Join a tournament to see your matches here</p>
+            <a href="tournaments.html" class="btn btn-primary">Find Tournaments</a>
+          </div>
+        </div>
+      </div>
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+      <!-- Wallet Tab -->
+      <div class="tab-panel" id="wallet-panel">
+        <div class="panel-header">
+          <h3>Wallet Overview</h3>
+          <a href="wallet.html" class="btn btn-primary btn-sm">
+            <span class="btn-icon">💰</span>
+            Manage Wallet
+          </a>
+        </div>
+        <div class="wallet-content" id="walletContent">
+          <div class="wallet-card">
+            <div class="wallet-balance">
+              <div class="balance-label">Available Balance</div>
+              <div class="balance-amount" id="detailedBalance">₹0.00</div>
+              <div class="balance-subtitle">Total withdrawable funds</div>
+            </div>
+            <div class="wallet-actions">
+              <a href="wallet.html?tab=deposit" class="btn btn-primary btn-sm">
+                <span class="btn-icon">⬇️</span>
+                Deposit
+              </a>
+              <a href="wallet.html?tab=withdraw" class="btn btn-secondary btn-sm">
+                <span class="btn-icon">⬆️</span>
+                Withdraw
+              </a>
+            </div>
+          </div>
+          
+          <div class="transaction-history">
+            <h4>Recent Transactions</h4>
+            <div class="transactions-list" id="transactionsList">
+              <div class="empty-state">
+                <div class="empty-icon">💸</div>
+                <p>No transactions yet</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<script>
-const firebaseConfig = {
-    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-    authDomain: "authapp-386ee.firebaseapp.com",
-    projectId: "authapp-386ee",
-    storageBucket: "authapp-386ee.firebasestorage.app",
-    messagingSenderId: "809698525310",
-    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-    measurementId: "G-EJZTSBSGQT"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+      <!-- Profile Tab -->
+      <div class="tab-panel" id="profile-panel">
+        <div class="panel-header">
+          <h3>Profile Settings</h3>
+        </div>
+        <div class="profile-content" id="profileContent">
+          <div class="profile-card">
+            <div class="profile-header">
+              <div class="profile-avatar-large">
+                <span class="avatar-icon-large">👤</span>
+              </div>
+              <div class="profile-info">
+                <h4 id="profileName">Loading...</h4>
+                <p class="profile-email" id="profileEmail">user@example.com</p>
+                <div class="profile-badges">
+                  <span class="badge verified" id="verifiedBadge">✓ Verified</span>
+                  <span class="badge member" id="memberSince">Member since 2024</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="profile-stats">
+              <div class="profile-stat">
+                <div class="stat-value" id="profileTournaments">0</div>
+                <div class="stat-label">Tournaments</div>
+              </div>
+              <div class="profile-stat">
+                <div class="stat-value" id="profileWins">0</div>
+                <div class="stat-label">Wins</div>
+              </div>
+              <div class="profile-stat">
+                <div class="stat-value" id="profileWinRate">0%</div>
+                <div class="stat-label">Win Rate</div>
+              </div>
+            </div>
 
-const tabs = [
-  document.getElementById("tab-my-tournaments"),
-  document.getElementById("tab-my-matches"),
-  document.getElementById("tab-my-wallet"),
-  document.getElementById("tab-my-profile")
-];
-const sections = [
-  document.getElementById("my-registrations-section"),
-  document.getElementById("my-matches-section"),
-  document.getElementById("my-wallet-section"),
-  document.getElementById("my-profile-section")
-];
-const userInfoEl = document.getElementById("user-info");
-let currentUser = null;
-
-// Tab switching
-function showTab(idx){
-  tabs.forEach((tab,i)=>tab.classList.toggle("active",i===idx));
-  sections.forEach((sec,i)=>sec.style.display=i===idx?"":"none");
-}
-tabs.forEach((tab,i)=>tab.onclick=()=>showTab(i));
-showTab(0);
-
-// Auth listener
-auth.onAuthStateChanged(async user=>{
-  if(!user) return window.location.href="login.html";
-  currentUser = user;
-  userInfoEl.textContent = user.email;
-  renderProfile(user);
-  await loadMyTournaments();
-  await loadMyMatches();
-  await loadWallet();
-});
-
-// Profile
-function renderProfile(user){
-  const myProfileEl = document.getElementById("my-profile");
-  myProfileEl.innerHTML = `
-    <div class="card">
-      <h3>${user.email}</h3>
-      <div class="card-meta">UID: ${user.uid}</div>
-      <div class="card-meta">Created: ${new Date(user.metadata.creationTime).toLocaleString()}</div>
-      <div class="card-meta">Last login: ${new Date(user.metadata.lastSignInTime).toLocaleString()}</div>
-      <div class="action-row">
-        <button id="logout-btn" class="btn ghost">Logout</button>
+            <div class="profile-actions">
+              <button class="btn btn-secondary" onclick="editProfile()">
+                <span class="btn-icon">✏️</span>
+                Edit Profile
+              </button>
+              <button class="btn btn-ghost" onclick="verifyEmail()">
+                <span class="btn-icon">📧</span>
+                Verify Email
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  `;
-  document.getElementById("logout-btn").onclick = async ()=>{ await auth.signOut(); window.location.href="login.html"; };
-}
+  </div>
 
-// My Tournaments
-async function loadMyTournaments(){
-  const container = document.getElementById("my-registrations");
-  container.innerHTML = '<div class="no-data">Loading…</div>';
-  try{
-    const snap = await db.collection('userTournaments').doc(currentUser.uid).collection('joined').orderBy('joinedAt','desc').get();
-    const tournaments=[];
-    snap.forEach(d=>tournaments.push({id:d.id,...d.data()}));
-    if(!tournaments.length){ container.innerHTML='<div class="no-data">No tournaments joined</div>'; return; }
-    container.innerHTML='';
-    tournaments.forEach(t=>{
-      const card = document.createElement('div');
-      card.className='card';
-      card.innerHTML=`
-        <h3>${t.title}</h3>
-        <div class="card-meta">Joined At: ${t.joinedAt?.toDate ? t.joinedAt.toDate().toLocaleString() : '—'}</div>
-        <div class="action-row">
-          <button class="btn ghost" onclick="leaveTournament('${t.id}')">Leave</button>
-          <a class="btn ghost" href="tournament.html?id=${t.id}">View</a>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }catch(err){ console.error(err); container.innerHTML='<div class="no-data">Error loading tournaments</div>'; }
-}
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Home</span>
+    </a>
+    <a href="tournaments.html" class="nav-item">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-text">Tournaments</span>
+    </a>
+    <a href="wallet.html" class="nav-item">
+      <span class="nav-icon">💰</span>
+      <span class="nav-text">Wallet</span>
+    </a>
+    <a href="dashboard.html" class="nav-item active">
+      <span class="nav-icon">👤</span>
+      <span class="nav-text">Profile</span>
+    </a>
+  </nav>
 
-// My Matches
-async function loadMyMatches(){
-  const container = document.getElementById("my-matches");
-  container.innerHTML='<div class="no-data">Loading…</div>';
-  try{
-    const snap = await db.collection('userMatches').doc(currentUser.uid).collection('matches').orderBy('playedAt','desc').get();
-    const matches=[]; snap.forEach(d=>matches.push({id:d.id,...d.data()}));
-    if(!matches.length){ container.innerHTML='<div class="no-data">No matches played</div>'; return; }
-    container.innerHTML='';
-    matches.forEach(m=>{
-      const card = document.createElement('div');
-      card.className='card';
-      card.innerHTML=`
-        <h3>${m.tournamentTitle||'—'}</h3>
-        <div class="card-meta">Game: ${m.game||'—'} • Opponent: ${m.opponent||'—'}</div>
-        <div class="card-meta">Result: ${m.result||'—'}</div>
-        <div class="card-meta">Played At: ${m.playedAt?.toDate ? m.playedAt.toDate().toLocaleString() : '—'}</div>
-      `;
-      container.appendChild(card);
-    });
-  }catch(err){ console.error(err); container.innerHTML='<div class="no-data">Error loading matches</div>'; }
-}
+  <!-- Notification Toast -->
+  <div class="notification-toast" id="notificationToast">
+    <div class="toast-content">
+      <span class="toast-icon" id="toastIcon">⚠️</span>
+      <span class="toast-message" id="toastMessage"></span>
+    </div>
+    <button class="toast-close" id="toastClose">×</button>
+  </div>
 
-// Wallet
-async function loadWallet(){
-  const container = document.getElementById("wallet-balance");
-  container.innerHTML='<div class="no-data">Loading…</div>';
-  try{
-    const snap = await db.collection('wallets').doc(currentUser.uid).get();
-    const balance = snap.exists?snap.data().balance||0:0;
-    container.innerHTML=`<div class="card">Balance: ₹${balance}</div>`;
-  }catch(err){ console.error(err); container.innerHTML='<div class="no-data">Error loading wallet</div>'; }
-}
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 
-// Leave Tournament with refund
-async function leaveTournament(tid){
-  if(!confirm('Leave this tournament?')) return;
-  try{
-    await db.runTransaction(async tx=>{
-      const tRef = db.collection('tournaments').doc(tid);
-      const tSnap = await tx.get(tRef);
-      if(!tSnap.exists) throw new Error('Tournament removed');
-      const data = tSnap.data();
-      const cur = Number(data.participants||0);
-
-      // Refund entry fee
-      const walletRef = db.collection('wallets').doc(currentUser.uid);
-      const walletSnap = await tx.get(walletRef);
-      const currentBalance = walletSnap.exists?walletSnap.data().balance||0:0;
-      const refundAmount = Number(data.entryFee||0);
-      tx.set(walletRef,{balance:currentBalance+refundAmount},{merge:true});
-
-      tx.delete(tRef.collection('participants').doc(currentUser.uid));
-      tx.delete(db.collection('userTournaments').doc(currentUser.uid).collection('joined').doc(tid));
-      tx.update(tRef,{participants:Math.max(0,cur-1)});
-    });
-    await loadMyTournaments();
-    await loadWallet();
-  }catch(err){ console.error(err); alert(err.message||'Error leaving tournament'); }
-}
-</script>
+  <!-- Dashboard JS -->
+  <script src="dashboard.js"></script>
 </body>
 </html>

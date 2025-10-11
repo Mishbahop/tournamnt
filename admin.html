@@ -1,446 +1,178 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="stylesheet" href="styll.css" />
-<title>TourneyHub Admin</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="TourneyHub Admin Portal - Administrative Interface" />
+  <link rel="stylesheet" href="admin.css" />
+  <title>TourneyHub Admin Portal</title>
+  <style>
+    /* Loading Screen Styles */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+    }
 
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loading-logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #6366f1, #818cf8, #10b981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 2rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(99, 102, 241, 0.3);
+      border-top: 3px solid #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1.5rem;
+    }
+
+    .loading-progress {
+      width: 200px;
+      height: 4px;
+      background: rgba(99, 102, 241, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .loading-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #818cf8);
+      border-radius: 2px;
+      animation: progress 2s ease-in-out infinite;
+    }
+
+    .loading-text {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+
+    @keyframes progress {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(0%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* Hide main content initially */
+    main {
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+    }
+
+    main.loaded {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
-<header>
-  <a class="logo" href="#">TourneyHub Admin</a>
-  <div id="adminBadge" class="badge">Checking…</div>
-</header>
-
-<main>
-  <div class="card">
-    <div class="tabs" id="tabsBar">
-      <button class="tab active" data-tab="tournaments">Tournaments</button>
-      <button class="tab" data-tab="users">Users</button>
-      <button class="tab" data-tab="deposits">Deposits</button>
-      <button class="tab" data-tab="withdrawals">Withdrawals</button>
-      <button class="tab" data-tab="settings">Settings</button>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-logo">TourneyHub Admin</div>
+    <div class="loading-spinner"></div>
+    <div class="loading-progress">
+      <div class="loading-progress-bar"></div>
     </div>
-
-    <div class="row" style="margin-top:12px">
-      <input id="globalSearch" placeholder="Search: title, email, UTR, host…" />
-      <button id="clearSearch" class="ghost small">Clear</button>
-      <button id="refreshBtn" class="small">Refresh</button>
-      <button id="signOut" class="ghost small">Sign out</button>
-    </div>
+    <div class="loading-text" id="loadingText">Initializing Admin Portal...</div>
   </div>
 
-  <div id="content"></div>
-  <div id="globalStatus" class="muted"></div>
-</main>
+  <!-- Main Content -->
+  <header>
+    <a class="logo" href="#">TourneyHub Admin</a>
+    <div id="adminBadge" class="badge">
+      <span class="badge-icon">👑</span>
+      <span class="badge-text">Checking permissions...</span>
+    </div>
+  </header>
 
-<!-- Bottom navigation moved into body -->
-<nav class="bottom-nav" aria-label="Mobile navigation">
-  <a href="index.html" class="nav-item">🏠<span style="display:block;font-size:12px">Home</span></a>
-  <a href="tournaments.html" class="nav-item">🏆<span style="display:block;font-size:12px">Tournaments</span></a>
-  <a href="wallet.html" class="nav-item">💰<span style="display:block;font-size:12px">Wallet</span></a>
-  <a href="dashboard.html" class="nav-item">👤<span style="display:block;font-size:12px">Dashboard</span></a>
-</nav>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
-
-<script>
-  // Replace with your Firebase project config
-  const firebaseConfig = {
-    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-    authDomain: "authapp-386ee.firebaseapp.com",
-    projectId: "authapp-386ee",
-    storageBucket: "authapp-386ee.firebasestorage.app",
-    messagingSenderId: "809698525310",
-    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-    measurementId: "G-EJZTSBSGQT"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  // UI refs
-  const content = document.getElementById('content');
-  const adminBadge = document.getElementById('adminBadge');
-  const tabs = document.querySelectorAll('.tab');
-  const refreshBtn = document.getElementById('refreshBtn');
-  const signOutBtn = document.getElementById('signOut');
-  const globalSearchEl = document.getElementById('globalSearch');
-  const clearSearchBtn = document.getElementById('clearSearch');
-
-  // state
-  let currentUser = null;
-  let activeTab = 'tournaments';
-  let searchQuery = '';
-  let depositFilterStatus = 'all'; // new status filter state
-  let withdrawalFilterStatus = 'all';
-
-  // helpers
-  const escapeHtml = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const debounce = (fn,ms)=>{let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
-  function fmtDate(t){ try{ if(!t) return '—'; if(t.toDate) return t.toDate().toLocaleString(); if(t.seconds) return new Date(t.seconds*1000).toLocaleString(); return new Date(t).toLocaleString(); }catch(e){return '—';} }
-  function tsToMs(t){ if(!t) return 0; if(t.toMillis) return t.toMillis(); if(t.seconds) return t.seconds*1000; if(typeof t==='string' || typeof t==='number') return new Date(t).getTime(); return 0; }
-
-  // auth + admin gate
-  auth.onAuthStateChanged(async u=>{
-    if(!u) return location.href='login.html';
-    currentUser = u;
-    try {
-      const doc = await db.collection('users').doc(u.uid).get();
-      const isAdmin = doc.exists && doc.data().role === 'admin';
-      if(!isAdmin){ alert('Access denied'); await auth.signOut(); return location.href='login.html'; }
-      adminBadge.textContent = `Admin: ${u.email}`;
-      adminBadge.style.color = '#10b981';
-      bindTopControls();
-      renderActiveTab();
-    } catch(e){ console.error(e); adminBadge.textContent='Error'; }
-  });
-
-  // top controls + event delegation
-  function bindTopControls(){
-    tabs.forEach(t=> t.addEventListener('click', ()=>{ tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active'); activeTab = t.dataset.tab; renderActiveTab(); }));
-    refreshBtn.onclick = () => renderActiveTab();
-    signOutBtn.onclick = () => auth.signOut().then(()=>location.href='login.html');
-    clearSearchBtn.onclick = () => { globalSearchEl.value=''; searchQuery=''; renderActiveTab(); };
-    globalSearchEl.oninput = debounce((e)=>{ searchQuery = (e.target.value||'').trim().toLowerCase(); renderActiveTab(); }, 300);
-
-    // event delegation for many small actions
-    document.addEventListener('click', async ev=>{
-      const btn = ev.target.closest('button');
-      if(!btn) return;
-      const action = btn.dataset.action;
-      const col = btn.dataset.col;
-      const id = btn.dataset.id;
-      const inc = btn.dataset.inc;
-      const dec = btn.dataset.dec;
-      const del = btn.dataset.del;
-      const load = btn.dataset.load;
-      const prom = btn.dataset.prom;
-      const dem = btn.dataset.dem;
-      const createType = btn.dataset.create;
-      const updateBracketId = btn.dataset.updateBracket;
-      // status update (approve/reject)
-      if(action && col && id){
-        ev.preventDefault(); btn.disabled=true;
-        try {
-          await db.collection(col).doc(id).update({ status: action==='approve' ? 'approved' : 'rejected', updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-          renderActiveTab();
-        } catch(e){ alert('Update failed: '+(e.message||e)); console.error(e); } finally { btn.disabled=false; }
-        return;
-      }
-      // increment participants
-      if(inc){
-        ev.preventDefault(); btn.disabled=true;
-        try {
-          await db.runTransaction(async tx=>{
-            const ref = db.collection('tournaments').doc(inc);
-            const s = await tx.get(ref);
-            if(!s.exists) throw new Error('Not found');
-            const d=s.data(); const cur = Number(d.participants||d.part||0); const max = Number(d.maxParticipants||d.max||0);
-            if(max > 0 && cur>=max) throw new Error('At max participants');
-            tx.update(ref, { participants: cur+1, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-          });
-          renderActiveTab();
-        } catch(e){ alert(e.message||'Error'); } finally { btn.disabled=false; }
-        return;
-      }
-      // decrement participants
-      if(dec){
-        ev.preventDefault(); btn.disabled=true;
-        try {
-          await db.runTransaction(async tx=>{
-            const ref = db.collection('tournaments').doc(dec);
-            const s = await tx.get(ref);
-            if(!s.exists) throw new Error('Not found');
-            const d=s.data(); const cur = Number(d.participants||d.part||0);
-            if(cur<=0) throw new Error('Already zero');
-            tx.update(ref, { participants: cur-1, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-          });
-          renderActiveTab();
-        } catch(e){ alert(e.message||'Error'); } finally { btn.disabled=false; }
-        return;
-      }
-      // delete
-      if(del){
-        ev.preventDefault();
-        if(!confirm('Delete item?')) return;
-        btn.disabled=true;
-        try { const colDel = btn.dataset.colDel || btn.dataset.col || 'tournaments'; await db.collection(colDel).doc(del).delete(); renderActiveTab(); } catch(e){ alert('Delete failed'); } finally { btn.disabled=false; }
-        return;
-      }
-      // load tournament into form
-      if(load){
-        ev.preventDefault(); btn.disabled=true;
-        try {
-          const doc = await db.collection('tournaments').doc(load).get();
-          if(!doc.exists) throw new Error('Not found');
-          const d = doc.data();
-          document.getElementById('t-id').value = load;
-          document.getElementById('t-title').value = d.title||'';
-          document.getElementById('t-date').value = d.date||'';
-          document.getElementById('t-game').value = d.game||'Other';
-          document.getElementById('t-type').value = d.type||'SOLO';
-          document.getElementById('t-bracket').value = d.bracket||'SINGLE_ELIM';
-          document.getElementById('t-entry').value = d.entry||0;
-          document.getElementById('t-host').value = d.host||'';
-          document.getElementById('t-max').value = d.maxParticipants||d.max||1;
-          document.getElementById('t-part').value = d.participants||d.part||0;
-          document.getElementById('t-desc').value = d.description||'';
-          window.scrollTo({top:0,behavior:'smooth'});
-        } catch(e){ alert(e.message||'Load failed'); } finally { btn.disabled=false; }
-        return;
-      }
-      // promote/demote user
-      if(prom){ ev.preventDefault(); btn.disabled=true; try{ await db.collection('users').doc(prom).update({ role:'admin' }); renderActiveTab(); } catch(e){ alert('Failed'); } finally { btn.disabled=false; } return; }
-      if(dem){ ev.preventDefault(); btn.disabled=true; try{ await db.collection('users').doc(dem).update({ role:'user' }); renderActiveTab(); } catch(e){ alert('Failed'); } finally { btn.disabled=false; } return; }
-      // quick create deposit/withdraw
-      if(createType){
-        ev.preventDefault(); btn.disabled=true;
-        try {
-          if(createType==='deposit'){
-            const email = document.getElementById('dep-create-email').value.trim(); if(!email) throw new Error('Enter email');
-            const amount = Number(prompt('Amount (₹)', '100'))||0;
-            await db.collection('deposits').add({ email, amount, utr:null, status:'approved', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            alert('Deposit created and approved');
-          } else if(createType==='withdraw'){
-            const email = document.getElementById('wit-create-email').value.trim(); if(!email) throw new Error('Enter email');
-            const amount = Number(prompt('Amount (₹)','100'))||0; const details = prompt('Details','')||'';
-            await db.collection('withdrawals').add({ email, amount, details, status:'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            alert('Withdrawal created (pending)');
-          }
-          renderActiveTab();
-        } catch(e){ alert(e.message||'Failed'); } finally { btn.disabled=false; }
-        return;
-      }
-
-      // update bracket inline: button has data-update-bracket="<id>"
-      if(updateBracketId){
-        ev.preventDefault();
-        const tid = updateBracketId;
-        const sel = document.querySelector(`select[data-bracket-select="${tid}"]`);
-        if(!sel) { alert('Select not found'); return; }
-        const newBracket = sel.value;
-        btn.disabled = true;
-        try {
-          await db.collection('tournaments').doc(tid).update({ bracket: newBracket, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-          // success — UI will update via snapshot on tournaments page
-          renderActiveTab();
-        } catch(e){ alert('Failed to update bracket'); console.error(e); } finally { btn.disabled=false; }
-        return;
-      }
-
-    }); // end document click
-  } // end bindTopControls
-
-  // router
-  function renderActiveTab(){ if(activeTab==='tournaments') renderTournamentsAdmin(); else if(activeTab==='users') renderUsersAdmin(); else if(activeTab==='deposits') renderDepositsAdmin(); else if(activeTab==='withdrawals') renderWithdrawalsAdmin(); else renderSettings(); }
-
-  // tournaments admin
-  async function renderTournamentsAdmin(){
-    content.innerHTML = `
-      <div class="card">
-        <h2>Create / Edit Tournament</h2>
-        <input id="t-id" type="hidden" />
-        <div class="row"><div class="col lg"><label class="muted">Title</label><input id="t-title" placeholder="Tournament title" /></div><div class="col"><label class="muted">Date</label><input id="t-date" type="date" /></div><div class="col"><label class="muted">Game</label><select id="t-game"><option>BGMI</option><option>Free Fire</option><option>Valorant</option><option>PUBG</option><option>Other</option></select></div></div>
-        <div class="row"><div class="col"><label class="muted">Type</label><select id="t-type"><option value="SOLO">Solo</option><option value="TEAM">Team</option></select></div><div class="col"><label class="muted">Bracket</label><select id="t-bracket"><option value="SINGLE_ELIM">Single Elimination</option><option value="DOUBLE_ELIM">Double Elimination</option></select></div><div class="col"><label class="muted">Entry fee (₹)</label><input id="t-entry" type="number" min="0" value="0" /></div></div>
-        <div class="row"><div class="col"><label class="muted">Host</label><input id="t-host" /></div><div class="col"><label class="muted">Max participants</label><input id="t-max" type="number" min="1" value="64" /></div><div class="col"><label class="muted">Participants</label><input id="t-part" type="number" min="0" value="0" /></div></div>
-        <div class="row"><div class="col lg"><label class="muted">Description</label><textarea id="t-desc"></textarea></div></div>
-        <div class="row"><button id="t-save">Save</button><button id="t-reset" class="ghost small">Reset</button></div>
-        <div id="t-status" class="muted"></div>
+  <main id="mainContent">
+    <div class="card">
+      <div class="tabs" id="tabsBar">
+        <button class="tab active" data-tab="tournaments">
+          <span class="tab-icon">🏆</span>
+          <span class="tab-text">Tournaments</span>
+        </button>
+        <button class="tab" data-tab="users">
+          <span class="tab-icon">👥</span>
+          <span class="tab-text">Users</span>
+        </button>
+        <button class="tab" data-tab="deposits">
+          <span class="tab-icon">💰</span>
+          <span class="tab-text">Deposits</span>
+        </button>
+        <button class="tab" data-tab="withdrawals">
+          <span class="tab-icon">🏦</span>
+          <span class="tab-text">Withdrawals</span>
+        </button>
+        <button class="tab" data-tab="settings">
+          <span class="tab-icon">⚙️</span>
+          <span class="tab-text">Settings</span>
+        </button>
       </div>
 
-      <div class="card">
-        <h2>Manage tournaments</h2>
-        <div class="row"><input id="t-search" class="search" placeholder="Search title, game, host" /><select id="t-filter-game"><option value="">All games</option><option>BGMI</option><option>Free Fire</option><option>Valorant</option><option>PUBG</option><option>Other</option></select><button id="t-reload" class="small">Reload</button><button id="t-clear" class="ghost small">Clear</button></div>
-        <div id="t-list-mobile" class="grid cards"></div>
-        <div style="overflow:auto"><table><thead><tr><th>Title</th><th>Game/Type</th><th>Host</th><th>Entry</th><th>Participants</th><th>Date</th><th>Created</th><th>Action</th></tr></thead><tbody id="t-table"></tbody></table></div>
-      </div>
-    `;
-
-    document.getElementById('t-save').onclick = async ()=>{
-      const id = document.getElementById('t-id').value || null;
-      const title = (document.getElementById('t-title').value||'').trim(); if(!title){ document.getElementById('t-status').textContent='Title required'; return; }
-      const data = {
-        title, date: document.getElementById('t-date').value||null, game: document.getElementById('t-game').value||'Other',
-        type: document.getElementById('t-type').value||'SOLO', bracket: document.getElementById('t-bracket').value||'SINGLE_ELIM',
-        entry: Number(document.getElementById('t-entry').value||0), host: (document.getElementById('t-host').value||'').trim(),
-        maxParticipants: Math.max(1, Number(document.getElementById('t-max').value||1)), participants: Math.max(0, Number(document.getElementById('t-part').value||0)),
-        description: (document.getElementById('t-desc').value||'').trim(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      try {
-        if(id){ await db.collection('tournaments').doc(id).update(data); document.getElementById('t-status').textContent='Updated'; }
-        else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('tournaments').add(data); document.getElementById('t-status').textContent='Created'; }
-        renderTournamentsAdmin();
-      } catch(e){ console.error(e); document.getElementById('t-status').textContent='Save failed'; }
-    };
-    document.getElementById('t-reset').onclick = ()=>{ ['t-id','t-title','t-date','t-host','t-entry','t-max','t-part','t-desc'].forEach(id=>{const el=document.getElementById(id); if(el) el.value=(id==='t-part'?'0':'');}); document.getElementById('t-status').textContent=''; };
-    document.getElementById('t-reload').onclick = renderTournamentsAdmin;
-    document.getElementById('t-clear').onclick = ()=>{ document.getElementById('t-search').value=''; document.getElementById('t-filter-game').value=''; renderTournamentsAdmin(); };
-    document.getElementById('t-search').oninput = debounce(()=>renderTournamentsAdmin(),300);
-
-    try {
-      const snap = await db.collection('tournaments').orderBy('createdAt','desc').get();
-      const items = []; snap.forEach(d=>items.push({id:d.id, ...d.data()}));
-      const search = (document.getElementById('t-search').value||'').trim().toLowerCase(); const gameFilter = document.getElementById('t-filter-game').value;
-      const filtered = items.filter(t=> { if(gameFilter && t.game!==gameFilter) return false; if(!search) return true; const blob = `${t.title||''} ${t.game||''} ${t.host||''}`.toLowerCase(); return blob.includes(search); });
-
-      // MOBILE CARDS WITH INLINE BRACKET SELECT + SAVE
-      document.getElementById('t-list-mobile').innerHTML = filtered.length ? filtered.map(t=>`
-        <div class="card-small card">
-          <div style="display:flex;justify-content:space-between;align-items:center"><strong>${escapeHtml(t.title)}</strong><span>${t.date||'—'}</span></div>
-          <div class="muted">${t.game} • ${t.type} • ${t.bracket}</div>
-          <div class="muted">Host: ${escapeHtml(t.host||'—')} • Entry: ₹${Number(t.entry||0)}</div>
-          <div class="muted">Participants: ${Number(t.participants||t.part||0)} / ${Number(t.maxParticipants||t.max||0)}</div>
-          <div style="margin-top:8px" class="action-row">
-            <select class="inline-select" data-bracket-select="${t.id}">
-              <option value="SINGLE_ELIM"${t.bracket==='SINGLE_ELIM'?' selected':''}>Single Elimination</option>
-              <option value="DOUBLE_ELIM"${t.bracket==='DOUBLE_ELIM'?' selected':''}>Double Elimination</option>
-            </select>
-            <button class="small ok" data-update-bracket="${t.id}">Save Bracket</button>
-            <button class="ok small" data-inc="${t.id}">+1</button>
-            <button class="ghost small" data-dec="${t.id}">-1</button>
-            <button class="ghost small" data-load="${t.id}">Load</button>
-            <button class="danger small" data-del="${t.id}" data-col-del="tournaments">Delete</button>
-          </div>
+      <div class="row" style="margin-top:16px">
+        <div class="search-container">
+          <input id="globalSearch" placeholder="Search across all data..." />
+          <span class="search-icon">🔍</span>
         </div>
-      `).join('') : '<div class="no-data">No tournaments</div>';
-
-      // TABLE VIEW: add bracket select + save
-      const tbody = document.getElementById('t-table');
-      tbody.innerHTML = filtered.length ? filtered.map(t=>`<tr>
-          <td>${escapeHtml(t.title)}</td>
-          <td>${escapeHtml(t.game)}<div class="muted">${escapeHtml(t.type)} • ${escapeHtml(t.bracket)}</div></td>
-          <td>${escapeHtml(t.host||'—')}</td>
-          <td>₹${Number(t.entry||0)}</td>
-          <td>${Number(t.participants||t.part||0)} / ${Number(t.maxParticipants||t.max||0)}</td>
-          <td>${t.date||'—'}</td>
-          <td>${fmtDate(t.createdAt)}</td>
-          <td class="action-row">
-            <select class="inline-select" data-bracket-select="${t.id}">
-              <option value="SINGLE_ELIM"${t.bracket==='SINGLE_ELIM'?' selected':''}>Single Elimination</option>
-              <option value="DOUBLE_ELIM"${t.bracket==='DOUBLE_ELIM'?' selected':''}>Double Elimination</option>
-            </select>
-            <button class="small ok" data-update-bracket="${t.id}">Save Bracket</button>
-            <button class="ok small" data-inc="${t.id}">+1</button>
-            <button class="ghost small" data-dec="${t.id}">-1</button>
-            <button class="ghost small" data-load="${t.id}">Load</button>
-            <button class="danger small" data-del="${t.id}" data-col-del="tournaments">Delete</button>
-          </td>
-        </tr>`).join('') : '<tr><td colspan="8" class="no-data">No tournaments</td></tr>';
-    } catch(e){ console.error(e); document.getElementById('t-list-mobile').innerHTML='<div class="no-data">Error loading tournaments</div>'; document.getElementById('t-table').innerHTML = '<tr><td colspan="8" class="no-data">Error</td></tr>'; }
-  }
-
-  // users admin
-  async function renderUsersAdmin(){
-    content.innerHTML = `<div class="card"><h2>Users</h2><div class="row"><input id="u-search" class="search" placeholder="Search email or UID" /><button id="u-reload" class="small">Reload</button></div><div id="users-list" style="margin-top:12px"></div><div style="overflow:auto"><table><thead><tr><th>Email</th><th>Role</th><th>UID</th><th>Action</th></tr></thead><tbody id="users-table"></tbody></table></div></div>`;
-    document.getElementById('u-reload').onclick = renderUsersAdmin;
-    document.getElementById('u-search').oninput = debounce(()=>renderUsersAdmin(),300);
-    try {
-      const snap = await db.collection('users').get(); const items=[]; snap.forEach(d=>items.push({uid:d.id, ...d.data()}));
-      const q=(document.getElementById('u-search').value||'').trim().toLowerCase();
-      const filtered = items.filter(u=> !q || (`${u.email||''} ${u.uid||''} ${u.role||''}`).toLowerCase().includes(q));
-      document.getElementById('users-list').innerHTML = filtered.length ? filtered.map(u=>`<div class="card-small"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(u.email)}</strong><div class="muted">${escapeHtml(u.role||'user')}</div></div><div class="muted">UID: ${u.uid}</div><div style="margin-top:8px" class="action-row"><button class="ghost small" data-prom="${u.uid}">Promote</button><button class="danger small" data-dem="${u.uid}">Demote</button></div></div>`).join('') : '<div class="no-data">No users</div>';
-      const tbody = document.getElementById('users-table'); tbody.innerHTML = filtered.length ? filtered.map(u=>`<tr><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.role||'user')}</td><td>${u.uid}</td><td class="action-row"><button class="ghost small" data-prom="${u.uid}">Promote</button><button class="danger small" data-dem="${u.uid}">Demote</button></td></tr>`).join('') : '<tr><td colspan="4" class="no-data">No users</td></tr>';
-    } catch(e){ console.error(e); document.getElementById('users-list').innerHTML='<div class="no-data">Error loading users</div>'; document.getElementById('users-table').innerHTML='<tr><td colspan="4" class="no-data">Error</td></tr>'; }
-  }
-
-  // deposits admin (with status tabs)
-  async function renderDepositsAdmin(){
-    activeTab='deposits';
-    content.innerHTML = `<div class="card"><h2>Deposits</h2>
-      <div class="status-tabs" id="depStatusTabs">
-        <div class="status-tab${depositFilterStatus==='all'?' active':''}" data-status="all">All</div>
-        <div class="status-tab${depositFilterStatus==='pending'?' active':''}" data-status="pending">Pending</div>
-        <div class="status-tab${depositFilterStatus==='approved'?' active':''}" data-status="approved">Complete</div>
-        <div class="status-tab${depositFilterStatus==='rejected'?' active':''}" data-status="rejected">Rejected</div>
+        <button id="clearSearch" class="ghost small">
+          <span class="btn-icon">🗑️</span>
+          Clear
+        </button>
+        <button id="refreshBtn" class="small">
+          <span class="btn-icon">🔄</span>
+          Refresh
+        </button>
+        <button id="signOut" class="ghost small">
+          <span class="btn-icon">🚪</span>
+          Sign out
+        </button>
       </div>
+    </div>
 
-      <div class="row" style="margin-top:10px"><div class="col"><label class="muted">Quick create deposit (admin)</label><input id="dep-create-email" placeholder="user email" /></div><div class="col"><label class="muted">&nbsp;</label><button data-create="deposit" class="ghost small">Create (approve)</button></div></div>
+    <div id="content"></div>
+    <div id="globalStatus" class="muted"></div>
+  </main>
 
-      <div id="dep-list-mobile" class="grid cards"></div>
-      <div style="overflow:auto"><table><thead><tr><th>Email</th><th>Amount</th><th>Status</th><th>UTR</th><th>Created</th><th>Action</th></tr></thead><tbody id="dep-table"></tbody></table></div>
-      </div>`;
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 
-    // wire up status tabs click
-    document.querySelectorAll('#depStatusTabs .status-tab').forEach(el=>{
-      el.addEventListener('click', ()=>{ depositFilterStatus = el.dataset.status; renderDepositsAdmin(); });
-    });
-
-    try {
-      const filter = depositFilterStatus;
-      let items=[];
-      if(filter==='all'){ const snap = await db.collection('deposits').orderBy('createdAt','desc').get(); snap.forEach(d=>items.push({id:d.id,...d.data()})); }
-      else { const qsnap = await db.collection('deposits').where('status','==',filter).get(); qsnap.forEach(d=>items.push({id:d.id,...d.data()})); items.sort((a,b)=>tsToMs(b.createdAt)-tsToMs(a.createdAt)); }
-      const filtered = items.filter(i=> !searchQuery || (`${i.email||''} ${i.utr||''} ${i.status||''} ${i.amount||''}`).toLowerCase().includes(searchQuery));
-      document.getElementById('dep-list-mobile').innerHTML = filtered.length ? filtered.map(d=>`<div class="card-small card"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(d.email)}</strong><div>₹${Number(d.amount||0)}</div></div><div class="muted">Status: ${escapeHtml(d.status||'pending')} • UTR: ${escapeHtml(d.utr||'—')}</div><div class="muted">Created: ${fmtDate(d.createdAt) || (d.createdAtClient||'—')}</div><div style="margin-top:8px" class="action-row"><button class="ok small" data-action="approve" data-id="${d.id}" data-col="deposits">Approve</button><button class="danger small" data-action="reject" data-id="${d.id}" data-col="deposits">Reject</button></div></div>`).join('') : '<div class="no-data">No deposits</div>';
-      const tbody = document.getElementById('dep-table'); tbody.innerHTML = filtered.length ? filtered.map(d=>`<tr><td>${escapeHtml(d.email)}</td><td>₹${Number(d.amount||0)}</td><td>${escapeHtml(d.status||'pending')}</td><td>${escapeHtml(d.utr||'—')}</td><td>${fmtDate(d.createdAt) || (d.createdAtClient||'—')}</td><td class="action-row"><button class="ok small" data-action="approve" data-id="${d.id}" data-col="deposits">Approve</button><button class="danger small" data-action="reject" data-id="${d.id}" data-col="deposits">Reject</button></td></tr>`).join('') : '<tr><td colspan="6" class="no-data">No deposits</td></tr>';
-    } catch(e){ console.error(e); document.getElementById('dep-list-mobile').innerHTML='<div class="no-data">Error loading deposits</div>'; document.getElementById('dep-table').innerHTML='<tr><td colspan="6" class="no-data">Error</td></tr>'; }
-  }
-
-  // withdrawals admin (with status tabs)
-  async function renderWithdrawalsAdmin(){
-    activeTab='withdrawals';
-    content.innerHTML = `<div class="card"><h2>Withdrawals</h2>
-      <div class="status-tabs" id="witStatusTabs">
-        <div class="status-tab${withdrawalFilterStatus==='all'?' active':''}" data-status="all">All</div>
-        <div class="status-tab${withdrawalFilterStatus==='pending'?' active':''}" data-status="pending">Pending</div>
-        <div class="status-tab${withdrawalFilterStatus==='approved'?' active':''}" data-status="approved">Complete</div>
-        <div class="status-tab${withdrawalFilterStatus==='rejected'?' active':''}" data-status="rejected">Rejected</div>
-      </div>
-
-      <div class="row" style="margin-top:10px"><div class="col"><label class="muted">Quick create withdrawal (admin)</label><input id="wit-create-email" placeholder="user email" /></div><div class="col"><label class="muted">&nbsp;</label><button data-create="withdraw" class="ghost small">Create (pending)</button></div></div>
-
-      <div id="wit-list-mobile" class="grid cards"></div>
-      <div style="overflow:auto"><table><thead><tr><th>Email</th><th>Amount</th><th>Status</th><th>Details</th><th>Created</th><th>Action</th></tr></thead><tbody id="wit-table"></tbody></table></div>
-      </div>`;
-
-    // wire up status tabs click
-    document.querySelectorAll('#witStatusTabs .status-tab').forEach(el=>{
-      el.addEventListener('click', ()=>{ withdrawalFilterStatus = el.dataset.status; renderWithdrawalsAdmin(); });
-    });
-
-    try {
-      const filter = withdrawalFilterStatus;
-      let items=[];
-      if(filter==='all'){ const snap = await db.collection('withdrawals').orderBy('createdAt','desc').get(); snap.forEach(d=>items.push({id:d.id,...d.data()})); }
-      else { const qsnap = await db.collection('withdrawals').where('status','==',filter).get(); qsnap.forEach(d=>items.push({id:d.id,...d.data()})); items.sort((a,b)=>tsToMs(b.createdAt)-tsToMs(a.createdAt)); }
-      const filtered = items.filter(i=> !searchQuery || (`${i.email||''} ${i.details||''} ${i.status||''} ${i.amount||''}`).toLowerCase().includes(searchQuery));
-      document.getElementById('wit-list-mobile').innerHTML = filtered.length ? filtered.map(w=>`<div class="card-small card"><div style="display:flex;justify-content:space-between"><strong>${escapeHtml(w.email)}</strong><div>₹${Number(w.amount||0)}</div></div><div class="muted">Status: ${escapeHtml(w.status||'pending')} • ${escapeHtml(w.details||'—')}</div><div class="muted">Created: ${fmtDate(w.createdAt) || (w.createdAtClient||'—')}</div><div style="margin-top:8px" class="action-row"><button class="ok small" data-action="approve" data-id="${w.id}" data-col="withdrawals">Approve</button><button class="danger small" data-action="reject" data-id="${w.id}" data-col="withdrawals">Reject</button></div></div>`).join('') : '<div class="no-data">No withdrawals</div>';
-      const tbody = document.getElementById('wit-table'); tbody.innerHTML = filtered.length ? filtered.map(w=>`<tr><td>${escapeHtml(w.email)}</td><td>₹${Number(w.amount||0)}</td><td>${escapeHtml(w.status||'pending')}</td><td>${escapeHtml(w.details||'—')}</td><td>${fmtDate(w.createdAt) || (w.createdAtClient||'—')}</td><td class="action-row"><button class="ok small" data-action="approve" data-id="${w.id}" data-col="withdrawals">Approve</button><button class="danger small" data-action="reject" data-id="${w.id}" data-col="withdrawals">Reject</button></td></tr>`).join('') : '<tr><td colspan="6" class="no-data">No withdrawals</td></tr>';
-    } catch(e){ console.error(e); document.getElementById('wit-list-mobile').innerHTML='<div class="no-data">Error loading withdrawals</div>'; document.getElementById('wit-table').innerHTML='<tr><td colspan="6" class="no-data">Error</td></tr>'; }
-  }
-
-  // settings
-  function renderSettings(){ content.innerHTML = `<div class="card"><h2>Settings</h2><div class="muted">Administrative helpers</div><div class="row"><div class="col"><button id="openIndexes" class="ghost small">Open Firestore Indexes</button></div></div></div>`; document.getElementById('openIndexes').onclick = ()=> alert('Open Firebase Console → Firestore → Indexes to create composite indexes if needed.'); }
-
-  // initialize route (optional)
-  (function initRoute(){ const hash = location.hash.replace('#',''); if(hash && document.querySelector(`[data-tab="${hash}"]`)){ activeTab = hash; tabs.forEach(x=>x.classList.remove('active')); document.querySelector(`[data-tab="${hash}"]`).classList.add('active'); } })();
-
- db.collection("tournaments").get().then(snapshot => {
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.game}</td>
-          <td>${data.player1}</td>
-          <td>${data.player2}</td>
-          <td><input type="number" value="${data.bracket || 0}" min="0" id="score-${doc.id}"></td>
-          <td><button class="save-btn" onclick="saveScore('${doc.id}')">Save</button></td>
-        `;
-        tableBody.appendChild(row);
-      });
-    });
-
-    function saveScore(id) {
-      const score = document.getElementById(`score-${id}`).value;
-      db.collection("tournaments").doc(id).update({ bracket: parseInt(score) })
-        .then(() => alert("Score updated successfully!"))
-        .catch(err => alert("Error: " + err));
-    }
-  </script>
+  <!-- Admin JS -->
+  <script src="admin.js"></script>
 </body>
 </html>

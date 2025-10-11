@@ -4,96 +4,151 @@
   <meta charset="UTF-8" />
   <title>Login — TourneyHub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="sty.css" />
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <span class="logo-icon">🏆</span>
+        <span class="logo-text">TourneyHub</span>
+      </div>
+      <div class="loading-spinner"></div>
+      <div class="loading-subtitle">Preparing Login...</div>
+    </div>
+  </div>
 
-  <!-- Firebase SDKs (compat version) -->
+  <!-- Background Elements -->
+  <div class="background-animation">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="login-container" id="mainContent">
+    <div class="login-card">
+      <!-- Header Section -->
+      <div class="login-header">
+        <div class="logo">
+          <span class="logo-icon">🏆</span>
+          <span class="logo-text">TourneyHub</span>
+        </div>
+        <h1 class="login-title">Welcome Back, Champion!</h1>
+        <p class="login-subtitle">Sign in to continue your competitive journey</p>
+      </div>
+
+      <!-- Login Form -->
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-icon">📧</span>
+            Email Address
+          </label>
+          <div class="input-container">
+            <input 
+              id="login-email" 
+              type="email" 
+              class="form-input" 
+              placeholder="Enter your email" 
+              required
+            />
+            <span class="input-icon">@</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-icon">🔒</span>
+            Password
+          </label>
+          <div class="input-container">
+            <input 
+              id="login-password" 
+              type="password" 
+              class="form-input" 
+              placeholder="Enter your password" 
+              required
+            />
+            <span class="input-icon">••••</span>
+            <button type="button" class="password-toggle" id="passwordToggle">
+              <span class="toggle-icon">👁️</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-container">
+            <input type="checkbox" id="rememberMe" />
+            <span class="checkmark"></span>
+            Remember me
+          </label>
+          <a href="#" class="forgot-link" id="forgotPassword">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-login" id="loginBtn">
+          <span class="btn-icon">🎮</span>
+          <span class="btn-text">Login to Arena</span>
+          <div class="btn-spinner" id="loginSpinner"></div>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>or continue with</span>
+      </div>
+
+      <!-- Social Login (Placeholder) -->
+      <div class="social-login">
+        <button type="button" class="btn btn-social btn-google" disabled>
+          <span class="social-icon">🔍</span>
+          Google (Coming Soon)
+        </button>
+        <button type="button" class="btn btn-social btn-discord" disabled>
+          <span class="social-icon">💬</span>
+          Discord (Coming Soon)
+        </button>
+      </div>
+
+      <!-- Signup Link -->
+      <div class="signup-section">
+        <p>New to the arena? <a href="signup.html" class="signup-link">Create your account</a></p>
+      </div>
+
+      <!-- Features Preview -->
+      <div class="features-preview">
+        <div class="feature-item">
+          <span class="feature-icon">⚔️</span>
+          <span class="feature-text">Compete in Tournaments</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">💰</span>
+          <span class="feature-text">Win Cash Prizes</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🏆</span>
+          <span class="feature-text">Build Your Legacy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="notification-toast" id="notificationToast">
+      <div class="toast-content">
+        <span class="toast-icon" id="toastIcon">⚠️</span>
+        <span class="toast-message" id="toastMessage"></span>
+      </div>
+      <button class="toast-close" id="toastClose">×</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-      authDomain: "authapp-386ee.firebaseapp.com",
-      projectId: "authapp-386ee",
-      storageBucket: "authapp-386ee.firebasestorage.app",
-      messagingSenderId: "809698525310",
-      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-      measurementId: "G-EJZTSBSGQT"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-</head>
-<body class="auth-body">
-  <main class="auth-card">
-    <h1>Welcome back</h1>
-    <p class="muted">Sign in to your account and join the action.</p>
-
-    <label class="input">
-      <span>Email</span>
-      <input id="login-email" type="email" placeholder="you@example.com" />
-    </label>
-    <label class="input">
-      <span>Password</span>
-      <input id="login-password" type="password" placeholder="••••••••" />
-    </label>
-    <button id="login-btn" class="btn btn-primary">Login</button>
-
-    <p class="tiny muted">
-      <a href="#" id="forgot-password" class="link">Forgot password?</a>
-    </p>
-
-    <p class="tiny muted">
-      Don't have an account? <a href="signup.html" class="link">Create one</a>
-    </p>
-  </main>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const auth = firebase.auth();
-
-      // Auto redirect if already logged in
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          window.location.href = "dashboard.html";
-        }
-      });
-
-      // Login logic
-      document.getElementById("login-btn").addEventListener("click", async () => {
-        const email = document.getElementById("login-email").value.trim();
-        const password = document.getElementById("login-password").value.trim();
-
-        if (!email || !password) {
-          alert("Please enter both email and password.");
-          return;
-        }
-
-        try {
-          const userCredential = await auth.signInWithEmailAndPassword(email, password);
-          alert("Login successful: " + userCredential.user.email);
-          window.location.href = "dashboard.html";
-        } catch (error) {
-          alert("Login failed: " + error.message);
-        }
-      });
-
-      // Forgot password
-      document.getElementById("forgot-password").addEventListener("click", async () => {
-        const email = document.getElementById("login-email").value.trim();
-        if (!email) {
-          alert("Please enter your email to reset password.");
-          return;
-        }
-
-        try {
-          await auth.sendPasswordResetEmail(email);
-          alert("Password reset email sent to " + email);
-        } catch (error) {
-          alert("Error: " + error.message);
-        }
-      });
-    });
-  </script>
+  <!-- Login JS -->
+  <script src="login.js"></script>
 </body>
 </html>

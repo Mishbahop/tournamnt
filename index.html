@@ -2,12 +2,1220 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TourneyHub — Play, Compete, Win</title>
-  <link rel="stylesheet" href="index.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TourneyHub — Premium Gaming Platform</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+     /* Basic Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: white;
+      padding-bottom: 80px;
+    }
+
+    /* Professional Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(30, 30, 46, 0.95);
+      backdrop-filter: blur(20px);
+      display: flex;
+      justify-content: space-around;
+      padding: 15px 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 10px;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: #b8b8d0;
+      min-width: 70px;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #6c63ff, #a363ff);
+      color: white;
+      transform: translateY(-5px);
+    }
+
+    .nav-icon {
+      font-size: 1.4rem;
+    }
+
+    .nav-text {
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    /* Header */
+    .main-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(15, 15, 26, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #6c63ff;
+    }
+
+    .header-nav {
+      display: none;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+      padding: 80px 20px 40px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin: 20px 0;
+      background: linear-gradient(135deg, #fff, #6c63ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Basic Responsive */
+    @media (min-width: 768px) {
+      .header-nav {
+        display: flex;
+        gap: 20px;
+      }
+      
+      .header-nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: background 0.3s ease;
+      }
+      
+      .header-nav a:hover {
+        background: rgba(108, 99, 255, 0.1);
+      }
+      
+      .bottom-nav {
+        display: none;
+      }
+      
+      body {
+        padding-bottom: 0;
+      }
+    }
+    /* Ultra-Modern Mobile Gaming Design */
+    :root {
+      --neon-primary: #6c63ff;
+      --neon-secondary: #ff6b6b;
+      --neon-accent: #4ecdc4;
+      --neon-purple: #a363ff;
+      --dark-bg: #0f0f1a;
+      --darker-bg: #080811;
+      --card-bg: rgba(30, 30, 46, 0.8);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --text-primary: #ffffff;
+      --text-secondary: #b8b8d0;
+      --success: #00ff88;
+      --warning: #ffcc00;
+      
+      --gradient-neon: linear-gradient(135deg, var(--neon-primary), var(--neon-purple));
+      --gradient-fire: linear-gradient(135deg, var(--neon-secondary), #ff8e00);
+      --gradient-ocean: linear-gradient(135deg, var(--neon-accent), #00a8ff);
+      --gradient-dark: linear-gradient(135deg, #1a1a2e, #16213e);
+      
+      --shadow-glow: 0 0 20px rgba(108, 99, 255, 0.4);
+      --shadow-glow-red: 0 0 20px rgba(255, 107, 107, 0.4);
+      --shadow-glow-green: 0 0 20px rgba(0, 255, 136, 0.4);
+      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+      
+      --border-radius: 20px;
+      --border-radius-sm: 12px;
+      --border-radius-lg: 30px;
+    }
+
+    /* Reset & Base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 90px;
+    }
+
+    /* Enhanced Loading Screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--darker-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    .loading-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+      font-size: 2.5rem;
+      font-weight: 800;
+    }
+
+    .logo-icon {
+      font-size: 3rem;
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 10px rgba(108, 99, 255, 0.5));
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid var(--neon-primary);
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 15px rgba(108, 99, 255, 0.3);
+    }
+
+    .loading-subtitle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Professional Header */
+    .main-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(15, 15, 26, 0.95);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      padding: 15px 0;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .main-header.scrolled {
+      background: rgba(15, 15, 26, 0.98);
+      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+      padding: 10px 0;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.6rem;
+      font-weight: 800;
+      position: relative;
+    }
+
+    .logo-icon {
+      font-size: 2rem;
+    }
+
+    .logo-text {
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Professional Desktop Navigation */
+    .header-nav {
+      display: none;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-neon);
+      transition: left 0.4s ease;
+      z-index: -1;
+      border-radius: 50px;
+    }
+
+    .nav-link:hover {
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .nav-link:hover::before {
+      left: 0;
+    }
+
+    .nav-link.active {
+      background: var(--gradient-neon);
+      color: white;
+      box-shadow: var(--shadow-glow);
+    }
+
+    /* Professional Mobile Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(20, 20, 35, 0.98);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      justify-content: space-around;
+      padding: 15px 10px;
+      z-index: 1000;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 16px;
+      border-radius: 20px;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      overflow: hidden;
+      min-width: 70px;
+    }
+
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-neon);
+      transition: left 0.4s ease;
+      z-index: -1;
+      border-radius: 20px;
+    }
+
+    .nav-item.active::before {
+      left: 0;
+    }
+
+    .nav-item.active {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .nav-icon {
+      font-size: 1.6rem;
+      transition: all 0.3s ease;
+      z-index: 1;
+    }
+
+    .nav-item.active .nav-icon {
+      transform: scale(1.2);
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    }
+
+    .nav-text {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      z-index: 1;
+    }
+
+    .nav-item.active .nav-text {
+      color: white;
+      font-weight: 800;
+    }
+
+    /* Premium Hero Section */
+    .hero-section {
+      min-height: 100vh;
+      background: var(--gradient-dark);
+      position: relative;
+      overflow: hidden;
+      padding: 100px 20px 60px;
+      display: flex;
+      align-items: center;
+    }
+
+    .hero-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.6;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100vw;
+      height: 100vw;
+      background: radial-gradient(circle, rgba(108, 99, 255, 0.15) 0%, rgba(108, 99, 255, 0) 70%);
+      border-radius: 50%;
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    .hero-container {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #ffffff 0%, var(--neon-primary) 50%, var(--neon-accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-text {
+      background: var(--gradient-fire);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-description {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 50px;
+    }
+
+    /* Premium Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 18px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      overflow: hidden;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: var(--gradient-neon);
+      color: white;
+      box-shadow: 0 10px 30px rgba(108, 99, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(108, 99, 255, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-icon {
+      font-size: 1.3rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 5px;
+      background: var(--gradient-ocean);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* Professional Trending Tournaments */
+    .trending-section {
+      padding: 80px 20px;
+      background: var(--darker-bg);
+      position: relative;
+    }
+
+    .trending-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-primary), transparent);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .fire-icon {
+      font-size: 2rem;
+      animation: fireBurn 2s ease-in-out infinite;
+    }
+
+    @keyframes fireBurn {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.1) rotate(-5deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .view-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .view-all:hover {
+      background: rgba(255, 255, 255, 0.1);
+      gap: 12px;
+    }
+
+    .arrow {
+      transition: transform 0.3s ease;
+    }
+
+    .view-all:hover .arrow {
+      transform: translateX(5px);
+    }
+
+    /* Professional Tournament Cards */
+    .tournaments-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
+
+    .tournament-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      box-shadow: var(--shadow-card);
+    }
+
+    .tournament-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 107, 107, 0.1) 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 0;
+    }
+
+    .tournament-card:hover {
+      transform: translateY(-10px);
+      border-color: rgba(108, 99, 255, 0.3);
+      box-shadow: var(--shadow-glow), var(--shadow-card);
+    }
+
+    .tournament-card:hover::before {
+      opacity: 1;
+    }
+
+    .tournament-card.featured {
+      border: 2px solid;
+      border-image: var(--gradient-fire) 1;
+      position: relative;
+    }
+
+    .tournament-card.featured::after {
+      content: '🔥 FEATURED';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: var(--gradient-fire);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 20px;
+      z-index: 2;
+      letter-spacing: 1px;
+      box-shadow: var(--shadow-glow-red);
+    }
+
+    .tournament-header {
+      padding: 25px 25px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tournament-game {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .game-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-neon);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+    }
+
+    .game-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .game-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+
+    .game-category {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .tournament-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-live {
+      background: var(--gradient-fire);
+      color: white;
+      animation: pulse 2s infinite;
+      box-shadow: var(--shadow-glow-red);
+    }
+
+    .status-upcoming {
+      background: var(--gradient-ocean);
+      color: white;
+    }
+
+    .status-registering {
+      background: linear-gradient(135deg, var(--success), #00cc77);
+      color: white;
+      box-shadow: var(--shadow-glow-green);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .tournament-body {
+      padding: 0 25px 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tournament-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      line-height: 1.3;
+    }
+
+    .tournament-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .tournament-detail {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .detail-icon {
+      font-size: 1rem;
+      opacity: 0.7;
+    }
+
+    .tournament-prize {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--success);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prize-icon {
+      font-size: 1.3rem;
+    }
+
+    .tournament-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 25px;
+      background: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .tournament-entries {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .entries-icon {
+      font-size: 1rem;
+    }
+
+    .entries-count {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .tournament-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-sm {
+      padding: 10px 18px;
+      font-size: 0.85rem;
+      border-radius: 50px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-register {
+      background: var(--gradient-neon);
+      color: white;
+      box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3);
+    }
+
+    .btn-register:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(108, 99, 255, 0.4);
+    }
+
+    .btn-details {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-details:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Enhanced Features Section */
+    .features-section {
+      padding: 80px 20px;
+      background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+      position: relative;
+    }
+
+    .features-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-accent), transparent);
+    }
+
+    .section-header.center {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border-radius: var(--border-radius);
+      padding: 30px;
+      text-align: center;
+      transition: all 0.4s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(108, 99, 255, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .feature-card:hover::before {
+      left: 100%;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(108, 99, 255, 0.3);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .feature-icon {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      display: inline-block;
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 10px rgba(108, 99, 255, 0.3));
+    }
+
+    .feature-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    /* Premium CTA Section */
+    .cta-section {
+      padding: 100px 20px;
+      background: linear-gradient(135deg, var(--neon-primary) 0%, var(--neon-purple) 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" opacity="0.1"><polygon fill="%23ffffff" points="0,1000 1000,0 1000,1000"/></svg>');
+      background-size: cover;
+    }
+
+    .cta-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-content h2 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .cta-content p {
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+      opacity: 0.9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-large {
+      padding: 20px 35px;
+      font-size: 1.1rem;
+    }
+
+    /* Premium Footer */
+    .main-footer {
+      background: var(--darker-bg);
+      padding: 60px 20px 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-brand .logo {
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+
+    .footer-description {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 300px;
+    }
+
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+
+    .footer-column h4 {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      position: relative;
+      color: var(--neon-accent);
+    }
+
+    .footer-column h4::after {
+      content: '';
+      position: absolute;
+      width: 30px;
+      height: 3px;
+      background: var(--neon-accent);
+      bottom: -8px;
+      left: 0;
+      border-radius: 2px;
+    }
+
+    .footer-column a {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+      transition: all 0.3s ease;
+    }
+
+    .footer-column a:hover {
+      color: var(--neon-primary);
+      padding-left: 5px;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Tablet Styles */
+    @media (min-width: 768px) {
+      .hero-title {
+        font-size: 3.5rem;
+      }
+      
+      .hero-actions, .cta-actions {
+        flex-direction: row;
+      }
+      
+      .tournaments-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .footer-content {
+        grid-template-columns: 1fr 2fr;
+      }
+      
+      .footer-links {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .header-nav {
+        display: flex;
+      }
+    }
+
+    /* Desktop Styles */
+    @media (min-width: 992px) {
+      .tournaments-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .bottom-nav {
+        display: none;
+      }
+      
+      body {
+        padding-bottom: 0;
+      }
+    }
+
+    /* Animation utilities */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--darker-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--gradient-neon);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--neon-purple);
+    }
+  </style>
 </head>
 <body>
-  <!-- Loading Screen -->
+  <!-- Premium Loading Screen -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-content">
       <div class="loading-logo">
@@ -21,7 +1229,7 @@
 
   <!-- Main Content -->
   <div class="main-container" id="mainContent">
-    <!-- Header -->
+    <!-- Professional Header -->
     <header class="main-header">
       <div class="header-container">
         <div class="logo">
@@ -31,12 +1239,12 @@
         <nav class="header-nav">
           <a href="tournaments.html" class="nav-link">Tournaments</a>
           <a href="wallet.html" class="nav-link">Wallet</a>
-          <a href="dashboard.html" class="nav-link">Profile</a>
+          <a href="dashboard.html" class="nav-link active">Profile</a>
         </nav>
       </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Premium Hero Section -->
     <section class="hero-section">
       <div class="hero-background">
         <div class="hero-glow"></div>
@@ -78,88 +1286,194 @@
             </div>
           </div>
         </div>
-        <div class="hero-visual">
-          <div class="floating-card card-1">
-            <div class="card-header">
-              <span class="game-icon">🎯</span>
-              <span class="live-badge">LIVE</span>
-            </div>
-            <div class="card-title">Valorant Showdown</div>
-            <div class="card-prize">₹50,000</div>
-          </div>
-          <div class="floating-card card-2">
-            <div class="card-header">
-              <span class="game-icon">🔥</span>
-              <span class="players">24/32</span>
-            </div>
-            <div class="card-title">Free Fire Clash</div>
-            <div class="card-prize">₹25,000</div>
-          </div>
-          <div class="floating-card card-3">
-            <div class="card-header">
-              <span class="game-icon">🎮</span>
-              <span class="upcoming">SOON</span>
-            </div>
-            <div class="card-title">COD Mobile Cup</div>
-            <div class="card-prize">₹40,000</div>
-          </div>
-        </div>
       </div>
     </section>
 
-    <!-- Trending Tournaments -->
-    <section class="section trending-section">
+    <!-- Professional Trending Tournaments -->
+    <section class="trending-section">
       <div class="container">
         <div class="section-header">
           <h2 class="section-title">
             <span class="fire-icon">🔥</span>
             Trending Tournaments
           </h2>
-          <a href="tournaments.html" class="view-all">
-            View All
-            <span class="arrow">→</span>
-          </a>
         </div>
         <div class="tournaments-grid" id="trendingTournaments">
-          <!-- Dynamic content will be loaded here -->
+          <!-- Tournament 1 -->
+          <div class="tournament-card featured fade-in">
+            <div class="tournament-header">
+              <div class="tournament-game">
+                <div class="game-icon">🎯</div>
+                <div class="game-info">
+                  <div class="game-name">Valorant</div>
+                  <div class="game-category">5v5 Tactical</div>
+                </div>
+              </div>
+              <div class="tournament-status status-live">LIVE</div>
+            </div>
+            <div class="tournament-body">
+              <h3 class="tournament-title">Valorant Champions Showdown</h3>
+              <div class="tournament-details">
+                <div class="tournament-detail">
+                  <span class="detail-icon">📅</span>
+                  <span>2024-03-15</span>
+                </div>
+                <div class="tournament-detail">
+                  <span class="detail-icon">🕒</span>
+                  <span>18:00 IST</span>
+                </div>
+                <div class="tournament-detail">
+                  <span class="detail-icon">⚙️</span>
+                  <span>Single Elimination</span>
+                </div>
+              </div>
+              <div class="tournament-prize">
+                <span class="prize-icon">💰</span>
+                <span>₹50,000</span>
+              </div>
+            </div>
+            <div class="tournament-footer">
+              <div class="tournament-entries">
+                <span class="entries-icon">👥</span>
+                <span class="entries-count">24/32</span>
+                <span>Players</span>
+              </div>
+              <div class="tournament-actions">
+                <button class="btn btn-sm btn-register">Register</button>
+                <button class="btn btn-sm btn-details">Details</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tournament 2 -->
+          <div class="tournament-card fade-in">
+            <div class="tournament-header">
+              <div class="tournament-game">
+                <div class="game-icon">🔥</div>
+                <div class="game-info">
+                  <div class="game-name">Free Fire</div>
+                  <div class="game-category">Battle Royale</div>
+                </div>
+              </div>
+              <div class="tournament-status status-registering">REGISTERING</div>
+            </div>
+            <div class="tournament-body">
+              <h3 class="tournament-title">Free Fire Clash Royale</h3>
+              <div class="tournament-details">
+                <div class="tournament-detail">
+                  <span class="detail-icon">📅</span>
+                  <span>2024-03-18</span>
+                </div>
+                <div class="tournament-detail">
+                  <span class="detail-icon">🕒</span>
+                  <span>20:00 IST</span>
+                </div>
+                <div class="tournament-detail">
+                  <span class="detail-icon">⚙️</span>
+                  <span>Squad Battle</span>
+                </div>
+              </div>
+              <div class="tournament-prize">
+                <span class="prize-icon">💰</span>
+                <span>₹25,000</span>
+              </div>
+            </div>
+            <div class="tournament-footer">
+              <div class="tournament-entries">
+                <span class="entries-icon">👥</span>
+                <span class="entries-count">18/48</span>
+                <span>Players</span>
+              </div>
+              <div class="tournament-actions">
+                <button class="btn btn-sm btn-register">Register</button>
+                <button class="btn btn-sm btn-details">Details</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tournament 3 -->
+          <div class="tournament-card fade-in">
+            <div class="tournament-header">
+              <div class="tournament-game">
+                <div class="game-icon">🎮</div>
+                <div class="game-info">
+                  <div class="game-name">COD Mobile</div>
+                  <div class="game-category">FPS</div>
+                </div>
+              </div>
+              <div class="tournament-status status-upcoming">UPCOMING</div>
+            </div>
+            <div class="tournament-body">
+              <h3 class="tournament-title">COD Mobile Masters Cup</h3>
+              <div class="tournament-details">
+                <div class="tournament-detail">
+                  <span class="detail-icon">📅</span>
+                  <span>2024-03-20</span>
+                </div>
+                <div class="tournament-detail">
+                  <span class="detail-icon">🕒</span>
+                  <span>17:00 IST</span>
+                </div>
+                <div class="tournament-detail">
+                  <span class="detail-icon">⚙️</span>
+                  <span>Team Deathmatch</span>
+                </div>
+              </div>
+              <div class="tournament-prize">
+                <span class="prize-icon">💰</span>
+                <span>₹40,000</span>
+              </div>
+            </div>
+            <div class="tournament-footer">
+              <div class="tournament-entries">
+                <span class="entries-icon">👥</span>
+                <span class="entries-count">12/24</span>
+                <span>Players</span>
+              </div>
+              <div class="tournament-actions">
+                <button class="btn btn-sm btn-register">Register</button>
+                <button class="btn btn-sm btn-details">Details</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="section features-section">
+    <!-- Premium Features Section -->
+    <section class="features-section">
       <div class="container">
         <div class="section-header center">
           <h2 class="section-title">Why Choose TourneyHub?</h2>
           <p class="section-subtitle">Built for gamers, by gamers</p>
         </div>
         <div class="features-grid">
-          <div class="feature-card">
+          <div class="feature-card fade-in">
             <div class="feature-icon">🏁</div>
             <h3>Advanced Brackets</h3>
             <p>Single or double elimination, seeded or shuffled—your choice. Professional tournament management.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card fade-in">
             <div class="feature-icon">💳</div>
             <h3>Easy Payments</h3>
             <p>Secure wallet system, instant deposits, and quick withdrawals. Focus on gaming, not payments.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card fade-in">
             <div class="feature-icon">🔔</div>
             <h3>Smart Notifications</h3>
             <p>Get reminders and updates so nobody misses a match. Stay informed in real-time.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card fade-in">
             <div class="feature-icon">📊</div>
             <h3>Live Tracking</h3>
             <p>Real-time bracket updates, live scores, and match progress. Never miss the action.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card fade-in">
             <div class="feature-icon">🛡️</div>
             <h3>Fair Play</h3>
             <p>Advanced anti-cheat monitoring and dedicated support to ensure fair competition.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card fade-in">
             <div class="feature-icon">🏆</div>
             <h3>Big Prizes</h3>
             <p>Compete for substantial prize pools and build your reputation in the gaming community.</p>
@@ -168,7 +1482,7 @@
       </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- Premium CTA Section -->
     <section class="cta-section">
       <div class="container">
         <div class="cta-content">
@@ -188,7 +1502,7 @@
       </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Premium Footer -->
     <footer class="main-footer">
       <div class="container">
         <div class="footer-content">
@@ -229,8 +1543,7 @@
     </footer>
   </div>
 
-  <!-- Bottom Navigation (Mobile) -->
-  <nav class="bottom-nav">
+<nav class="bottom-nav">
     <a href="tournaments.html" class="nav-item">
       <span class="nav-icon">🏆</span>
       <span class="nav-text">Tournaments</span>
@@ -239,22 +1552,53 @@
       <span class="nav-icon">💰</span>
       <span class="nav-text">Wallet</span>
     </a>
-    <a href="admin.html" class="nav-item">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-text">Organizer</span>
-    </a>
-    <a href="dashboard.html" class="nav-item">
+    <a href="dashboard.html" class="nav-item active">
       <span class="nav-icon">👤</span>
       <span class="nav-text">Profile</span>
     </a>
-  </nav>
+  <script>
+    // Simple loading screen handler
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('loadingScreen').classList.add('hidden');
+      }, 2000);
+    });
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+    // Header scroll effect
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('.main-header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
 
-  <!-- App JS -->
-  <script src="index.js"></script>
+    // Add scroll animations
+    document.addEventListener('DOMContentLoaded', function() {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, observerOptions);
+
+      // Observe tournament cards
+      document.querySelectorAll('.tournament-card').forEach(card => {
+        observer.observe(card);
+      });
+
+      // Observe feature cards
+      document.querySelectorAll('.feature-card').forEach(card => {
+        observer.observe(card);
+      });
+    });
+  </script>
 </body>
 </html>

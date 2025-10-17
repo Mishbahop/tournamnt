@@ -39,7 +39,7 @@ function initApp() {
       console.log('User already logged in, redirecting...');
       showNotification('Welcome back! Redirecting...', 'success');
       setTimeout(() => {
-        window.location.href = getRedirectUrl() || 'dashboard.html';
+        window.location.href = getRedirectUrl() || 'tournaments.html';
       }, 1500);
     } else {
       // User is not logged in, show the login form

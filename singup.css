@@ -422,6 +422,62 @@ body {
   color: var(--success);
 }
 
+/* Email Verification Notice */
+.verification-notice {
+  background: var(--surface-dark);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+  display: none;
+  animation: slideInDown 0.5s ease;
+}
+
+.verification-notice.show {
+  display: block;
+}
+
+.verification-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s infinite;
+}
+
+.verification-content h3 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.verification-content p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.verification-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.verification-actions .btn {
+  min-width: 200px;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Form Options */
 .form-options {
   margin-bottom: 2rem;
@@ -517,6 +573,18 @@ body {
   background: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary {
+  background: var(--surface-light);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  width: 100%;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--primary-light);
 }
 
 .btn-signup {
@@ -743,6 +811,19 @@ body {
     right: 1rem;
     max-width: none;
   }
+
+  .verification-actions {
+    flex-direction: column;
+  }
+
+  .verification-actions .btn {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .btn {
+    padding: 0.875rem 1.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -764,5 +845,55 @@ body {
   
   .btn {
     padding: 0.875rem 1.5rem;
+  }
+
+  .verification-notice {
+    padding: 1.5rem;
+  }
+
+  .logo {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .logo-text {
+    font-size: 1.25rem;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 360px) {
+  .signup-card {
+    padding: 1rem;
+  }
+
+  .form-input {
+    padding: 0.875rem 2.5rem 0.875rem 0.875rem;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .btn {
+    padding: 0.875rem 1rem;
+  }
+
+  .features-preview {
+    flex-wrap: wrap;
+  }
+
+  .feature-item {
+    flex: 0 0 calc(50% - 0.5rem);
+  }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+  .password-toggle,
+  .toast-close {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .btn {
+    min-height: 44px;
   }
 }

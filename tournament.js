@@ -1,11 +1,12 @@
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "your-api-key",
-    authDomain: "your-auth-domain",
-    projectId: "your-project-id",
-    storageBucket: "your-storage-bucket",
-    messagingSenderId: "your-sender-id",
-    appId: "your-app-id"
+      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+  authDomain: "authapp-386ee.firebaseapp.com",
+  projectId: "authapp-386ee",
+  storageBucket: "authapp-386ee.appspot.com",
+  messagingSenderId: "809698525310",
+  appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+  measurementId: "G-EJZTSBSGQT"
 };
 
 // Initialize Firebase
@@ -19,7 +20,7 @@ let currentUser = null;
 // Firebase Auth State Listener
 auth.onAuthStateChanged(async (user) => {
     if (!user) {
-        window.location.href = "../login/login.html";
+        window.location.href = "login.html";
         return;
     }
     
@@ -54,7 +55,7 @@ function renderProfile(user) {
     if (logoutBtn) {
         logoutBtn.onclick = async () => {
             await auth.signOut();
-            window.location.href = "../login/login.html";
+            window.location.href = "login.html";
         };
     }
 }

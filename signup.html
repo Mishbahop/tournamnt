@@ -5,6 +5,7 @@
   <title>Signup — TourneyHub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="singup.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Loading Screen -->
@@ -57,7 +58,7 @@
             />
             <span class="input-icon">@</span>
           </div>
-          <div class="input-hint" id="emailHint">We'll never share your email</div>
+          <div class="input-hint" id="emailHint">We'll send a verification link to this email</div>
         </div>
 
         <div class="form-group">
@@ -128,12 +129,29 @@
         </button>
       </form>
 
+      <!-- Email Verification Notice -->
+      <div class="verification-notice" id="verificationNotice">
+        <div class="verification-icon">📧</div>
+        <div class="verification-content">
+          <h3>Verify Your Email</h3>
+          <p>We've sent a verification link to your email address. Please check your inbox and click the link to activate your account.</p>
+          <div class="verification-actions">
+            <button type="button" class="btn btn-secondary" id="resendVerification">
+              Resend Verification Email
+            </button>
+            <button type="button" class="btn btn-primary" id="continueToLogin">
+              Continue to Login
+            </button>
+          </div>
+        </div>
+      </form>
+
       <!-- Divider -->
       <div class="divider">
         <span>or sign up with</span>
       </div>
 
-      <!-- Social Signup (Placeholder) -->
+      <!-- Social Signup -->
       <div class="social-signup">
         <button type="button" class="btn btn-social btn-google" disabled>
           <span class="social-icon">🔍</span>

@@ -604,3 +604,191 @@ setTimeout(() => {
     showMainContent();
   }
 }, 5000);
+// Enhanced Navigation & Trending Tournaments Interactions
+// Create mobile navigation
+const mobileNav = document.createElement('div');
+mobileNav.className = 'mobile-nav';
+mobileNav.innerHTML = `
+  <div class="mobile-nav-links">
+    <a href="tournaments.html" class="mobile-nav-link">Tournaments</a>
+    <a href="wallet.html" class="mobile-nav-link">Wallet</a>
+    <a href="dashboard.html" class="mobile-nav-link">Profile</a>
+    <a href="admin.html" class="mobile-nav-link">Organizer</a>
+  </div>
+`;
+
+// Add mobile menu button to header
+const headerContainer = document.querySelector('.header-container');
+headerContainer.appendChild(mobileMenuBtn);
+document.body.appendChild(mobileNav);
+
+// Toggle mobile menu
+mobileMenuBtn.addEventListener('click', function() {
+  this.classList.toggle('active');
+  mobileNav.classList.toggle('active');
+  document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+});
+
+// Close mobile menu when clicking on a link
+document.querySelectorAll('.mobile-nav-link').forEach(link => {
+  link.addEventListener('click', () => {
+    mobileMenuBtn.classList.remove('active');
+    mobileNav.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+});
+
+// Header scroll effect
+window.addEventListener('scroll', () => {
+  const header = document.querySelector('.main-header');
+  if (window.scrollY > 50) {
+    header.classList.add('scrolled');
+  } else {
+    header.classList.remove('scrolled');
+  }
+});
+
+// Enhanced trending tournaments data
+const trendingTournamentsData = [
+  {
+    id: 1,
+    game: "Valorant",
+    gameIcon: "🎯",
+    category: "5v5 Tactical",
+    status: "live",
+    title: "Valorant Champions Showdown",
+    date: "2024-03-15",
+    time: "18:00 IST",
+    format: "Single Elimination",
+    prize: "₹50,000",
+    entries: "24/32",
+    featured: true
+  },
+  {
+    id: 2,
+    game: "Free Fire",
+    gameIcon: "🔥",
+    category: "Battle Royale",
+    status: "registering",
+    title: "Free Fire Clash Royale",
+    date: "2024-03-18",
+    time: "20:00 IST",
+    format: "Squad Battle",
+    prize: "₹25,000",
+    entries: "18/48",
+    featured: false
+  },
+  {
+    id: 3,
+    game: "COD Mobile",
+    gameIcon: "🎮",
+    category: "FPS",
+    status: "upcoming",
+    title: "COD Mobile Masters Cup",
+    date: "2024-03-20",
+    time: "17:00 IST",
+    format: "Team Deathmatch",
+    prize: "₹40,000",
+    entries: "12/24",
+    featured: false
+  },
+  {
+    id: 4,
+    game: "BGMI",
+    gameIcon: "🏹",
+    category: "Battle Royale",
+    status: "registering",
+    title: "BGMI India Showdown",
+    date: "2024-03-22",
+    time: "16:00 IST",
+    format: "Squad Battle",
+    prize: "₹75,000",
+    entries: "36/64",
+    featured: true
+  }
+];
+
+// Render trending tournaments
+function renderTrendingTournaments() {
+  const container = document.getElementById('trendingTournaments');
+  
+  if (!container) return;
+  
+  container.innerHTML = trendingTournamentsData.map(tournament => `
+    <div class="tournament-card ${tournament.featured ? 'featured' : ''}">
+      <div class="tournament-header">
+        <div class="tournament-game">
+          <div class="game-icon">${tournament.gameIcon}</div>
+          <div class="game-info">
+            <div class="game-name">${tournament.game}</div>
+            <div class="game-category">${tournament.category}</div>
+          </div>
+        </div>
+        <div class="tournament-status status-${tournament.status}">
+          ${tournament.status.toUpperCase()}
+        </div>
+      </div>
+      <div class="tournament-body">
+        <h3 class="tournament-title">${tournament.title}</h3>
+        <div class="tournament-details">
+          <div class="tournament-detail">
+            <span class="detail-icon">📅</span>
+            <span>${tournament.date}</span>
+          </div>
+          <div class="tournament-detail">
+            <span class="detail-icon">🕒</span>
+            <span>${tournament.time}</span>
+          </div>
+          <div class="tournament-detail">
+            <span class="detail-icon">⚙️</span>
+            <span>${tournament.format}</span>
+          </div>
+        </div>
+        <div class="tournament-prize">
+          <span class="prize-icon">💰</span>
+          <span>${tournament.prize}</span>
+        </div>
+      </div>
+      <div class="tournament-footer">
+        <div class="tournament-entries">
+          <span class="entries-icon">👥</span>
+          <span class="entries-count">${tournament.entries}</span>
+          <span>Players</span>
+        </div>
+        <div class="tournament-actions">
+          <button class="btn btn-sm btn-register">Register</button>
+          <button class="btn btn-sm btn-details">Details</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  
+  // Add scroll animation for tournament cards
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  document.querySelectorAll('.tournament-card').forEach(card => {
+    observer.observe(card);
+  });
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  renderTrendingTournaments();
+  
+  // Add active class to current page in bottom nav
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navItems = document.querySelectorAll('.nav-item');
+  
+  navItems.forEach(item => {
+    const link = item.getAttribute('href');
+    if (link === currentPage) {
+      item.classList.add('active');
+    }
+  });
+});

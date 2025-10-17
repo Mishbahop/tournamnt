@@ -36,10 +36,14 @@ const notificationToast = document.getElementById('notificationToast');
 const toastIcon = document.getElementById('toastIcon');
 const toastMessage = document.getElementById('toastMessage');
 const toastClose = document.getElementById('toastClose');
+const verificationNotice = document.getElementById('verificationNotice');
+const resendVerificationBtn = document.getElementById('resendVerification');
+const continueToLoginBtn = document.getElementById('continueToLogin');
 
 // State variables
 let passwordValid = false;
 let passwordsMatch = false;
+let currentUser = null;
 
 // Initialize Application
 function initApp() {
@@ -48,11 +52,20 @@ function initApp() {
   // Check if user is already logged in
   auth.onAuthStateChanged((user) => {
     if (user) {
-      console.log('User already logged in, redirecting...');
-      showNotification('Welcome back! Redirecting...', 'success');
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1500);
+      console.log('User already logged in:', user.email);
+      currentUser = user;
+      
+      if (user.emailVerified) {
+        // User is verified, redirect to dashboard
+        showNotification('Welcome back! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      } else {
+        // User is logged in but not verified, show verification notice
+        showMainContent();
+        showVerificationNotice();
+      }
     } else {
       // User is not logged in, show the signup form
       showMainContent();
@@ -73,6 +86,24 @@ function showMainContent() {
       mainContent.style.opacity = '1';
     }
   }, 1000);
+}
+
+// Show verification notice
+function showVerificationNotice() {
+  if (verificationNotice) {
+    verificationNotice.classList.add('show');
+    // Hide the signup form
+    if (signupForm) {
+      signupForm.style.display = 'none';
+    }
+  }
+}
+
+// Hide verification notice
+function hideVerificationNotice() {
+  if (verificationNotice) {
+    verificationNotice.classList.remove('show');
+  }
 }
 
 // Show notification toast
@@ -244,6 +275,87 @@ async function createUserProfile(user, email) {
   }
 }
 
+// FIXED: Send email verification with proper redirect URL
+async function sendEmailVerification(user) {
+  try {
+    console.log('Sending email verification...');
+    
+    // Use the Firebase Auth domain as the redirect URL since it's always authorized
+    const actionCodeSettings = {
+      url: `https://${firebaseConfig.authDomain}/login.html`,
+      handleCodeInApp: false
+    };
+    
+    console.log('Using redirect URL:', actionCodeSettings.url);
+    
+    await user.sendEmailVerification(actionCodeSettings);
+    console.log('Verification email sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    
+    let errorMessage = 'Failed to send verification email. ';
+    
+    switch (error.code) {
+      case 'auth/too-many-requests':
+        errorMessage += 'Too many attempts. Please try again later.';
+        break;
+      case 'auth/user-not-found':
+        errorMessage += 'User not found.';
+        break;
+      case 'auth/invalid-email':
+        errorMessage += 'Invalid email address.';
+        break;
+      case 'auth/network-request-failed':
+        errorMessage += 'Network error. Please check your connection.';
+        break;
+      case 'auth/unauthorized-continue-uri':
+        errorMessage += 'Redirect URL not authorized. Using default Firebase domain.';
+        // Try without actionCodeSettings as fallback
+        try {
+          await user.sendEmailVerification();
+          console.log('Fallback: Email sent without custom redirect');
+          return true;
+        } catch (fallbackError) {
+          errorMessage += ' Fallback also failed.';
+          throw new Error(errorMessage);
+        }
+      default:
+        errorMessage += error.message || 'Please try again later.';
+    }
+    
+    throw new Error(errorMessage);
+  }
+}
+
+// Resend verification email
+async function resendVerificationEmail() {
+  if (!currentUser) {
+    showNotification('No user found. Please sign up again.', 'error');
+    return;
+  }
+  
+  try {
+    resendVerificationBtn.disabled = true;
+    resendVerificationBtn.innerHTML = '<span class="btn-text">Sending...</span>';
+    
+    await sendEmailVerification(currentUser);
+    showNotification('Verification email sent successfully! Check your inbox.', 'success');
+    
+    // Re-enable button after 30 seconds
+    setTimeout(() => {
+      resendVerificationBtn.disabled = false;
+      resendVerificationBtn.innerHTML = '<span class="btn-text">Resend Verification Email</span>';
+    }, 30000);
+    
+  } catch (error) {
+    console.error('Error resending verification email:', error);
+    showNotification(error.message, 'error');
+    resendVerificationBtn.disabled = false;
+    resendVerificationBtn.innerHTML = '<span class="btn-text">Resend Verification Email</span>';
+  }
+}
+
 // Toggle password visibility
 function togglePasswordVisibility(inputElement, toggleButton) {
   const type = inputElement.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -277,23 +389,25 @@ async function handleSignup(event) {
     
     // Create user with Firebase Auth
     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-    const user = userCredential.user;
+    currentUser = userCredential.user;
     
-    console.log('Signup successful:', user.email);
+    console.log('Signup successful:', currentUser.email);
     
     // Create user profile in Firestore
-    await createUserProfile(user, email);
+    await createUserProfile(currentUser, email);
     
     // Send email verification
-    await user.sendEmailVerification();
+    try {
+      await sendEmailVerification(currentUser);
+      showNotification(`Welcome to TourneyHub! Verification email sent to ${currentUser.email}`, 'success');
+    } catch (verificationError) {
+      console.error('Verification email failed:', verificationError);
+      // Don't fail the entire signup if verification email fails
+      showNotification(`Account created! But verification email failed: ${verificationError.message}`, 'warning');
+    }
     
-    // Show success message
-    showNotification(`Welcome to TourneyHub, ${user.email.split('@')[0]}! Verification email sent.`, 'success');
-    
-    // Redirect after a short delay
-    setTimeout(() => {
-      window.location.href = 'dashboard.html';
-    }, 2000);
+    // Show verification notice
+    showVerificationNotice();
     
   } catch (error) {
     console.error('Signup error:', error);
@@ -325,11 +439,16 @@ async function handleSignup(event) {
     }
     
     showNotification(errorMessage, 'error');
-    
+  } finally {
     // Reset loading state
     signupBtn.classList.remove('loading');
     signupBtn.disabled = false;
   }
+}
+
+// Continue to login
+function continueToLogin() {
+  window.location.href = 'login.html';
 }
 
 // Event Listeners
@@ -380,7 +499,7 @@ function setupEventListeners() {
         emailHint.className = 'input-hint success';
       } else {
         emailInput.classList.remove('error', 'success');
-        emailHint.textContent = 'We\'ll never share your email';
+        emailHint.textContent = 'We\'ll send a verification link to this email';
         emailHint.className = 'input-hint';
       }
     });
@@ -389,6 +508,16 @@ function setupEventListeners() {
   // Toast close button
   if (toastClose) {
     toastClose.addEventListener('click', hideNotification);
+  }
+  
+  // Resend verification button
+  if (resendVerificationBtn) {
+    resendVerificationBtn.addEventListener('click', resendVerificationEmail);
+  }
+  
+  // Continue to login button
+  if (continueToLoginBtn) {
+    continueToLoginBtn.addEventListener('click', continueToLogin);
   }
   
   // Enter key to submit form
@@ -414,9 +543,4 @@ setTimeout(() => {
     console.log('Fallback: forcing content to show');
     showMainContent();
   }
-}, 5000); // 5 second fallback
-
-// Export functions for global access (if needed)
-window.handleSignup = handleSignup;
-window.togglePasswordVisibility = togglePasswordVisibility;
-window.checkPasswordStrength = checkPasswordStrength;
+}, 5000);

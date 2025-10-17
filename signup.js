@@ -275,18 +275,18 @@ async function createUserProfile(user, email) {
   }
 }
 
-// FIXED: Send email verification with proper redirect URL
+// FIXED: Send email verification for GitHub Pages
 async function sendEmailVerification(user) {
   try {
-    console.log('Sending email verification...');
+    console.log('Sending email verification for GitHub Pages...');
     
-    // Use the Firebase Auth domain as the redirect URL since it's always authorized
+    // Use GitHub Pages URL as redirect
     const actionCodeSettings = {
-      url: `https://${firebaseConfig.authDomain}/login.html`,
+      url: 'https://mishbahop.github.io/tournamnt/login.html',
       handleCodeInApp: false
     };
     
-    console.log('Using redirect URL:', actionCodeSettings.url);
+    console.log('Using GitHub Pages redirect URL:', actionCodeSettings.url);
     
     await user.sendEmailVerification(actionCodeSettings);
     console.log('Verification email sent successfully');
@@ -310,14 +310,14 @@ async function sendEmailVerification(user) {
         errorMessage += 'Network error. Please check your connection.';
         break;
       case 'auth/unauthorized-continue-uri':
-        errorMessage += 'Redirect URL not authorized. Using default Firebase domain.';
-        // Try without actionCodeSettings as fallback
+        // Fallback: try without custom redirect
         try {
+          console.log('Custom redirect failed, trying without redirect...');
           await user.sendEmailVerification();
           console.log('Fallback: Email sent without custom redirect');
           return true;
         } catch (fallbackError) {
-          errorMessage += ' Fallback also failed.';
+          errorMessage += ' Please make sure "mishbahop.github.io" is added to authorized domains in Firebase Console.';
           throw new Error(errorMessage);
         }
       default:

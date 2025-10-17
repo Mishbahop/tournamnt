@@ -1,1388 +1,362 @@
+[file name]: index.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TourneyHub — Premium Gaming Platform</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* Modern Gaming Design */
-    :root {
-      --primary: #6c63ff;
-      --primary-dark: #5a52d5;
-      --secondary: #ff6b6b;
-      --accent: #4ecdc4;
-      --dark: #0f0f1a;
-      --darker: #080811;
-      --card-bg: rgba(30, 30, 46, 0.8);
-      --text: #ffffff;
-      --text-secondary: #b8b8d0;
-      --success: #00ff88;
-      --warning: #ffcc00;
-      
-      --gradient-primary: linear-gradient(135deg, var(--primary), #a363ff);
-      --gradient-secondary: linear-gradient(135deg, var(--secondary), #ff8e00);
-      --gradient-accent: linear-gradient(135deg, var(--accent), #00a8ff);
-      --gradient-dark: linear-gradient(135deg, #1a1a2e, #16213e);
-      
-      --shadow-glow: 0 0 20px rgba(108, 99, 255, 0.4);
-      --shadow-glow-red: 0 0 20px rgba(255, 107, 107, 0.4);
-      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
-      
-      --radius: 16px;
-      --radius-lg: 24px;
-    }
-
-    /* Reset & Base */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--dark);
-      color: var(--text);
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
-
-    /* Enhanced Loading Screen */
-    .loading-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--darker);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-
-    .loading-screen.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .loading-content {
-      text-align: center;
-    }
-
-    .loading-logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 40px;
-      font-size: 2.5rem;
-      font-weight: 800;
-    }
-
-    .loading-spinner {
-      width: 60px;
-      height: 60px;
-      border: 3px solid rgba(255, 255, 255, 0.1);
-      border-top: 3px solid var(--primary);
-      border-radius: 50%;
-      margin: 0 auto 20px;
-      animation: spin 1s linear infinite;
-      box-shadow: 0 0 15px rgba(108, 99, 255, 0.3);
-    }
-
-    .loading-subtitle {
-      color: var(--text-secondary);
-      font-size: 1rem;
-      letter-spacing: 1px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Header */
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(15, 15, 26, 0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      z-index: 1000;
-      padding: 1rem 0;
-      transform: translateY(0);
-      transition: all 0.4s ease;
-    }
-
-    .header.scrolled {
-      background: rgba(15, 15, 26, 0.98);
-      padding: 0.75rem 0;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .header-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 1.5rem;
-      font-weight: 800;
-    }
-
-    .logo-icon {
-      font-size: 1.75rem;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: logoPulse 2s infinite;
-    }
-
-    @keyframes logoPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-
-    .logo-text {
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .nav-desktop {
-      display: none;
-      gap: 1.5rem;
-    }
-
-    .nav-link {
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 600;
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .nav-link::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: var(--gradient-primary);
-      transition: left 0.4s ease;
-      z-index: -1;
-      border-radius: 50px;
-    }
-
-    .nav-link:hover {
-      color: white;
-      transform: translateY(-2px);
-    }
-
-    .nav-link:hover::before {
-      left: 0;
-    }
-
-    .nav-link.active {
-      background: var(--gradient-primary);
-      color: white;
-      box-shadow: var(--shadow-glow);
-    }
-
-    .auth-buttons {
-      display: none;
-      gap: 0.75rem;
-    }
-
-    /* Hero Section */
-    .hero {
-      min-height: 100vh;
-      background: var(--gradient-dark);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      padding: 6rem 1.5rem 2rem;
-    }
-
-    .hero-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0.4;
-    }
-
-    .hero-glow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 100vw;
-      height: 100vw;
-      background: radial-gradient(circle, rgba(108, 99, 255, 0.15) 0%, rgba(108, 99, 255, 0) 70%);
-      border-radius: 50%;
-      animation: pulse 6s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-      50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.05); }
-    }
-
-    .hero-container {
-      position: relative;
-      z-index: 2;
-      max-width: 1200px;
-      margin: 0 auto;
-      text-align: center;
-      opacity: 0;
-      transform: translateY(30px);
-      animation: fadeInUp 1s ease 0.5s forwards;
-    }
-
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      padding: 0.5rem 1.25rem;
-      border-radius: 50px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 2rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .hero-title {
-      font-size: 2.75rem;
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #ffffff 0%, var(--primary) 50%, var(--accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-subtitle {
-      font-size: 1.25rem;
-      color: var(--text-secondary);
-      max-width: 600px;
-      margin: 0 auto 2.5rem;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      justify-content: center;
-      margin-bottom: 3rem;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      padding: 1rem 2rem;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .btn:hover::before {
-      left: 100%;
-    }
-
-    .btn-primary {
-      background: var(--gradient-primary);
-      color: white;
-      box-shadow: 0 10px 30px rgba(108, 99, 255, 0.3);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(108, 99, 255, 0.5);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateY(-3px);
-    }
-
-    .hero-stats {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .stat {
-      text-align: center;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.8s ease forwards;
-    }
-
-    .stat:nth-child(1) { animation-delay: 1s; }
-    .stat:nth-child(2) { animation-delay: 1.2s; }
-    .stat:nth-child(3) { animation-delay: 1.4s; }
-
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 0.25rem;
-      background: var(--gradient-accent);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .stat-label {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-
-    /* Featured Games */
-    .games {
-      padding: 5rem 1.5rem;
-      background: var(--darker);
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .section-title {
-      font-size: 2.25rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-    }
-
-    .fire-icon {
-      animation: fireBurn 2s ease-in-out infinite;
-    }
-
-    @keyframes fireBurn {
-      0%, 100% { transform: scale(1) rotate(0deg); }
-      25% { transform: scale(1.1) rotate(-5deg); }
-      75% { transform: scale(1.1) rotate(5deg); }
-    }
-
-    .section-subtitle {
-      font-size: 1.1rem;
-      color: var(--text-secondary);
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .game-card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      opacity: 0;
-      transform: translateY(30px);
-    }
-
-    .game-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .game-card:hover {
-      transform: translateY(-8px);
-      border-color: var(--primary);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .game-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    .game-name {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .game-players {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-
-    /* Live Tournaments */
-    .tournaments {
-      padding: 5rem 1.5rem;
-      background: var(--dark);
-    }
-
-    .tournaments-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      max-width: 1200px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .tournaments-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .tournament-card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s ease;
-      opacity: 0;
-      transform: translateY(30px);
-    }
-
-    .tournament-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .tournament-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--primary);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .tournament-header {
-      padding: 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .tournament-game {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .game-icon-small {
-      width: 40px;
-      height: 40px;
-      background: var(--gradient-primary);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
-    }
-
-    .game-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .game-name {
-      font-weight: 700;
-      font-size: 1rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .game-category {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-
-    .tournament-status {
-      padding: 0.4rem 0.75rem;
-      border-radius: 50px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .status-live {
-      background: var(--gradient-secondary);
-      color: white;
-      animation: pulse 2s infinite;
-      box-shadow: var(--shadow-glow-red);
-    }
-
-    .status-upcoming {
-      background: var(--gradient-accent);
-      color: white;
-    }
-
-    .tournament-body {
-      padding: 0 1.5rem 1.5rem;
-    }
-
-    .tournament-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    .tournament-details {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .tournament-detail {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-
-    .tournament-prize {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: var(--success);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .tournament-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      background: rgba(0, 0, 0, 0.2);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .tournament-entries {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-
-    .tournament-actions {
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    .btn-sm {
-      padding: 0.6rem 1.25rem;
-      font-size: 0.85rem;
-      border-radius: 50px;
-      font-weight: 600;
-    }
-
-    /* Features */
-    .features {
-      padding: 5rem 1.5rem;
-      background: var(--darker);
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .feature-card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      opacity: 0;
-      transform: translateY(30px);
-    }
-
-    .feature-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .feature-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--primary);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .feature-icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 10px rgba(108, 99, 255, 0.3));
-    }
-
-    .feature-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    .feature-desc {
-      color: var(--text-secondary);
-    }
-
-    /* CTA */
-    .cta {
-      padding: 5rem 1.5rem;
-      background: var(--gradient-primary);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .cta::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" opacity="0.1"><polygon fill="%23ffffff" points="0,1000 1000,0 1000,1000"/></svg>');
-      background-size: cover;
-    }
-
-    .cta-content {
-      position: relative;
-      z-index: 1;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .cta-title {
-      font-size: 2.5rem;
-      font-weight: 800;
-      margin-bottom: 1.5rem;
-    }
-
-    .cta-desc {
-      font-size: 1.25rem;
-      margin-bottom: 2.5rem;
-      opacity: 0.9;
-    }
-
-    .cta-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .btn-light {
-      background: white;
-      color: var(--primary);
-    }
-
-    .btn-light:hover {
-      background: rgba(255, 255, 255, 0.9);
-      transform: translateY(-3px);
-    }
-
-    /* Footer */
-    .footer {
-      background: var(--darker);
-      padding: 4rem 1.5rem 2rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .footer-content {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-      max-width: 1200px;
-      margin: 0 auto 2.5rem;
-    }
-
-    .footer-brand {
-      text-align: center;
-    }
-
-    .footer-logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      font-size: 1.75rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-    }
-
-    .footer-desc {
-      color: var(--text-secondary);
-      max-width: 300px;
-      margin: 0 auto;
-    }
-
-    .footer-links {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-    }
-
-    .footer-column h4 {
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-      color: var(--accent);
-      position: relative;
-    }
-
-    .footer-column h4::after {
-      content: '';
-      position: absolute;
-      width: 30px;
-      height: 3px;
-      background: var(--accent);
-      bottom: -8px;
-      left: 0;
-      border-radius: 2px;
-    }
-
-    .footer-column a {
-      display: block;
-      margin-bottom: 0.75rem;
-      color: var(--text-secondary);
-      text-decoration: none;
-      transition: all 0.3s ease;
-    }
-
-    .footer-column a:hover {
-      color: var(--primary);
-      padding-left: 5px;
-    }
-
-    .footer-bottom {
-      text-align: center;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-
-    /* Mobile Nav */
-    .mobile-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(30, 30, 46, 0.95);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      justify-content: space-around;
-      padding: 1rem 0.5rem;
-      z-index: 1000;
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 16px;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      color: var(--text-secondary);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .nav-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: var(--gradient-primary);
-      transition: left 0.4s ease;
-      z-index: -1;
-      border-radius: 16px;
-    }
-
-    .nav-item.active::before {
-      left: 0;
-    }
-
-    .nav-item.active {
-      transform: translateY(-5px);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .nav-icon {
-      font-size: 1.25rem;
-      transition: all 0.3s ease;
-      z-index: 1;
-    }
-
-    .nav-item.active .nav-icon {
-      transform: scale(1.2);
-      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
-    }
-
-    .nav-text {
-      font-size: 0.7rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      z-index: 1;
-    }
-
-    .nav-item.active .nav-text {
-      color: white;
-      font-weight: 800;
-    }
-
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--darker);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--gradient-primary);
-      border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--primary-dark);
-    }
-
-    /* Responsive */
-    @media (min-width: 768px) {
-      .hero-title {
-        font-size: 3.5rem;
-      }
-      
-      .hero-actions, .cta-actions {
-        flex-direction: row;
-      }
-      
-      .tournaments-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .features-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .footer-content {
-        grid-template-columns: 1fr 2fr;
-      }
-      
-      .footer-links {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      
-      .nav-desktop, .auth-buttons {
-        display: flex;
-      }
-      
-      .mobile-nav {
-        display: none;
-      }
-    }
-
-    @media (min-width: 992px) {
-      .tournaments-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      
-      .features-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TourneyHub — Premium Gaming Platform</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add this to your HTML head section -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no">
 </head>
-<body>
-  <!-- Enhanced Loading Screen -->
-  <div class="loading-screen" id="loadingScreen">
-    <div class="loading-content">
-      <div class="loading-logo">
-        <span class="logo-icon">🏆</span>
-        <span class="logo-text">TourneyHub</span>
-      </div>
-      <div class="loading-spinner"></div>
-      <div class="loading-subtitle">Loading Arena...</div>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <header class="header">
-    <div class="header-container">
-      <div class="logo">
-        <span class="logo-icon">🏆</span>
-        <span class="logo-text">TourneyHub</span>
-      </div>
-      
-      <nav class="nav-desktop">
-        <a href="tournaments.html" class="nav-link">Tournaments</a>
-        <a href="games.html" class="nav-link">Games</a>
-        <a href="leaderboards.html" class="nav-link">Leaderboards</a>
-        <a href="how-to-play.html" class="nav-link">How to Play</a>
-      </nav>
-      
-      <div class="auth-buttons">
-        <a href="login.html" class="btn btn-secondary">Login</a>
-        <a href="register.html" class="btn btn-primary">Sign Up</a>
-      </div>
-    </div>
-  </header>
-
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-bg">
-      <div class="hero-glow"></div>
-    </div>
-    <div class="hero-container">
-      <div class="hero-badge">
-        <span>🎮</span>
-        <span>Competitive Gaming Platform</span>
-      </div>
-      <h1 class="hero-title">Compete. Conquer. Celebrate.</h1>
-      <p class="hero-subtitle">Join thrilling tournaments, track live brackets, and prove your skills. Whether you're solo or in a squad, TourneyHub is your arena.</p>
-      <div class="hero-actions">
-        <a href="tournaments.html" class="btn btn-primary">
-          <span>⚔️</span>
-          Find Tournament
-        </a>
-        <a href="register.html" class="btn btn-secondary">
-          <span>🚀</span>
-          Get Started
-        </a>
-      </div>
-      <div class="hero-stats">
-        <div class="stat">
-          <div class="stat-number">500+</div>
-          <div class="stat-label">Active Players</div>
-        </div>
-        <div class="stat">
-          <div class="stat-number">50+</div>
-          <div class="stat-label">Tournaments</div>
-        </div>
-        <div class="stat">
-          <div class="stat-number">₹2L+</div>
-          <div class="stat-label">Prize Money</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Featured Games -->
-  <section class="games">
-    <div class="section-header">
-      <h2 class="section-title">
-        <span class="fire-icon">🎯</span>
-        Popular Games
-      </h2>
-      <p class="section-subtitle">Compete in your favorite games and climb the leaderboards</p>
-    </div>
-    <div class="games-grid">
-      <div class="game-card">
-        <div class="game-icon">🎯</div>
-        <h3 class="game-name">Valorant</h3>
-        <p class="game-players">2,400+ players</p>
-      </div>
-      <div class="game-card">
-        <div class="game-icon">🔥</div>
-        <h3 class="game-name">Free Fire</h3>
-        <p class="game-players">3,100+ players</p>
-      </div>
-      <div class="game-card">
-        <div class="game-icon">🎮</div>
-        <h3 class="game-name">COD Mobile</h3>
-        <p class="game-players">1,800+ players</p>
-      </div>
-      <div class="game-card">
-        <div class="game-icon">🏹</div>
-        <h3 class="game-name">BGMI</h3>
-        <p class="game-players">2,700+ players</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Live Tournaments -->
-  <section class="tournaments">
-    <div class="tournaments-header">
-      <h2 class="section-title">
-        <span class="fire-icon">🔥</span>
-        Live Tournaments
-      </h2>
-      <a href="tournaments.html" class="btn btn-secondary">View All</a>
-    </div>
-    <div class="tournaments-grid">
-      <!-- Tournament 1 -->
-      <div class="tournament-card">
-        <div class="tournament-header">
-          <div class="tournament-game">
-            <div class="game-icon-small">🎯</div>
-            <div class="game-info">
-              <div class="game-name">Valorant</div>
-              <div class="game-category">5v5 Tactical</div>
+<body class="no-select">
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <span class="logo-icon">🏆</span>
+                <span class="logo-text">TourneyHub</span>
             </div>
-          </div>
-          <div class="tournament-status status-live">LIVE</div>
+            <div class="loading-spinner"></div>
+            <p class="loading-subtitle">Loading Premium Experience...</p>
         </div>
-        <div class="tournament-body">
-          <h3 class="tournament-title">Valorant Champions Showdown</h3>
-          <div class="tournament-details">
-            <div class="tournament-detail">
-              <span>📅</span>
-              <span>Today, 18:00 IST</span>
-            </div>
-            <div class="tournament-detail">
-              <span>⚙️</span>
-              <span>Single Elimination</span>
-            </div>
-          </div>
-          <div class="tournament-prize">
-            <span>💰</span>
-            <span>₹50,000</span>
-          </div>
-        </div>
-        <div class="tournament-footer">
-          <div class="tournament-entries">
-            <span>👥</span>
-            <span>24/32 Players</span>
-          </div>
-          <div class="tournament-actions">
-            <button class="btn btn-sm btn-primary">Join Now</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tournament 2 -->
-      <div class="tournament-card">
-        <div class="tournament-header">
-          <div class="tournament-game">
-            <div class="game-icon-small">🔥</div>
-            <div class="game-info">
-              <div class="game-name">Free Fire</div>
-              <div class="game-category">Battle Royale</div>
-            </div>
-          </div>
-          <div class="tournament-status status-upcoming">UPCOMING</div>
-        </div>
-        <div class="tournament-body">
-          <h3 class="tournament-title">Free Fire Clash Royale</h3>
-          <div class="tournament-details">
-            <div class="tournament-detail">
-              <span>📅</span>
-              <span>Tomorrow, 20:00 IST</span>
-            </div>
-            <div class="tournament-detail">
-              <span>⚙️</span>
-              <span>Squad Battle</span>
-            </div>
-          </div>
-          <div class="tournament-prize">
-            <span>💰</span>
-            <span>₹25,000</span>
-          </div>
-        </div>
-        <div class="tournament-footer">
-          <div class="tournament-entries">
-            <span>👥</span>
-            <span>18/48 Players</span>
-          </div>
-          <div class="tournament-actions">
-            <button class="btn btn-sm btn-primary">Register</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tournament 3 -->
-      <div class="tournament-card">
-        <div class="tournament-header">
-          <div class="tournament-game">
-            <div class="game-icon-small">🎮</div>
-            <div class="game-info">
-              <div class="game-name">COD Mobile</div>
-              <div class="game-category">FPS</div>
-            </div>
-          </div>
-          <div class="tournament-status status-upcoming">UPCOMING</div>
-        </div>
-        <div class="tournament-body">
-          <h3 class="tournament-title">COD Mobile Masters Cup</h3>
-          <div class="tournament-details">
-            <div class="tournament-detail">
-              <span>📅</span>
-              <span>Mar 20, 17:00 IST</span>
-            </div>
-            <div class="tournament-detail">
-              <span>⚙️</span>
-              <span>Team Deathmatch</span>
-            </div>
-          </div>
-          <div class="tournament-prize">
-            <span>💰</span>
-            <span>₹40,000</span>
-          </div>
-        </div>
-        <div class="tournament-footer">
-          <div class="tournament-entries">
-            <span>👥</span>
-            <span>12/24 Players</span>
-          </div>
-          <div class="tournament-actions">
-            <button class="btn btn-sm btn-primary">Register</button>
-          </div>
-        </div>
-      </div>
     </div>
-  </section>
 
-  <!-- Features -->
-  <section class="features">
-    <div class="section-header">
-      <h2 class="section-title">Why Choose TourneyHub?</h2>
-      <p class="section-subtitle">Built for gamers, by gamers</p>
-    </div>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🏁</div>
-        <h3 class="feature-title">Advanced Brackets</h3>
-        <p class="feature-desc">Single or double elimination, seeded or shuffled—your choice. Professional tournament management.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">💳</div>
-        <h3 class="feature-title">Easy Payments</h3>
-        <p class="feature-desc">Secure wallet system, instant deposits, and quick withdrawals. Focus on gaming, not payments.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔔</div>
-        <h3 class="feature-title">Smart Notifications</h3>
-        <p class="feature-desc">Get reminders and updates so nobody misses a match. Stay informed in real-time.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3 class="feature-title">Live Tracking</h3>
-        <p class="feature-desc">Real-time bracket updates, live scores, and match progress. Never miss the action.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🛡️</div>
-        <h3 class="feature-title">Fair Play</h3>
-        <p class="feature-desc">Advanced anti-cheat monitoring and dedicated support to ensure fair competition.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🏆</div>
-        <h3 class="feature-title">Big Prizes</h3>
-        <p class="feature-desc">Compete for substantial prize pools and build your reputation in the gaming community.</p>
-      </div>
-    </div>
-  </section>
+    <!-- Header -->
+    <header class="main-header" id="mainHeader">
+        <div class="header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🏆</span>
+                <span class="logo-text">TourneyHub</span>
+            </a>
+            
+            <nav class="header-nav">
+                <a href="tournaments.html" class="nav-link">Tournaments</a>
+                <a href="games.html" class="nav-link">Games</a>
+                <a href="leaderboards.html" class="nav-link">Leaderboards</a>
+                <a href="how-to-play.html" class="nav-link">How to Play</a>
+            </nav>
+            
+            <div class="auth-buttons">
+                <a href="login.html" class="btn btn-secondary">Login</a>
+                <a href="register.html" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </header>
 
-  <!-- CTA -->
-  <section class="cta">
-    <div class="cta-content">
-      <h2 class="cta-title">Ready to Compete?</h2>
-      <p class="cta-desc">Join thousands of gamers who trust TourneyHub for their competitive journey.</p>
-      <div class="cta-actions">
-        <a href="register.html" class="btn btn-light btn-large">
-          <span>🎮</span>
-          Start Playing
-        </a>
-        <a href="tournaments.html" class="btn btn-secondary btn-large">
-          <span>🔥</span>
-          Browse Tournaments
-        </a>
-      </div>
-    </div>
-  </section>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-glow"></div>
+        <div class="hero-container">
+            <div class="hero-badge">
+                <span>🎮</span>
+                <span>Competitive Gaming Platform</span>
+            </div>
+            <h1 class="hero-title">Compete. Conquer. <span class="gradient-text">Celebrate.</span></h1>
+            <p class="hero-description">Join thrilling tournaments, track live brackets, and prove your skills. Whether you're solo or in a squad, TourneyHub is your arena.</p>
+            <div class="hero-actions">
+                <a href="tournaments.html" class="btn btn-primary">
+                    <span class="btn-icon">⚔️</span>
+                    Find Tournament
+                </a>
+                <a href="register.html" class="btn btn-secondary">
+                    <span class="btn-icon">🚀</span>
+                    Get Started
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Active Players</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Tournaments</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">₹2L+</div>
+                    <div class="stat-label">Prize Money</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-brand">
-        <div class="footer-logo">
-          <span class="logo-icon">🏆</span>
-          <span class="logo-text">TourneyHub</span>
+    <!-- Trending Tournaments -->
+    <section class="trending-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="fire-icon">🔥</span>
+                Live Tournaments
+            </h2>
+            <a href="tournaments.html" class="view-all">
+                View All
+                <span class="arrow">→</span>
+            </a>
         </div>
-        <p class="footer-desc">The ultimate platform for competitive gaming tournaments and esports events.</p>
-      </div>
-      <div class="footer-links">
-        <div class="footer-column">
-          <h4>Platform</h4>
-          <a href="tournaments.html">Tournaments</a>
-          <a href="games.html">Games</a>
-          <a href="leaderboards.html">Leaderboards</a>
-          <a href="how-to-play.html">How to Play</a>
+        <div class="tournaments-grid" id="liveTournamentsContainer">
+            <!-- Tournament cards will be loaded dynamically by JavaScript -->
+            <div class="loading-tournaments">
+                <div class="loading-spinner"></div>
+                <p>Loading tournaments...</p>
+            </div>
         </div>
-        <div class="footer-column">
-          <h4>Support</h4>
-          <a href="#">Help Center</a>
-          <a href="#">Contact Us</a>
-          <a href="#">FAQ</a>
-          <a href="#">Community</a>
-        </div>
-        <div class="footer-column">
-          <h4>Legal</h4>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Cookie Policy</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2024 TourneyHub. All rights reserved.</p>
-    </div>
-  </footer>
+    </section>
 
-  <!-- Mobile Navigation -->
-  <nav class="mobile-nav">
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="section-header center">
+            <h2 class="section-title">Why Choose TourneyHub?</h2>
+            <p class="section-subtitle">Built for gamers, by gamers - experience the future of competitive gaming</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🏁</div>
+                <h3>Advanced Brackets</h3>
+                <p>Single or double elimination, seeded or shuffled—your choice. Professional tournament management.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💳</div>
+                <h3>Easy Payments</h3>
+                <p>Secure wallet system, instant deposits, and quick withdrawals. Focus on gaming, not payments.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🔔</div>
+                <h3>Smart Notifications</h3>
+                <p>Get reminders and updates so nobody misses a match. Stay informed in real-time.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">📊</div>
+                <h3>Live Tracking</h3>
+                <p>Real-time bracket updates, live scores, and match progress. Never miss the action.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🛡️</div>
+                <h3>Fair Play</h3>
+                <p>Advanced anti-cheat monitoring and dedicated support to ensure fair competition.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🏆</div>
+                <h3>Big Prizes</h3>
+                <p>Compete for substantial prize pools and build your reputation in the gaming community.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Compete?</h2>
+            <p>Join thousands of gamers who trust TourneyHub for their competitive journey. Start your winning streak today!</p>
+            <div class="cta-actions">
+                <a href="register.html" class="btn btn-light btn-large">
+                    <span class="btn-icon">🎮</span>
+                    Start Playing
+                </a>
+                <a href="tournaments.html" class="btn btn-secondary btn-large">
+                    <span class="btn-icon">🔥</span>
+                    Browse Tournaments
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo">
+                    <span class="logo-icon">🏆</span>
+                    <span class="logo-text">TourneyHub</span>
+                </div>
+                <p class="footer-description">The ultimate platform for competitive gaming tournaments and esports events.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Platform</h4>
+                    <a href="tournaments.html">Tournaments</a>
+                    <a href="games.html">Games</a>
+                    <a href="leaderboards.html">Leaderboards</a>
+                    <a href="how-to-play.html">How to Play</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <a href="help.html">Help Center</a>
+                    <a href="contact.html">Contact Us</a>
+                    <a href="faq.html">FAQ</a>
+                    <a href="community.html">Community</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="refund.html">Refund Policy</a>
+                    <a href="cookies.html">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 TourneyHub. All rights reserved. | Built with ❤️ for gamers</p>
+        </div>
+    </footer>
+
+    <!-- Bottom Navigation -->
+   <!-- ULTRA GAMERX BOTTOM NAV -->
+<nav class="bottom-nav">
     <a href="tournaments.html" class="nav-item">
-      <span class="nav-icon">🏆</span>
-      <span class="nav-text">Tournaments</span>
+        <span class="nav-icon">⚔️</span>
+        <span class="nav-text">Tourneys</span>
     </a>
     <a href="games.html" class="nav-item">
-      <span class="nav-icon">🎮</span>
-      <span class="nav-text">Games</span>
+        <span class="nav-icon">🎮</span>
+        <span class="nav-text">Games</span>
     </a>
     <a href="index.html" class="nav-item active">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-text">Home</span>
+        <span class="nav-icon">🏠</span>
+        <span class="nav-text">Home</span>
     </a>
     <a href="leaderboards.html" class="nav-item">
-      <span class="nav-icon">📊</span>
-      <span class="nav-text">Rankings</span>
+        <span class="nav-icon">🏆</span>
+        <span class="nav-text">Rankings</span>
     </a>
-    <a href="dashboard.html" class="nav-item">
-      <span class="nav-icon">👤</span>
-      <span class="nav-text">profile</span>
+    <a href="profile.html" class="nav-item">
+        <span class="nav-icon">👑</span>
+        <span class="nav-text">Pro</span>
     </a>
-  </nav>
+</nav>
 
-  <script>
-    // Loading screen handler
-    window.addEventListener('load', function() {
-      setTimeout(function() {
-        document.getElementById('loadingScreen').classList.add('hidden');
-      }, 2000);
-    });
-
-    // Header scroll effect
-    window.addEventListener('scroll', function() {
-      const header = document.querySelector('.header');
-      if (window.scrollY > 50) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-    });
-
-    // Scroll animations
-    document.addEventListener('DOMContentLoaded', function() {
-      const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-      };
-
-      const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
+    <!-- Firebase & JavaScript -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="index.js"></script>
+    
+    <script>
+        // Enhanced loading screen
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                }
+            }, 1500);
         });
-      }, observerOptions);
 
-      // Observe elements for animation
-      document.querySelectorAll('.game-card, .tournament-card, .feature-card').forEach(card => {
-        observer.observe(card);
-      });
-    });
-  </script>
+        // Enhanced scroll animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Header scroll effect
+            const header = document.getElementById('mainHeader');
+            if (header) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 50) {
+                        header.classList.add('scrolled');
+                    } else {
+                        header.classList.remove('scrolled');
+                    }
+                });
+            }
+
+            // Intersection Observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe fade-in elements
+            document.querySelectorAll('.fade-in').forEach(element => {
+                observer.observe(element);
+            });
+
+            // Enhanced bottom nav interaction
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Remove active class from all items
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    
+                    // Add click feedback
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+
+            // Enhanced button interactions
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.btn')) {
+                    const btn = e.target.closest('.btn');
+                    btn.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        btn.style.transform = '';
+                    }, 150);
+                }
+            });
+
+            // Prevent context menu on interactive elements
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.closest('.btn') || e.target.closest('.nav-item') || e.target.closest('a')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Touch device optimizations
+            if ('ontouchstart' in window) {
+                document.body.classList.add('touch-device');
+                
+                // Improve touch feedback
+                document.addEventListener('touchstart', function() {}, { passive: true });
+                
+                // Prevent zoom on double tap
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', function(event) {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+            }
+        });
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                // Page became visible, refresh tournaments
+                if (typeof loadLiveTournaments === 'function') {
+                    setTimeout(loadLiveTournaments, 1000);
+                }
+            }
+        });
+
+        // Handle online/offline status
+        window.addEventListener('online', function() {
+            if (typeof showNotification === 'function') {
+                showNotification('Connection restored', 'success');
+            }
+            if (typeof loadLiveTournaments === 'function') {
+                setTimeout(loadLiveTournaments, 500);
+            }
+        });
+
+        window.addEventListener('offline', function() {
+            if (typeof showNotification === 'function') {
+                showNotification('You are offline', 'warning');
+            }
+        });
+    </script>
 </body>
 </html>
+[file content end]

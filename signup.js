@@ -1,4 +1,8 @@
-// Firebase Configuration
+// =============================================
+// 🏆 TOURNEYHUB - SIGNUP SCRIPT
+// =============================================
+
+// 🔧 Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
   authDomain: "authapp-386ee.firebaseapp.com",
@@ -9,254 +13,298 @@ const firebaseConfig = {
   measurementId: "G-EJZTSBSGQT"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// 🚀 Initialize Firebase
+try {
+  firebase.initializeApp(firebaseConfig);
+  console.log('🎯 Firebase initialized successfully');
+} catch (error) {
+  console.error('❌ Firebase initialization failed:', error);
+}
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// DOM Elements
+// =============================================
+// 🎯 DOM ELEMENTS
+// =============================================
+
+// 🖼️ Layout Elements
 const loadingScreen = document.getElementById('loadingScreen');
 const mainContent = document.getElementById('mainContent');
 const signupForm = document.getElementById('signupForm');
+const verificationNotice = document.getElementById('verificationNotice');
+
+// 📝 Form Inputs
 const emailInput = document.getElementById('signup-email');
 const passwordInput = document.getElementById('signup-password');
 const confirmPasswordInput = document.getElementById('confirm-password');
+
+// 👁️ Password Toggles
 const passwordToggle = document.getElementById('passwordToggle');
 const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+
+// 🔘 Buttons
 const signupBtn = document.getElementById('signupBtn');
-const signupSpinner = document.getElementById('signupSpinner');
+const resendVerificationBtn = document.getElementById('resendVerification');
+const continueToLoginBtn = document.getElementById('continueToLogin');
+
+// 🎛️ Form Elements
 const agreeTerms = document.getElementById('agreeTerms');
 const newsletter = document.getElementById('newsletter');
+const signupSpinner = document.getElementById('signupSpinner');
+
+// 💬 Hints & Feedback
 const emailHint = document.getElementById('emailHint');
 const passwordStrength = document.getElementById('passwordStrength');
 const strengthFill = document.getElementById('strengthFill');
 const strengthText = document.getElementById('strengthText');
 const confirmHint = document.getElementById('confirmHint');
+
+// 🔔 Notifications
 const notificationToast = document.getElementById('notificationToast');
 const toastIcon = document.getElementById('toastIcon');
 const toastMessage = document.getElementById('toastMessage');
 const toastClose = document.getElementById('toastClose');
-const verificationNotice = document.getElementById('verificationNotice');
-const resendVerificationBtn = document.getElementById('resendVerification');
-const continueToLoginBtn = document.getElementById('continueToLogin');
 
-// State variables
-let passwordValid = false;
-let passwordsMatch = false;
-let currentUser = null;
+// =============================================
+// 🎮 STATE MANAGEMENT
+// =============================================
 
-// Initialize Application
-function initApp() {
-  console.log('Initializing signup application...');
-  
-  // Check if user is already logged in
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      console.log('User already logged in:', user.email);
-      currentUser = user;
-      
-      if (user.emailVerified) {
-        // User is verified, redirect to dashboard
-        showNotification('Welcome back! Redirecting...', 'success');
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
-      } else {
-        // User is logged in but not verified, show verification notice
-        showMainContent();
-        showVerificationNotice();
-      }
-    } else {
-      // User is not logged in, show the signup form
-      showMainContent();
-    }
-  });
-}
+const state = {
+  passwordValid: false,
+  passwordsMatch: false,
+  currentUser: null,
+  isSubmitting: false
+};
 
-// Show Main Content
-function showMainContent() {
-  console.log('Showing signup form...');
-  
-  setTimeout(() => {
-    if (loadingScreen) {
-      loadingScreen.classList.add('hidden');
-    }
-    
-    if (mainContent) {
-      mainContent.style.opacity = '1';
-    }
-  }, 1000);
-}
+// =============================================
+// 🎨 ANIMATION & UI FUNCTIONS
+// =============================================
 
-// Show verification notice
-function showVerificationNotice() {
-  if (verificationNotice) {
-    verificationNotice.classList.add('show');
-    // Hide the signup form
-    if (signupForm) {
-      signupForm.style.display = 'none';
-    }
-  }
-}
-
-// Hide verification notice
-function hideVerificationNotice() {
-  if (verificationNotice) {
-    verificationNotice.classList.remove('show');
-  }
-}
-
-// Show notification toast
+/**
+ * 🎭 Show elegant notification toast
+ */
 function showNotification(message, type = 'info') {
-  // Set appropriate icon based on type
+  if (!notificationToast) return;
+
   const icons = {
     success: '✅',
     error: '❌',
     info: 'ℹ️',
     warning: '⚠️'
   };
-  
+
   toastIcon.textContent = icons[type] || icons.info;
   toastMessage.textContent = message;
-  
-  // Set toast class based on type
   notificationToast.className = `notification-toast show ${type}`;
-  
-  // Auto-hide after 5 seconds for success/info, 8 seconds for errors
+
+  // Auto-hide with different timing based on type
   const hideTime = type === 'error' ? 8000 : 5000;
-  
-  setTimeout(() => {
-    hideNotification();
-  }, hideTime);
+  setTimeout(hideNotification, hideTime);
 }
 
-// Hide notification toast
+/**
+ * 🎭 Hide notification toast
+ */
 function hideNotification() {
-  notificationToast.classList.remove('show');
+  if (notificationToast) {
+    notificationToast.classList.remove('show');
+  }
 }
 
-// Validate email format
+/**
+ * 🎯 Show main content with smooth transition
+ */
+function showMainContent() {
+  setTimeout(() => {
+    loadingScreen?.classList.add('hidden');
+    if (mainContent) {
+      mainContent.style.opacity = '1';
+      mainContent.style.transform = 'translateY(0)';
+    }
+  }, 1000);
+}
+
+/**
+ * 📧 Show verification notice
+ */
+function showVerificationNotice() {
+  if (verificationNotice) {
+    verificationNotice.classList.add('show');
+    signupForm.style.display = 'none';
+    
+    // Add entrance animation
+    setTimeout(() => {
+      verificationNotice.style.transform = 'scale(1)';
+      verificationNotice.style.opacity = '1';
+    }, 100);
+  }
+}
+
+/**
+ * 🔄 Set button loading state
+ */
+function setButtonLoading(button, isLoading) {
+  if (isLoading) {
+    button.classList.add('loading');
+    button.disabled = true;
+  } else {
+    button.classList.remove('loading');
+    button.disabled = false;
+  }
+}
+
+// =============================================
+// 🔐 VALIDATION FUNCTIONS
+// =============================================
+
+/**
+ * ✉️ Validate email format
+ */
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-// Check password strength
+/**
+ * 💪 Check password strength with detailed analysis
+ */
 function checkPasswordStrength(password) {
   let strength = 0;
-  let feedback = '';
-  
+  const feedback = [];
+
+  // Criteria checks
   if (password.length >= 8) strength++;
-  if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+  if (password.match(/[a-z]/)) strength++;
+  if (password.match(/[A-Z]/)) strength++;
   if (password.match(/\d/)) strength++;
   if (password.match(/[^a-zA-Z\d]/)) strength++;
-  
-  // Update visual feedback
+
+  // Reset visual state
   strengthFill.className = 'strength-fill';
   strengthText.className = 'strength-text';
-  
+
   if (password.length === 0) {
     strengthText.textContent = 'Password strength';
-    return { strength: 0, valid: false };
+    return { strength: 0, valid: false, feedback: [] };
   }
-  
-  if (strength <= 1) {
+
+  // Determine strength level
+  if (strength <= 2) {
     strengthFill.classList.add('weak');
     strengthText.classList.add('weak');
     strengthText.textContent = 'Weak password';
-    return { strength: 1, valid: false };
-  } else if (strength <= 3) {
+    state.passwordValid = false;
+  } else if (strength <= 4) {
     strengthFill.classList.add('medium');
     strengthText.classList.add('medium');
     strengthText.textContent = 'Medium strength';
-    return { strength: 2, valid: true };
+    state.passwordValid = true;
   } else {
     strengthFill.classList.add('strong');
     strengthText.classList.add('strong');
     strengthText.textContent = 'Strong password';
-    return { strength: 3, valid: true };
+    state.passwordValid = true;
   }
+
+  return { strength, valid: state.passwordValid };
 }
 
-// Check if passwords match
+/**
+ * 🔄 Check if passwords match
+ */
 function checkPasswordMatch() {
   const password = passwordInput.value;
   const confirmPassword = confirmPasswordInput.value;
-  
+
   if (confirmPassword.length === 0) {
     confirmHint.textContent = 'Passwords must match';
     confirmHint.className = 'input-hint';
     confirmPasswordInput.classList.remove('success', 'error');
+    state.passwordsMatch = false;
     return false;
   }
-  
+
   if (password === confirmPassword) {
-    confirmHint.textContent = 'Passwords match!';
+    confirmHint.textContent = '🎉 Passwords match!';
     confirmHint.className = 'input-hint success';
     confirmPasswordInput.classList.remove('error');
     confirmPasswordInput.classList.add('success');
+    state.passwordsMatch = true;
     return true;
   } else {
-    confirmHint.textContent = 'Passwords do not match';
+    confirmHint.textContent = '❌ Passwords do not match';
     confirmHint.className = 'input-hint error';
     confirmPasswordInput.classList.remove('success');
     confirmPasswordInput.classList.add('error');
+    state.passwordsMatch = false;
     return false;
   }
 }
 
-// Validate form inputs
+/**
+ * 📋 Comprehensive form validation
+ */
 function validateForm(email, password, confirmPassword) {
-  // Reset styles
+  // Reset all styles
   emailInput.classList.remove('error', 'success');
   passwordInput.classList.remove('error', 'success');
   confirmPasswordInput.classList.remove('error', 'success');
-  
+
+  // Check empty fields
   if (!email || !password || !confirmPassword) {
-    showNotification('Please fill in all fields', 'error');
+    showNotification('📝 Please fill in all fields', 'error');
     return false;
   }
-  
+
+  // Validate email format
   if (!isValidEmail(email)) {
-    showNotification('Please enter a valid email address', 'error');
+    showNotification('📧 Please enter a valid email address', 'error');
     emailInput.classList.add('error');
     emailInput.focus();
     return false;
   } else {
     emailInput.classList.add('success');
   }
-  
+
   // Check password strength
   const strengthResult = checkPasswordStrength(password);
   if (!strengthResult.valid) {
-    showNotification('Please use a stronger password (min 8 characters with mix of letters, numbers, and symbols)', 'error');
+    showNotification('🔒 Please use a stronger password (min 8 characters with mix of letters, numbers, and symbols)', 'error');
     passwordInput.classList.add('error');
     passwordInput.focus();
     return false;
   } else {
     passwordInput.classList.add('success');
   }
-  
+
   // Check password match
   if (!checkPasswordMatch()) {
-    showNotification('Passwords do not match', 'error');
+    showNotification('🔑 Passwords do not match', 'error');
     confirmPasswordInput.focus();
     return false;
   }
-  
+
+  // Check terms agreement
   if (!agreeTerms.checked) {
-    showNotification('Please agree to the Terms of Service and Privacy Policy', 'error');
+    showNotification('📜 Please agree to the Terms of Service and Privacy Policy', 'error');
     agreeTerms.focus();
     return false;
   }
-  
+
   return true;
 }
 
-// Create user profile in Firestore
+// =============================================
+// 🔥 FIREBASE FUNCTIONS
+// =============================================
+
+/**
+ * 👤 Create user profile in Firestore
+ */
 async function createUserProfile(user, email) {
   try {
-    await db.collection('users').doc(user.uid).set({
+    const userData = {
       email: email,
       displayName: email.split('@')[0],
       role: 'user',
@@ -266,281 +314,338 @@ async function createUserProfile(user, email) {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       newsletterSubscribed: newsletter.checked,
-      emailVerified: false
-    });
-    console.log('User profile created successfully');
+      emailVerified: false,
+      lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await db.collection('users').doc(user.uid).set(userData);
+    console.log('✅ User profile created successfully');
+    return true;
   } catch (error) {
-    console.error('Error creating user profile:', error);
+    console.error('❌ Error creating user profile:', error);
     throw new Error('Failed to create user profile');
   }
 }
 
-// FIXED: Send email verification for GitHub Pages
+/**
+ * 📨 Send email verification with GitHub Pages support
+ */
 async function sendEmailVerification(user) {
   try {
-    console.log('Sending email verification for GitHub Pages...');
-    
-    // Use GitHub Pages URL as redirect
+    console.log('📧 Sending email verification...');
+
+    // Use GitHub Pages URL for redirect
     const actionCodeSettings = {
       url: 'https://mishbahop.github.io/tournamnt/login.html',
       handleCodeInApp: false
     };
-    
-    console.log('Using GitHub Pages redirect URL:', actionCodeSettings.url);
-    
+
     await user.sendEmailVerification(actionCodeSettings);
-    console.log('Verification email sent successfully');
+    console.log('✅ Verification email sent successfully');
     return true;
   } catch (error) {
-    console.error('Error sending verification email:', error);
-    
-    let errorMessage = 'Failed to send verification email. ';
-    
-    switch (error.code) {
-      case 'auth/too-many-requests':
-        errorMessage += 'Too many attempts. Please try again later.';
-        break;
-      case 'auth/user-not-found':
-        errorMessage += 'User not found.';
-        break;
-      case 'auth/invalid-email':
-        errorMessage += 'Invalid email address.';
-        break;
-      case 'auth/network-request-failed':
-        errorMessage += 'Network error. Please check your connection.';
-        break;
-      case 'auth/unauthorized-continue-uri':
-        // Fallback: try without custom redirect
-        try {
-          console.log('Custom redirect failed, trying without redirect...');
-          await user.sendEmailVerification();
-          console.log('Fallback: Email sent without custom redirect');
-          return true;
-        } catch (fallbackError) {
-          errorMessage += ' Please make sure "mishbahop.github.io" is added to authorized domains in Firebase Console.';
-          throw new Error(errorMessage);
-        }
-      default:
-        errorMessage += error.message || 'Please try again later.';
+    console.error('❌ Email verification error:', error);
+
+    // Fallback: Try without custom redirect
+    if (error.code === 'auth/unauthorized-continue-uri') {
+      try {
+        console.log('🔄 Trying fallback without custom redirect...');
+        await user.sendEmailVerification();
+        console.log('✅ Fallback email sent successfully');
+        return true;
+      } catch (fallbackError) {
+        throw new Error('Please add "mishbahop.github.io" to authorized domains in Firebase Console');
+      }
     }
-    
-    throw new Error(errorMessage);
+
+    throw new Error(`Failed to send verification email: ${error.message}`);
   }
 }
 
-// Resend verification email
+/**
+ * 🔄 Resend verification email
+ */
 async function resendVerificationEmail() {
-  if (!currentUser) {
-    showNotification('No user found. Please sign up again.', 'error');
+  if (!state.currentUser) {
+    showNotification('❌ No user found. Please sign up again.', 'error');
     return;
   }
-  
+
   try {
-    resendVerificationBtn.disabled = true;
+    setButtonLoading(resendVerificationBtn, true);
     resendVerificationBtn.innerHTML = '<span class="btn-text">Sending...</span>';
-    
-    await sendEmailVerification(currentUser);
-    showNotification('Verification email sent successfully! Check your inbox.', 'success');
-    
-    // Re-enable button after 30 seconds
+
+    await sendEmailVerification(state.currentUser);
+    showNotification('✅ Verification email sent! Check your inbox.', 'success');
+
+    // Disable resend for 30 seconds
     setTimeout(() => {
-      resendVerificationBtn.disabled = false;
+      setButtonLoading(resendVerificationBtn, false);
       resendVerificationBtn.innerHTML = '<span class="btn-text">Resend Verification Email</span>';
     }, 30000);
-    
+
   } catch (error) {
-    console.error('Error resending verification email:', error);
+    console.error('❌ Resend error:', error);
     showNotification(error.message, 'error');
-    resendVerificationBtn.disabled = false;
+    setButtonLoading(resendVerificationBtn, false);
     resendVerificationBtn.innerHTML = '<span class="btn-text">Resend Verification Email</span>';
   }
 }
 
-// Toggle password visibility
+// =============================================
+// 🎛️ UI INTERACTION FUNCTIONS
+// =============================================
+
+/**
+ * 👁️ Toggle password visibility
+ */
 function togglePasswordVisibility(inputElement, toggleButton) {
   const type = inputElement.getAttribute('type') === 'password' ? 'text' : 'password';
   inputElement.setAttribute('type', type);
   
-  // Update toggle button icon
   const toggleIcon = toggleButton.querySelector('.toggle-icon');
   toggleIcon.textContent = type === 'password' ? '👁️' : '🔒';
+  
+  // Add smooth animation
+  toggleButton.style.transform = 'scale(0.95)';
+  setTimeout(() => {
+    toggleButton.style.transform = 'scale(1)';
+  }, 150);
 }
 
-// Handle signup form submission
+/**
+ * 📧 Handle email input with real-time validation
+ */
+function handleEmailInput() {
+  const email = emailInput.value.trim();
+  
+  if (email && !isValidEmail(email)) {
+    emailInput.classList.add('error');
+    emailHint.textContent = '❌ Please enter a valid email address';
+    emailHint.className = 'input-hint error';
+  } else if (email) {
+    emailInput.classList.remove('error');
+    emailInput.classList.add('success');
+    emailHint.textContent = '✅ Valid email address';
+    emailHint.className = 'input-hint success';
+  } else {
+    emailInput.classList.remove('error', 'success');
+    emailHint.textContent = '📧 We\'ll send a verification link to this email';
+    emailHint.className = 'input-hint';
+  }
+}
+
+// =============================================
+// 🚀 MAIN SIGNUP FUNCTION
+// =============================================
+
+/**
+ * 🎯 Handle signup form submission
+ */
 async function handleSignup(event) {
   event.preventDefault();
+  
+  if (state.isSubmitting) return;
   
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
   const confirmPassword = confirmPasswordInput.value.trim();
-  
+
   // Validate form
   if (!validateForm(email, password, confirmPassword)) {
     return;
   }
-  
-  // Show loading state
-  signupBtn.classList.add('loading');
-  signupBtn.disabled = true;
-  
+
+  // Set loading state
+  state.isSubmitting = true;
+  setButtonLoading(signupBtn, true);
+  showNotification('🔄 Creating your account...', 'info');
+
   try {
-    console.log('Attempting signup...');
-    showNotification('Creating your account...', 'info');
-    
+    console.log('🚀 Starting signup process...');
+
     // Create user with Firebase Auth
     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-    currentUser = userCredential.user;
-    
-    console.log('Signup successful:', currentUser.email);
-    
+    state.currentUser = userCredential.user;
+
+    console.log('✅ Firebase Auth user created:', state.currentUser.uid);
+
     // Create user profile in Firestore
-    await createUserProfile(currentUser, email);
+    await createUserProfile(state.currentUser, email);
+
+    // Send verification email
+    await sendEmailVerification(state.currentUser);
+
+    // Show success state
+    showNotification(`🎉 Welcome to TourneyHub, ${state.currentUser.email.split('@')[0]}! Verification email sent.`, 'success');
     
-    // Send email verification
-    try {
-      await sendEmailVerification(currentUser);
-      showNotification(`Welcome to TourneyHub! Verification email sent to ${currentUser.email}`, 'success');
-    } catch (verificationError) {
-      console.error('Verification email failed:', verificationError);
-      // Don't fail the entire signup if verification email fails
-      showNotification(`Account created! But verification email failed: ${verificationError.message}`, 'warning');
-    }
-    
-    // Show verification notice
-    showVerificationNotice();
-    
+    // Show verification notice with delay for better UX
+    setTimeout(() => {
+      showVerificationNotice();
+    }, 1500);
+
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('❌ Signup error:', error);
     
-    // Handle specific error cases
-    let errorMessage = 'Signup failed. Please try again.';
-    
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = 'This email is already registered. Please login instead.';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Invalid email address format.';
-        break;
-      case 'auth/weak-password':
-        errorMessage = 'Password is too weak. Please use a stronger password.';
-        break;
-      case 'auth/operation-not-allowed':
-        errorMessage = 'Email/password accounts are not enabled. Please contact support.';
-        break;
-      case 'auth/network-request-failed':
-        errorMessage = 'Network error. Please check your connection.';
-        break;
-      case 'auth/too-many-requests':
-        errorMessage = 'Too many attempts. Please try again later.';
-        break;
-      default:
-        errorMessage = error.message || 'Signup failed. Please try again.';
-    }
-    
+    const errorMessages = {
+      'auth/email-already-in-use': '📧 This email is already registered. Please login instead.',
+      'auth/invalid-email': '❌ Invalid email address format.',
+      'auth/weak-password': '🔒 Password is too weak. Please use a stronger password.',
+      'auth/operation-not-allowed': '⚙️ Email/password accounts are not enabled. Please contact support.',
+      'auth/network-request-failed': '📡 Network error. Please check your connection.',
+      'auth/too-many-requests': '🚫 Too many attempts. Please try again later.'
+    };
+
+    const errorMessage = errorMessages[error.code] || `Signup failed: ${error.message}`;
     showNotification(errorMessage, 'error');
+
   } finally {
-    // Reset loading state
-    signupBtn.classList.remove('loading');
-    signupBtn.disabled = false;
+    state.isSubmitting = false;
+    setButtonLoading(signupBtn, false);
   }
 }
 
-// Continue to login
-function continueToLogin() {
-  window.location.href = 'login.html';
+// =============================================
+// 🎪 APPLICATION INITIALIZATION
+// =============================================
+
+/**
+ * 🏁 Initialize the application
+ */
+function initApp() {
+  console.log('🎮 Initializing TourneyHub Signup...');
+
+  // Check authentication state
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      console.log('🔐 User session found:', user.email);
+      state.currentUser = user;
+
+      if (user.emailVerified) {
+        showNotification('✅ Welcome back! Redirecting to dashboard...', 'success');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 2000);
+      } else {
+        showMainContent();
+        showVerificationNotice();
+      }
+    } else {
+      showMainContent();
+    }
+  });
 }
 
-// Event Listeners
+/**
+ * 🎯 Setup all event listeners
+ */
 function setupEventListeners() {
   // Form submission
   if (signupForm) {
     signupForm.addEventListener('submit', handleSignup);
   }
-  
+
   // Password visibility toggles
   if (passwordToggle) {
     passwordToggle.addEventListener('click', () => {
       togglePasswordVisibility(passwordInput, passwordToggle);
     });
   }
-  
+
   if (confirmPasswordToggle) {
     confirmPasswordToggle.addEventListener('click', () => {
       togglePasswordVisibility(confirmPasswordInput, confirmPasswordToggle);
     });
   }
-  
-  // Real-time password strength checking
+
+  // Real-time validation
+  if (emailInput) {
+    emailInput.addEventListener('input', handleEmailInput);
+    emailInput.addEventListener('blur', handleEmailInput);
+  }
+
   if (passwordInput) {
     passwordInput.addEventListener('input', () => {
       checkPasswordStrength(passwordInput.value);
       checkPasswordMatch();
     });
   }
-  
-  // Real-time password match checking
+
   if (confirmPasswordInput) {
     confirmPasswordInput.addEventListener('input', checkPasswordMatch);
   }
-  
-  // Email validation on blur
-  if (emailInput) {
-    emailInput.addEventListener('blur', () => {
-      const email = emailInput.value.trim();
-      if (email && !isValidEmail(email)) {
-        emailInput.classList.add('error');
-        emailHint.textContent = 'Please enter a valid email address';
-        emailHint.className = 'input-hint error';
-      } else if (email) {
-        emailInput.classList.remove('error');
-        emailInput.classList.add('success');
-        emailHint.textContent = 'Valid email address';
-        emailHint.className = 'input-hint success';
-      } else {
-        emailInput.classList.remove('error', 'success');
-        emailHint.textContent = 'We\'ll send a verification link to this email';
-        emailHint.className = 'input-hint';
-      }
-    });
-  }
-  
-  // Toast close button
+
+  // Notification close
   if (toastClose) {
     toastClose.addEventListener('click', hideNotification);
   }
-  
-  // Resend verification button
+
+  // Verification actions
   if (resendVerificationBtn) {
     resendVerificationBtn.addEventListener('click', resendVerificationEmail);
   }
-  
-  // Continue to login button
+
   if (continueToLoginBtn) {
-    continueToLoginBtn.addEventListener('click', continueToLogin);
+    continueToLoginBtn.addEventListener('click', () => {
+      window.location.href = 'login.html';
+    });
   }
-  
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      hideNotification();
+    }
+  });
+
   // Enter key to submit form
   if (confirmPasswordInput) {
     confirmPasswordInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !state.isSubmitting) {
         handleSignup(e);
       }
     });
   }
 }
 
-// Initialize when DOM is loaded
+// =============================================
+// 🎉 APPLICATION START
+// =============================================
+
+/**
+ * 🏃‍♂️ Start the application when DOM is ready
+ */
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM fully loaded');
+  console.log('🎊 DOM fully loaded - Starting TourneyHub');
+  
   setupEventListeners();
   initApp();
+  
+  // Add some fun console messages
+  console.log('🌈 Welcome to TourneyHub! Ready for some tournaments? 🏆');
 });
 
-// Fallback: if loading takes too long, force show content
+/**
+ * 🕐 Fallback: Force show content if loading takes too long
+ */
 setTimeout(() => {
   if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
-    console.log('Fallback: forcing content to show');
+    console.log('⏰ Loading timeout - Showing content');
     showMainContent();
   }
 }, 5000);
+
+// =============================================
+// 🎁 EXPORT FUNCTIONS FOR GLOBAL ACCESS
+// =============================================
+
+window.TourneyHub = {
+  handleSignup,
+  togglePasswordVisibility,
+  checkPasswordStrength,
+  resendVerificationEmail,
+  showNotification,
+  hideNotification
+};
+
+console.log('🎯 TourneyHub Signup Script Loaded Successfully!');

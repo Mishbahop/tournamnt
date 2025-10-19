@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TourneyHub - Tournament Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="tournament.css">
+        <link rel="stylesheet" href="css/tournament-common.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="tournament.css">
     <style>
         /* Ultra-Modern Mobile Gaming Design */
         :root {
@@ -807,84 +812,7 @@
             color: var(--text-secondary);
         }
 
-        /* Professional Mobile Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(20, 20, 35, 0.98);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            display: flex;
-            justify-content: space-around;
-            padding: 15px 10px;
-            z-index: 1000;
-            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            padding: 12px 16px;
-            border-radius: 20px;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative;
-            overflow: hidden;
-            min-width: 70px;
-            text-decoration: none;
-            color: var(--text-secondary);
-        }
-
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-neon);
-            transition: left 0.4s ease;
-            z-index: -1;
-            border-radius: 20px;
-        }
-
-        .nav-item.active::before {
-            left: 0;
-        }
-
-        .nav-item.active {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-glow);
-            color: white;
-        }
-
-        .nav-icon {
-            font-size: 1.6rem;
-            transition: all 0.3s ease;
-            z-index: 1;
-        }
-
-        .nav-item.active .nav-icon {
-            transform: scale(1.2);
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
-        }
-
-        .nav-text {
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            z-index: 1;
-        }
-
-        .nav-item.active .nav-text {
-            color: white;
-            font-weight: 800;
-        }
+ 
 
         /* Responsive Design */
         @media (min-width: 768px) {
@@ -1054,26 +982,94 @@
     </div>
 
     <!-- Professional Bottom Navigation (Mobile) -->
-    <nav class="bottom-nav">
-        <a href="tournaments.html" class="nav-item">
-            <span class="nav-icon">🏆</span>
-            <span class="nav-text">Tournaments</span>
-        </a>
-        <a href="wallet.html" class="nav-item">
-            <span class="nav-icon">💰</span>
-            <span class="nav-text">Wallet</span>
-        </a>
-        <a href="admin.html" class="nav-item">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-text">Organizer</span>
-        </a>
-        <a href="dashboard.html" class="nav-item active">
-            <span class="nav-icon">👤</span>
-            <span class="nav-text">Profile</span>
-        </a>
-    </nav>
+        <nav class="bottom-nav">
+            <a href="tournaments.html" class="nav-item">
+                <span class="nav-icon">⚔️</span>
+                <span class="nav-text">Tourneys</span>
+            </a>
+            <a href="games.html" class="nav-item">
+                <span class="nav-icon">🎮</span>
+                <span class="nav-text">Games</span>
+            </a>
+            <a href="index.html" class="nav-item active">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Home</span>
+            </a>
+
+          
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon">👑</span>
+                <span class="nav-text">Pro</span>
+            </a>
+            <a href="wallet.html" class="nav-item">
+      <span class="nav-icon">💰</span> 
+      <span class="nav-text">Wallet</span>
+
+        </nav>
 
     <!-- Firebase SDKs -->
+        <script>
+            // Enhanced bottom nav interaction and animations
+            document.addEventListener('DOMContentLoaded', function() {
+                // Bottom nav active state
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        this.classList.add('active');
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => { this.style.transform = ''; }, 150);
+                    });
+                });
+
+                // Button click feedback
+                document.addEventListener('click', function(e) {
+                    if (e.target.closest('.btn')) {
+                        const btn = e.target.closest('.btn');
+                        btn.style.transform = 'scale(0.98)';
+                        setTimeout(() => { btn.style.transform = ''; }, 150);
+                    }
+                });
+
+                // Prevent context menu on interactive elements
+                document.addEventListener('contextmenu', function(e) {
+                    if (e.target.closest('.btn') || e.target.closest('.nav-item') || e.target.closest('a')) {
+                        e.preventDefault();
+                    }
+                });
+
+                // Touch device optimizations
+                if ('ontouchstart' in window) {
+                    document.body.classList.add('touch-device');
+                    document.addEventListener('touchstart', function() {}, { passive: true });
+                    let lastTouchEnd = 0;
+                    document.addEventListener('touchend', function(event) {
+                        const now = (new Date()).getTime();
+                        if (now - lastTouchEnd <= 300) {
+                            event.preventDefault();
+                        }
+                        lastTouchEnd = now;
+                    }, false);
+                }
+
+                // Show Organizer nav only for admins
+                // Replace this with your actual admin check logic
+                function isAdmin() {
+                    // Example: check localStorage, cookie, or Firebase user role
+                    // return true if user is admin
+                    // For demo, set to false; replace with real check
+                    return localStorage.getItem('isAdmin') === 'true';
+                }
+                const organizerNav = document.getElementById('organizerNav');
+                if (organizerNav) {
+                    if (isAdmin()) {
+                        organizerNav.style.display = '';
+                    } else {
+                        organizerNav.style.display = 'none';
+                    }
+                }
+            });
+        </script>
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
@@ -1580,60 +1576,243 @@ console.log('Dashboard initialized');
                 });
             });
             
-            // Add some sample data for demonstration
-            setTimeout(() => {
-                // This is just for demonstration - replace with your actual data loading
-                document.getElementById('live-tournaments').innerHTML = `
-                    <div class="tournament-card featured">
-                        <div class="tournament-header">
-                            <div class="tournament-game">
-                                <div class="game-icon">🎯</div>
-                                <div class="game-info">
-                                    <div class="game-name">Valorant</div>
-                                    <div class="game-category">5v5 Tactical</div>
+            // Load live and upcoming tournaments
+            loadLiveTournaments();
+            
+            // Function to load live tournaments
+            async function loadLiveTournaments() {
+                const container = document.getElementById('live-tournaments');
+                if (!container) return;
+                
+                container.innerHTML = '<div class="loading">Loading tournaments...</div>';
+                
+                try {
+                    const now = firebase.firestore.Timestamp.now();
+                    
+                    // Fetch active tournaments
+                    const activeTournamentsSnapshot = await db.collection('tournaments')
+                        .where('status', '==', 'active')
+                        .orderBy('startDate', 'desc')
+                        .get();
+                        
+                    // Fetch upcoming tournaments
+                    const upcomingTournamentsSnapshot = await db.collection('tournaments')
+                        .where('status', '==', 'upcoming')
+                        .where('startDate', '>', now)
+                        .orderBy('startDate', 'asc')
+                        .limit(5)
+                        .get();
+                    
+                    const tournaments = [];
+                    
+                    // Process active tournaments
+                    activeTournamentsSnapshot.forEach(doc => {
+                        tournaments.push({ id: doc.id, ...doc.data(), isActive: true });
+                    });
+                    
+                    // Process upcoming tournaments
+                    upcomingTournamentsSnapshot.forEach(doc => {
+                        tournaments.push({ id: doc.id, ...doc.data(), isActive: false });
+                    });
+                    
+                    if (tournaments.length === 0) {
+                        container.innerHTML = `
+                            <div class="no-data">
+                                <div class="no-data-icon">🏆</div>
+                                <h3>No Active Tournaments</h3>
+                                <p>Check back later for upcoming tournaments!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Sort tournaments: active first, then by start date
+                    tournaments.sort((a, b) => {
+                        if (a.isActive && !b.isActive) return -1;
+                        if (!a.isActive && b.isActive) return 1;
+                        return a.startDate.toMillis() - b.startDate.toMillis();
+                    });
+                    
+                    // Render tournaments
+                    container.innerHTML = tournaments.map(tournament => `
+                        <div class="tournament-card ${tournament.isActive ? 'featured' : ''}">
+                            <div class="tournament-header">
+                                <div class="tournament-game">
+                                    <div class="game-icon">
+                                        ${getGameIcon(tournament.game)}
+                                    </div>
+                                    <div class="game-info">
+                                        <div class="game-name">${tournament.game || 'Unknown Game'}</div>
+                                        <div class="game-category">${tournament.gameType || 'Tournament'}</div>
+                                    </div>
+                                </div>
+                                <div class="tournament-status ${tournament.isActive ? 'status-live' : 'status-upcoming'}">
+                                    ${tournament.isActive ? '<span class="live-pulse"></span> LIVE' : 'UPCOMING'}
                                 </div>
                             </div>
-                            <div class="tournament-status status-live">
-                                <span class="live-pulse"></span>
-                                LIVE
+                            <div class="tournament-body">
+                                <h3 class="tournament-title">${tournament.title || 'Untitled Tournament'}</h3>
+                                <div class="tournament-details">
+                                    <div class="tournament-detail">
+                                        <span class="detail-icon">💰</span>
+                                        <span>Prize: ₹${(tournament.prizePool || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div class="tournament-detail">
+                                        <span class="detail-icon">🎫</span>
+                                        <span>Entry: ₹${(tournament.entryFee || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div class="tournament-detail">
+                                        <span class="detail-icon">👥</span>
+                                        <span>${tournament.currentPlayers || 0}/${tournament.maxPlayers || '∞'} Players</span>
+                                    </div>
+                                </div>
+                                ${tournament.maxPlayers ? `
+                                    <div class="tournament-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: ${((tournament.currentPlayers || 0) / tournament.maxPlayers * 100)}%"></div>
+                                        </div>
+                                        <div class="progress-text">${Math.round((tournament.currentPlayers || 0) / tournament.maxPlayers * 100)}% filled</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="tournament-footer">
+                                <div class="tournament-timer">
+                                    <span class="timer-icon">⏰</span>
+                                    <span>${tournament.isActive ? 
+                                        'Started: ' + formatTimeAgo(tournament.startDate) :
+                                        'Starts: ' + formatDate(tournament.startDate)
+                                    }</span>
+                                </div>
+                                <div class="tournament-actions">
+                                    ${canJoinTournament(tournament) ? `
+                                        <button class="btn btn-primary" onclick="joinTournament('${tournament.id}')">
+                                            🎮 Join Now
+                                        </button>
+                                    ` : ''}
+                                    <button class="btn btn-secondary" onclick="viewTournament('${tournament.id}')">
+                                        📊 Details
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="tournament-body">
-                            <h3 class="tournament-title">Valorant Champions Showdown</h3>
-                            <div class="tournament-details">
-                                <div class="tournament-detail">
-                                    <span class="detail-icon">💰</span>
-                                    <span>Prize: $50,000</span>
-                                </div>
-                                <div class="tournament-detail">
-                                    <span class="detail-icon">🎫</span>
-                                    <span>Entry: $10</span>
-                                </div>
-                                <div class="tournament-detail">
-                                    <span class="detail-icon">👥</span>
-                                    <span>24/32 Players</span>
-                                </div>
-                            </div>
-                            <div class="tournament-progress">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 75%"></div>
-                                </div>
-                                <div class="progress-text">75% filled</div>
-                            </div>
+                    `).join('');
+                    
+                } catch (error) {
+                    console.error('Error loading tournaments:', error);
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <div class="no-data-icon">❌</div>
+                            <h3>Error Loading Tournaments</h3>
+                            <p>Please try again later</p>
                         </div>
-                        <div class="tournament-footer">
-                            <div class="tournament-timer">
-                                <span class="timer-icon">⏰</span>
-                                <span>Started: Just now</span>
-                            </div>
-                            <div class="tournament-actions">
-                                <button class="btn btn-primary">🎮 Join Now</button>
-                                <button class="btn btn-secondary">📊 Details</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }, 1000);
+                    `;
+                }
+            }
+
+            // Utility function to get game icon
+            function getGameIcon(game) {
+                const icons = {
+                    'BGMI': '🎯',
+                    'Free Fire': '🔫',
+                    'Call of Duty Mobile': '💥',
+                    'Clash Royale': '⚔️',
+                    '8 Ball Pool': '🎱'
+                };
+                return icons[game] || '🎮';
+            }
+
+            // Utility function to format time ago
+            function formatTimeAgo(timestamp) {
+                if (!timestamp) return 'N/A';
+                
+                const now = firebase.firestore.Timestamp.now();
+                const diff = now.seconds - timestamp.seconds;
+                
+                if (diff < 60) return 'Just now';
+                if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
+                if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+                return Math.floor(diff / 86400) + ' days ago';
+            }
+
+            // Utility function to check if user can join tournament
+            function canJoinTournament(tournament) {
+                if (!currentUser) return false;
+                if (tournament.status === 'completed') return false;
+                if (tournament.currentPlayers >= tournament.maxPlayers) return false;
+                // Add more conditions as needed (e.g., check if user is already registered)
+                return true;
+            }
+
+            // Function to join tournament
+            async function joinTournament(tournamentId) {
+                if (!currentUser) {
+                    alert('Please sign in to join tournaments');
+                    return;
+                }
+                
+                try {
+                    // Get tournament data
+                    const tournamentDoc = await db.collection('tournaments').doc(tournamentId).get();
+                    const tournamentData = tournamentDoc.data();
+                    
+                    // Check if tournament is full
+                    if (tournamentData.currentPlayers >= tournamentData.maxPlayers) {
+                        alert('Tournament is full!');
+                        return;
+                    }
+                    
+                    // Check if user has sufficient balance
+                    const walletDoc = await db.collection('wallets').doc(currentUser.uid).get();
+                    const walletData = walletDoc.data() || { balance: 0 };
+                    
+                    if (walletData.balance < tournamentData.entryFee) {
+                        alert('Insufficient balance! Please add funds to your wallet.');
+                        return;
+                    }
+                    
+                    // Add user to tournament
+                    await db.runTransaction(async transaction => {
+                        // Update tournament player count
+                        transaction.update(db.collection('tournaments').doc(tournamentId), {
+                            currentPlayers: firebase.firestore.FieldValue.increment(1)
+                        });
+                        
+                        // Deduct entry fee from wallet
+                        transaction.update(db.collection('wallets').doc(currentUser.uid), {
+                            balance: firebase.firestore.FieldValue.increment(-tournamentData.entryFee),
+                            transactions: firebase.firestore.FieldValue.arrayUnion({
+                                amount: -tournamentData.entryFee,
+                                description: `Tournament Entry: ${tournamentData.title}`,
+                                date: firebase.firestore.FieldValue.serverTimestamp(),
+                                type: 'tournament_entry',
+                                status: 'completed',
+                                tournamentId
+                            })
+                        });
+                        
+                        // Add tournament to user's tournaments
+                        const userTournamentsRef = db.collection('userTournaments').doc(currentUser.uid);
+                        const userTournamentsDoc = await transaction.get(userTournamentsRef);
+                        
+                        if (!userTournamentsDoc.exists) {
+                            transaction.set(userTournamentsRef, {
+                                tournamentIds: [tournamentId]
+                            });
+                        } else {
+                            transaction.update(userTournamentsRef, {
+                                tournamentIds: firebase.firestore.FieldValue.arrayUnion(tournamentId)
+                            });
+                        }
+                    });
+                    
+                    alert('Successfully joined the tournament!');
+                    loadLiveTournaments(); // Refresh the list
+                    
+                } catch (error) {
+                    console.error('Error joining tournament:', error);
+                    alert('Error joining tournament. Please try again.');
+                }
+            }
         });
     </script>
 </body>

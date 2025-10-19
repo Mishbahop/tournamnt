@@ -1,10 +1,9 @@
-
 // Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
     authDomain: "authapp-386ee.firebaseapp.com",
     projectId: "authapp-386ee",
-    storageBucket: "authapp-386ee.firebasestorage.app",
+    storageBucket: "authapp-386ee.appspot.com",
     messagingSenderId: "809698525310",
     appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
     measurementId: "G-EJZTSBSGQT"
@@ -32,31 +31,23 @@ let currentProgress = 0;
 
 // ==================== LOADING SCREEN ====================
 function updateProgress() {
-    const progressFill = document.getElementById('progressFill');
-    const loadingText = document.getElementById('loadingText');
-    
+    // Prefer the loading subtitle element present in HTML (class "loading-subtitle")
+    const loadingTextEl = document.querySelector('.loading-subtitle');
     if (currentProgress < 100) {
         currentProgress += Math.random() * 10 + 5;
-        
         if (currentProgress > 100) currentProgress = 100;
-        
-        if (progressFill) {
-            progressFill.style.width = currentProgress + '%';
-        }
-        
-        // Update loading text
-        if (loadingText) {
+        // update visible loading text (if present)
+        if (loadingTextEl) {
             if (currentProgress < 30) {
-                loadingText.textContent = 'Loading tournaments...';
+                loadingTextEl.textContent = 'Loading tournaments...';
             } else if (currentProgress < 60) {
-                loadingText.textContent = 'Setting up gaming environment...';
+                loadingTextEl.textContent = 'Setting up gaming environment...';
             } else if (currentProgress < 90) {
-                loadingText.textContent = 'Almost ready...';
+                loadingTextEl.textContent = 'Almost ready...';
             } else {
-                loadingText.textContent = 'Ready to compete!';
+                loadingTextEl.textContent = 'Ready to compete!';
             }
         }
-        
         if (currentProgress >= 100) {
             setTimeout(hideLoadingScreen, 500);
         } else {
@@ -70,12 +61,68 @@ function hideLoadingScreen() {
     if (loadingScreen) {
         loadingScreen.classList.add('hidden');
         setTimeout(() => {
-            if (loadingScreen.parentElement) {
-                loadingScreen.remove();
-            }
+            if (loadingScreen.parentElement) loadingScreen.remove();
         }, 600);
     }
 }
+
+/* --- Fallback: force-hide loading UI if initialization hangs --- */
+(function() {
+	// Time (ms) before forcing UI to proceed
+	const FORCE_HIDE_TIMEOUT = 8000;
+
+	function forceHideLoading() {
+		try {
+			// Hide any global loading-screen
+			document.querySelectorAll('.loading-screen').forEach(el => {
+				el.classList.add('hidden');
+				// remove after a short delay to allow CSS transition
+				setTimeout(() => el.remove(), 600);
+			});
+
+			// Replace common inline loading placeholders (so sections don't show indefinite "Loading...")
+			document.querySelectorAll('.loading, .loading-spinner, .loading-state').forEach(el => {
+				// If the element is inside a known container (like live-tournaments), swap to a friendly no-data message
+				const parent = el.closest('#live-tournaments, #my-tournaments, #my-matches, #wallet-balance, #content, #tabContent');
+				if (parent) {
+					parent.innerHTML = `<div class="no-data">No data available right now — try refreshing.</div>`;
+				} else {
+					// otherwise remove the stub
+					el.remove();
+				}
+			});
+
+			// Ensure main content areas are visible (if they exist)
+			document.querySelectorAll('#mainContent, .main-content, .container, .wallet-container').forEach(el => {
+				el.style.display = el.style.display || 'block';
+				el.classList.add('fade-in');
+			});
+
+			console.info('forceHideLoading: fallback UI shown');
+		} catch (err) {
+			console.warn('forceHideLoading error', err);
+		}
+	}
+
+	// Schedule the fallback — will be no-op if hideLoadingScreen already ran
+	window.addEventListener('load', () => {
+		setTimeout(() => {
+			// If any .loading-screen still exists and is visible, force-hide
+			const anyLoading = Array.from(document.querySelectorAll('.loading-screen')).some(el => {
+				return el && (getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).opacity !== '0');
+			});
+			if (anyLoading) forceHideLoading();
+		}, FORCE_HIDE_TIMEOUT);
+	});
+
+	// Also run a safety fallback if DOMContentLoaded fired but app didn't finish init
+	document.addEventListener('DOMContentLoaded', () => {
+		setTimeout(() => {
+			const anyLoading = document.querySelector('.loading-screen');
+			if (anyLoading) forceHideLoading();
+		}, FORCE_HIDE_TIMEOUT);
+	});
+})();
 
 // ==================== AUTHENTICATION ====================
 // Check authentication state
@@ -118,94 +165,110 @@ function updateUIForGuest() {
 
 // ==================== TOURNAMENTS ====================
 // Load Live Tournaments for Homepage
-async function loadLiveTournaments() {
-    const container = document.getElementById('liveTournamentsContainer');
+function loadLiveTournaments() {
+    // guard to avoid rapid re-invocations / duplicate listener setup
+    if (loadLiveTournaments._last && Date.now() - loadLiveTournaments._last < 700) {
+        console.log('loadLiveTournaments: debounced');
+        return;
+    }
+    loadLiveTournaments._last = Date.now();
+
+    const container = document.getElementById('live-tournaments');
     if (!container) {
         console.log('Tournaments container not found');
         return;
     }
-    
-    // Show loading state
-    container.innerHTML = `
-        <div class="loading-tournaments">
-            <div class="loading-spinner"></div>
-            <p>Loading tournaments...</p>
-        </div>
-    `;
-    
+
+    // Show temporary loading state
+    container.innerHTML = `<div class="loading">Loading live tournaments...</div>`;
+
+    // Clean up previous listener if exists
+    if (window.__tournamentsListenerCleanup) {
+        try { window.__tournamentsListenerCleanup(); } catch (e) { console.warn(e); }
+        window.__tournamentsListenerCleanup = null;
+    }
+
     try {
-        console.log('Fetching tournaments from Firestore...');
-        
-        // Clean up previous listener
-        if (tournamentsListener) {
-            tournamentsListener();
-        }
-        
-        // Get tournaments with different statuses
-        tournamentsListener = db.collection("tournaments")
+        // attach listener
+        const q = db.collection("tournaments")
             .where("status", "in", ["live", "registering", "upcoming"])
             .orderBy("status")
             .orderBy("startDate", "asc")
-            .limit(6)
-            .onSnapshot(async (snapshot) => {
-                console.log(`Found ${snapshot.size} tournaments`);
-                
-                if (snapshot.empty) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary); grid-column: 1 / -1;">
-                            <div style="font-size: 4rem; margin-bottom: 20px;">🎮</div>
-                            <h3 style="margin-bottom: 15px; color: var(--text-primary);">No Tournaments Available</h3>
-                            <p style="margin-bottom: 25px;">Check back later for new tournaments!</p>
-                            ${currentUser ? '<a href="create-tournament.html" class="btn btn-primary">Create Tournament</a>' : ''}
-                        </div>
-                    `;
-                    return;
-                }
+            .limit(18);
 
-                let tournamentsHTML = '';
-                let featuredCount = 0;
-                
-                snapshot.forEach(doc => {
-                    const tournament = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    
-                    // Limit featured tournaments
-                    if (tournament.featured && featuredCount < 2) {
-                        featuredCount++;
-                    } else {
-                        tournament.featured = false;
-                    }
-                    
-                    tournamentsHTML += createTournamentCard(tournament);
-                });
-
-                container.innerHTML = tournamentsHTML;
-                setupTournamentButtons();
-                addScrollAnimations();
-                
-            }, (error) => {
-                console.error("Error in tournaments listener:", error);
-                showErrorState(container, error);
+        const unsubscribe = q.onSnapshot(snapshot => {
+            if (snapshot.empty) {
+                container.innerHTML = `<div class="no-data">No tournaments available</div>`;
+                return;
+            }
+            let html = '';
+            let featuredCount = 0;
+            snapshot.forEach(doc => {
+                const tournament = { id: doc.id, ...doc.data() };
+                if (tournament.featured && featuredCount < 2) { featuredCount++; }
+                else { tournament.featured = false; }
+                html += createTournamentCard(tournament);
             });
+            container.innerHTML = html;
+            // setup delegation (single call is fine)
+            attachTournamentDelegation();
+            addScrollAnimations();
+        }, err => {
+            console.error('Tournaments snapshot error:', err);
+            container.innerHTML = `<div class="no-data">Error loading tournaments</div>`;
+        });
 
+        // store cleanup
+        window.__tournamentsListenerCleanup = unsubscribe;
     } catch (error) {
-        console.error("Error setting up tournaments listener:", error);
-        showErrorState(container, error);
+        console.error('Error in loadLiveTournaments:', error);
+        container.innerHTML = `<div class="no-data">Error loading tournaments</div>`;
     }
 }
 
-// Show error state
-function showErrorState(container, error) {
-    container.innerHTML = `
-        <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary); grid-column: 1 / -1;">
-            <div style="font-size: 4rem; margin-bottom: 20px;">⚠️</div>
-            <h3 style="margin-bottom: 15px; color: var(--text-primary);">Error Loading Tournaments</h3>
-            <p style="margin-bottom: 25px;">${error.message || 'Please try refreshing the page'}</p>
-            <button onclick="loadLiveTournaments()" class="btn btn-primary">Try Again</button>
-        </div>
-    `;
+// --- Event delegation for tournament actions ---
+function attachTournamentDelegation() {
+    const container = document.getElementById('live-tournaments');
+    if (!container || container.__listenerAttached) return;
+    container.__listenerAttached = true;
+
+    container.addEventListener('click', function (e) {
+        const el = e.target.closest('button');
+        if (!el) return;
+        // Register / Join button
+        if (el.classList.contains('btn-register')) {
+            e.preventDefault();
+            const tournamentId = el.getAttribute('data-tournament-id');
+            if (!tournamentId) return;
+            // visual feedback
+            el.disabled = true;
+            setTimeout(() => el.disabled = false, 600);
+            joinTournament(tournamentId).catch(err => {
+                console.error(err);
+                showNotification(err.message || 'Unable to join', 'error');
+            });
+            return;
+        }
+        // Details button (data attribute)
+        if (el.classList.contains('btn-details')) {
+            e.preventDefault();
+            const parentCard = el.closest('.tournament-card');
+            const tid = parentCard && parentCard.querySelector('.btn-register') && parentCard.querySelector('.btn-register').getAttribute('data-tournament-id');
+            if (tid) viewTournamentDetails(tid);
+            return;
+        }
+    });
+
+    // keyboard activation for buttons inside container
+    container.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            const btn = document.activeElement.closest && document.activeElement.closest('button');
+            if (btn) {
+                btn.click();
+                e.preventDefault();
+            }
+        }
+    });
 }
 
 // Create Tournament Card HTML
@@ -308,166 +371,129 @@ function createTournamentCard(tournament) {
     `;
 }
 
-// Setup tournament action buttons
-function setupTournamentButtons() {
-    const registerButtons = document.querySelectorAll('.btn-register');
-    registerButtons.forEach(btn => {
-        if (currentUser) {
-            // User is logged in
-            btn.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Add click feedback
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-                
-                const tournamentId = this.getAttribute('data-tournament-id');
-                if (tournamentId) {
-                    joinTournament(tournamentId);
-                }
-            };
-            btn.innerHTML = '<span class="btn-icon">🎮</span> Join Tournament';
-        } else {
-            // User is guest
-            btn.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Add click feedback
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-                
-                showNotification('Please login to join tournaments', 'info');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1500);
-            };
-            btn.innerHTML = '<span class="btn-icon">🔒</span> Login to Join';
-        }
-    });
-
-    // Setup details buttons
-    const detailsButtons = document.querySelectorAll('.btn-details');
-    detailsButtons.forEach(btn => {
-        btn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Add click feedback
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 150);
-        };
-    });
-}
-
-// Join Tournament Function
+// --- Robust joinTournament using Firestore transaction ---
 async function joinTournament(tournamentId) {
     if (!currentUser) {
         showNotification('Please login to join tournaments', 'info');
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 1500);
+        setTimeout(() => window.location.href = 'login.html', 1200);
         return;
     }
-    
+
     try {
-        console.log('Joining tournament:', tournamentId);
-        
-        // Check if user already registered
-        const userTournamentsRef = db.collection("userTournaments").doc(currentUser.uid);
-        const userDoc = await userTournamentsRef.get();
-        
-        let tournamentIds = [];
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-            tournamentIds = userData.tournamentIds || [];
-            
-            if (tournamentIds.includes(tournamentId)) {
-                showNotification('You are already registered for this tournament!', 'warning');
-                return;
+        showNotification('Processing your registration...', 'info');
+
+        const tRef = db.collection('tournaments').doc(tournamentId);
+        const userRef = db.collection('userTournaments').doc(currentUser.uid);
+        const walletRef = db.collection('wallets').doc(currentUser.uid);
+
+        await db.runTransaction(async tx => {
+            const tDoc = await tx.get(tRef);
+            if (!tDoc.exists) throw new Error('Tournament not found');
+
+            const tData = tDoc.data();
+            const currentPlayers = tData.currentPlayers || 0;
+            const maxPlayers = tData.maxPlayers || 0;
+            const status = tData.status || 'upcoming';
+
+            if (currentPlayers >= maxPlayers) throw new Error('Tournament is full');
+            if (status !== 'registering') throw new Error('Registration for this tournament is closed');
+
+            // handle entry fee
+            const entryFee = tData.entryFee || 0;
+            if (entryFee > 0) {
+                const wDoc = await tx.get(walletRef);
+                const balance = (wDoc.exists && wDoc.data().balance) || 0;
+                if (balance < entryFee) throw new Error(`Insufficient balance (requires ₹${entryFee})`);
+                tx.update(walletRef, {
+                    balance: firebase.firestore.FieldValue.increment(-entryFee),
+                    transactions: firebase.firestore.FieldValue.arrayUnion({
+                        amount: -entryFee,
+                        description: `Entry fee for ${tData.name || tData.title || 'tournament'}`,
+                        date: firebase.firestore.FieldValue.serverTimestamp(),
+                        type: 'tournament_entry'
+                    }),
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
             }
-        }
-        
-        // Get tournament details
-        const tournamentDoc = await db.collection("tournaments").doc(tournamentId).get();
-        if (!tournamentDoc.exists) {
-            showNotification('Tournament not found!', 'error');
-            return;
-        }
-        
-        const tournamentData = tournamentDoc.data();
-        
-        // Check if tournament is full
-        if (tournamentData.currentPlayers >= tournamentData.maxPlayers) {
-            showNotification('This tournament is already full!', 'error');
-            return;
-        }
-        
-        // Check if registration is open
-        if (tournamentData.status !== 'registering') {
-            showNotification('Registration for this tournament is closed!', 'error');
-            return;
-        }
-        
-        // Check entry fee
-        if (tournamentData.entryFee > 0) {
-            const walletRef = db.collection("wallets").doc(currentUser.uid);
-            const walletDoc = await walletRef.get();
-            const userBalance = walletDoc.exists ? (walletDoc.data().balance || 0) : 0;
-            
-            if (userBalance < tournamentData.entryFee) {
-                showNotification(`Insufficient balance! You need ₹${tournamentData.entryFee} to join this tournament.`, 'error');
-                return;
-            }
-            
-            // Deduct entry fee
-            await walletRef.set({
-                balance: firebase.firestore.FieldValue.increment(-tournamentData.entryFee),
-                transactions: firebase.firestore.FieldValue.arrayUnion({
-                    amount: -tournamentData.entryFee,
-                    description: `Entry fee for ${tournamentData.name}`,
-                    date: firebase.firestore.FieldValue.serverTimestamp(),
-                    type: 'tournament_entry'
-                }),
+
+            // mark user registered
+            tx.set(userRef, {
+                tournamentIds: firebase.firestore.FieldValue.arrayUnion(tRef.id),
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
-        }
-        
-        // Register user for tournament
-        await userTournamentsRef.set({
-            tournamentIds: firebase.firestore.FieldValue.arrayUnion(tournamentId),
-            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-        
-        // Update tournament player count
-        await db.collection("tournaments").doc(tournamentId).update({
-            currentPlayers: firebase.firestore.FieldValue.increment(1),
-            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+
+            // increment player count
+            tx.update(tRef, {
+                currentPlayers: firebase.firestore.FieldValue.increment(1),
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
         });
-        
+
         showNotification('Successfully joined the tournament! 🎉', 'success');
-        
-        // Refresh tournaments to update counts
-        setTimeout(() => {
-            loadLiveTournaments();
-        }, 1000);
-        
-    } catch (error) {
-        console.error("Error joining tournament:", error);
-        showNotification('Error joining tournament. Please try again.', 'error');
+        // refresh local UI quickly
+        setTimeout(loadLiveTournaments, 800);
+    } catch (err) {
+        console.error('joinTournament error:', err);
+        // better user-facing messages for known cases
+        const msg = err.message || 'Unable to join tournament';
+        showNotification(msg, 'error');
+        throw err;
     }
 }
 
-// View Tournament Details
-function viewTournamentDetails(tournamentId) {
-    window.location.href = `tournament-details.html?id=${tournamentId}`;
+// --- Accessible, improved notifications ---
+function showNotification(message, type = 'info', dismissAfter = 5000) {
+    // ensure container
+    let container = document.getElementById('siteNotifications');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'siteNotifications';
+        container.style.position = 'fixed';
+        container.style.top = '16px';
+        container.style.right = '16px';
+        container.style.zIndex = 99999;
+        document.body.appendChild(container);
+    }
+
+    const notif = document.createElement('div');
+    notif.className = `notification ${type}`;
+    notif.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    notif.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+    notif.style.marginBottom = '8px';
+    notif.style.minWidth = '220px';
+    notif.style.padding = '12px 14px';
+    notif.style.borderRadius = '8px';
+    notif.style.boxShadow = '0 8px 30px rgba(0,0,0,0.3)';
+    notif.style.background = type === 'success' ? '#052e08' : type === 'error' ? '#2a0510' : '#08102a';
+    notif.style.color = '#fff';
+    notif.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div style="flex:1">
+          <div style="font-weight:600">${type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info'}</div>
+          <div style="font-size:0.95rem;margin-top:6px">${message}</div>
+        </div>
+        <button aria-label="Close notification" style="background:none;border:none;color:inherit;font-size:18px;cursor:pointer">×</button>
+      </div>
+    `;
+    const closeBtn = notif.querySelector('button');
+    closeBtn.addEventListener('click', () => notif.remove());
+    container.prepend(notif);
+
+    if (dismissAfter > 0) setTimeout(() => notif.remove(), dismissAfter);
+}
+
+// --- Keyboard accessibility for nav items (enhancement) ---
+function setupNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.setAttribute('tabindex', '0');
+        item.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
 }
 
 // ==================== HELPER FUNCTIONS ====================
@@ -546,44 +572,6 @@ function formatDate(date) {
 function numberWithCommas(x) {
     if (!x) return '0';
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-// ==================== NOTIFICATION SYSTEM ====================
-function showNotification(message, type = 'info') {
-    // Remove existing notifications
-    const existingNotification = document.querySelector('.notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
-    
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-icon">${getNotificationIcon(type)}</span>
-            <span class="notification-message">${message}</span>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
-}
-
-function getNotificationIcon(type) {
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-    return icons[type] || 'ℹ️';
 }
 
 // ==================== SCROLL ANIMATIONS ====================
@@ -830,6 +818,5 @@ window.addEventListener('load', function() {
 
 // ==================== GLOBAL EXPORTS ====================
 window.joinTournament = joinTournament;
-window.viewTournamentDetails = viewTournamentDetails;
 window.loadLiveTournaments = loadLiveTournaments;
 window.showNotification = showNotification;

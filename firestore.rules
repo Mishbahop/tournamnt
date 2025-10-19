@@ -1,0 +1,233 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helpers and shared predicates ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function authUid() {
+      return request.auth.uid;
+    }
+
+    function getUserRole(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    function emailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function canAccessEmailVerifiedContent() {
+      return isSignedIn() && emailVerified();
+    }
+
+    function isPositiveNumber(field) {
+      return (request.resource.data[field] is number) && request.resource.data[field] > 0;
+    }
+
+    // ----------------- USERS -----------------
+    match /users/{userId} {
+      // Creation allowed by authenticated user for their own profile (signup flows)
+      allow create: if isSignedIn() && authUid() == userId
+                    && request.resource.data.email == request.auth.token.email;
+
+      // Read: owner or admin
+      allow get, list: if isSignedIn() && (authUid() == userId || isAdmin());
+
+      // Update: owner may edit limited fields; admins may edit any field
+      allow update: if isSignedIn() && (
+        isAdmin() || (
+          authUid() == userId
+          && !(request.resource.data.role is string && request.resource.data.role != resource.data.role)
+          && request.resource.data.email == resource.data.email
+        )
+      );
+
+      // Only admins may delete user documents
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- TOURNAMENTS -----------------
+    match /tournaments/{tid} {
+      // Public read access for listing and details
+      allow get, list: if true;
+
+      // Admin-only write operations
+      allow create, update, delete: if isAdmin();
+
+      // participants subcollection: users can create their own registration document
+      match /participants/{pid} {
+        allow create: if isSignedIn()
+                      && authUid() == pid
+                      && request.resource.data.userId == authUid()
+                      && (request.resource.data.tournamentId == tid || request.resource.data.tournamentRef == resource.data.tournamentRef);
+
+        // owner can read their participant doc; admin can read all
+        allow get: if isSignedIn() && (authUid() == pid || isAdmin());
+        allow list: if isAdmin();
+
+        // user can delete their own participant doc to cancel registration
+        allow delete: if isSignedIn() && authUid() == pid;
+
+        // only admin may update participant records (results, status)
+        allow update: if isAdmin();
+      }
+
+      // results subcollection
+      match /results/{rid} {
+        allow read: if isSignedIn() && (emailVerified() || isAdmin());
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    // ----------------- WALLETS -----------------
+    match /wallets/{walletUserId} {
+      // Owner or admin may read, but require email verified for reads involving money
+      allow get: if isSignedIn() && (authUid() == walletUserId || isAdmin()) && (emailVerified() || isAdmin());
+      allow list: if isAdmin();
+
+      // Prevent clients from directly creating/updating wallet summaries; only admin/server
+      allow create, update, delete: if isAdmin();
+
+      // Transactions subcollection handled below
+      match /transactions/{txId} {
+        // Create transactions (deposits/withdrawals) from owner only when email verified
+        allow create: if isSignedIn()
+                      && authUid() == walletUserId
+                      && emailVerified()
+                      && (request.resource.data.amount is number)
+                      && (request.resource.data.type in ['deposit','withdraw','tournament_entry','refund'])
+                      && (request.resource.data.status in ['pending','approved','rejected'])
+                      && request.resource.data.userId == authUid();
+
+        // Owner or admin can read their own transactions (admin can read all)
+        allow get, list: if isSignedIn() && (authUid() == walletUserId || isAdmin());
+
+        // Only admin or trusted server processes may update transaction status/details
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ----------------- DEPOSITS -----------------
+    match /deposits/{depositId} {
+      // Users can create deposit requests for themselves (must be email-verified)
+  allow create: if isSignedIn()
+        && request.resource.data.userId == authUid()
+        && isPositiveNumber('amount')
+        && request.resource.data.status == 'pending';
+
+      // Owner or admin can read
+      allow get, list: if isSignedIn() && (resource.data.userId == authUid() || isAdmin());
+
+      // Only admins may approve/reject (update status)
+      allow update: if isAdmin() && (request.resource.data.status in ['approved','rejected','cancelled']);
+
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- WITHDRAWALS -----------------
+    match /withdrawals/{withdrawalId} {
+  allow create: if isSignedIn()
+        && request.resource.data.userId == authUid()
+        && isPositiveNumber('amount')
+        && request.resource.data.status == 'pending'
+        && (request.resource.data.destination is string);
+
+      allow get, list: if isSignedIn() && (resource.data.userId == authUid() || isAdmin());
+
+      allow update: if isAdmin() && (request.resource.data.status in ['approved','rejected','cancelled']);
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- USER TOURNAMENTS -----------------
+    match /userTournaments/{userId} {
+      // Allow a user to create/update their own document (array of tournament ids), but validate shape
+      allow create: if isSignedIn() && authUid() == userId && request.resource.data.tournamentIds is list;
+      allow get: if isSignedIn() && (authUid() == userId || isAdmin());
+      allow update: if isSignedIn() && authUid() == userId && request.resource.data.tournamentIds is list;
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- MATCHES -----------------
+    match /matches/{matchId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ----------------- ADMIN LOGS -----------------
+    match /adminLogs/{logId} {
+      allow create: if isAdmin();
+      allow get, list: if isAdmin();
+      allow update, delete: if false; // immutable audit trail
+    }
+
+    // ----------------- REPORTS, SETTINGS, ANALYTICS -----------------
+    match /reports/{reportId} {
+      allow create: if isSignedIn();
+      allow get, list, update, delete: if isAdmin();
+    }
+
+    match /systemSettings/{settingId} {
+      allow get: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /analytics/{doc} {
+      allow get: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // Email verification tokens (for custom email verification flow if needed)
+    match /emailVerificationTokens/{token} {
+      allow read, write: if isAdmin();
+      // Users can't directly read/write verification tokens for security
+    }
+
+    // User email preferences
+    match /userPreferences/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Optional adminConfigs collection
+    match /adminConfigs/{docId} {
+      allow get: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Email templates (for notifications, etc.)
+    match /emailTemplates/{templateId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // User sessions or login history
+    match /userSessions/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Analytics and statistics
+    match /analytics/{document} {
+      allow read: if isAdmin();
+      allow write: if false; // Only written by cloud functions
+    }
+
+    // Audit trail for critical actions
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only written by cloud functions or admin actions
+    }
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

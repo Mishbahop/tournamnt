@@ -77,24 +77,38 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" onclick="closeQRModal()">Close</button>
+        <button class="btn btn-secondary" onclick="closeQRModal()">Close</button>
       </div>
     </div>
   </div>
 
   <!-- Bottom Navigation -->
+  <!-- ULTRA GAMERX BOTTOM NAV -->
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">
+    <a href="tournaments.html" class="nav-item">
+      <span class="nav-icon">⚔️</span>
+      <span class="nav-text">Tourneys</span>
+    </a>
+    <a href="games.html" class="nav-item">
+      <span class="nav-icon">🎮</span>
+      <span class="nav-text">Games</span>
+    </a>
+    <a href="index.html" class="nav-item active">
       <span class="nav-icon">🏠</span>
       <span class="nav-text">Home</span>
     </a>
-    <a href="tournaments.html" class="nav-item">
-      <span class="nav-icon">🏆</span>
-      <span class="nav-text">Tournaments</span>
-    </a>
     <a href="dashboard.html" class="nav-item">
-      <span class="nav-icon">👤</span>
-      <span class="nav-text">Profile</span>
+      <span class="nav-icon">👑</span>
+      <span class="nav-text">Pro</span>
+    </a>
+    <a href="admin.html" class="nav-item" id="organizerNav" style="display:none;">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-text">Organizer</span>
+      <!-- Organizer nav is only shown for admins via JS -->
+    </a>
+    <a href="wallet.html" class="nav-item">
+      <span class="nav-icon">💰</span>
+      <span class="nav-text">Wallet</span>
     </a>
   </nav>
 
@@ -104,6 +118,55 @@
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 
   <!-- Wallet JS -->
+  <!-- Animations and nav bar styles are inherited from index.css. -->
+  <script>
+    // Enhanced bottom nav interaction and animations
+    document.addEventListener('DOMContentLoaded', function() {
+      // Button click feedback
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn')) {
+          const btn = e.target.closest('.btn');
+          btn.style.transform = 'scale(0.98)';
+          setTimeout(() => { btn.style.transform = ''; }, 150);
+        }
+      });
+
+      // Prevent context menu on interactive elements
+      document.addEventListener('contextmenu', function(e) {
+        if (e.target.closest('.btn') || e.target.closest('.nav-item') || e.target.closest('a')) {
+          e.preventDefault();
+        }
+      });
+
+      // Touch device optimizations
+      if ('ontouchstart' in window) {
+        document.body.classList.add('touch-device');
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+          const now = (new Date()).getTime();
+          if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, false);
+      }
+
+      // Show Organizer nav only for admins
+      function isAdmin() {
+        return localStorage.getItem('isAdmin') === 'true';
+      }
+      const organizerNav = document.getElementById('organizerNav');
+      if (organizerNav) {
+        organizerNav.style.display = 'none';
+        if (isAdmin()) {
+          organizerNav.style.display = '';
+        }
+      }
+    });
+    // TEMP: Enable admin for demo/testing (remove in production)
+    localStorage.setItem('isAdmin', 'true');
+  </script>
   <script src="wallet.js"></script>
 </body>
 </html>

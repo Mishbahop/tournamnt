@@ -520,7 +520,7 @@ function refreshTournaments() {
 function viewTournament(tournamentId) {
   showNotification(`Opening tournament ${tournamentId}...`, 'info');
   // In real app, redirect to tournament page
-  // window.location.href = `tournament.html?id=${tournamentId}`;
+  // window.location.href = `tournament-new.html?id=${tournamentId}`;
 }
 
 // Withdraw from Tournament

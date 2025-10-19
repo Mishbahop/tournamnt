@@ -49,13 +49,7 @@
             Email Address
           </label>
           <div class="input-container">
-            <input 
-              id="signup-email" 
-              type="email" 
-              class="form-input" 
-              placeholder="Enter your email" 
-              required
-            />
+            <input id="signup-email" name="email" type="email" class="form-input" placeholder="you@example.com" required />
             <span class="input-icon">@</span>
           </div>
           <div class="input-hint" id="emailHint">We'll send a verification link to this email</div>
@@ -67,22 +61,14 @@
             Password
           </label>
           <div class="input-container">
-            <input 
-              id="signup-password" 
-              type="password" 
-              class="form-input" 
-              placeholder="Create a strong password" 
-              required
-            />
+            <input id="signup-password" name="password" type="password" class="form-input" placeholder="Create a strong password" required />
             <span class="input-icon">••••</span>
             <button type="button" class="password-toggle" id="passwordToggle">
               <span class="toggle-icon">👁️</span>
             </button>
           </div>
           <div class="password-strength" id="passwordStrength">
-            <div class="strength-bar">
-              <div class="strength-fill" id="strengthFill"></div>
-            </div>
+            <div class="strength-bar"><div id="strengthFill" class="strength-fill"></div></div>
             <div class="strength-text" id="strengthText">Password strength</div>
           </div>
         </div>
@@ -93,13 +79,7 @@
             Confirm Password
           </label>
           <div class="input-container">
-            <input 
-              id="confirm-password" 
-              type="password" 
-              class="form-input" 
-              placeholder="Confirm your password" 
-              required
-            />
+            <input id="confirm-password" name="confirmPassword" type="password" class="form-input" placeholder="Confirm password" required />
             <span class="input-icon">✓</span>
             <button type="button" class="password-toggle" id="confirmPasswordToggle">
               <span class="toggle-icon">👁️</span>
@@ -118,7 +98,7 @@
           <label class="checkbox-container">
             <input type="checkbox" id="newsletter" checked />
             <span class="checkmark"></span>
-            Send me tournament updates and news
+            Subscribe to newsletter
           </label>
         </div>
 
@@ -130,21 +110,17 @@
       </form>
 
       <!-- Email Verification Notice -->
-      <div class="verification-notice" id="verificationNotice">
+      <div class="verification-notice" id="verificationNotice" style="display:none;">
         <div class="verification-icon">📧</div>
         <div class="verification-content">
           <h3>Verify Your Email</h3>
           <p>We've sent a verification link to your email address. Please check your inbox and click the link to activate your account.</p>
           <div class="verification-actions">
-            <button type="button" class="btn btn-secondary" id="resendVerification">
-              Resend Verification Email
-            </button>
-            <button type="button" class="btn btn-primary" id="continueToLogin">
-              Continue to Login
-            </button>
+            <button type="button" class="btn btn-outline" id="resendVerification">Resend Verification Email</button>
+            <button type="button" class="btn btn-primary" id="continueToLogin">Continue to Login</button>
           </div>
         </div>
-      </form>
+      </div>
 
       <!-- Divider -->
       <div class="divider">

@@ -258,24 +258,29 @@
   </div>
 
   <!-- Bottom Navigation -->
+  <!-- ULTRA GAMERX BOTTOM NAV -->
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-text">Home</span>
-    </a>
     <a href="tournaments.html" class="nav-item">
-      <span class="nav-icon">🏆</span>
-      <span class="nav-text">Tournaments</span>
+        <span class="nav-icon">⚔️</span>
+        <span class="nav-text">Tourneys</span>
     </a>
-    <a href="wallet.html" class="nav-item">
-      <span class="nav-icon">💰</span>
-      <span class="nav-text">Wallet</span>
+    <a href="games.html" class="nav-item">
+        <span class="nav-icon">�</span>
+        <span class="nav-text">Games</span>
     </a>
-    <a href="dashboard.html" class="nav-item active">
-      <span class="nav-icon">👤</span>
-      <span class="nav-text">Profile</span>
+    <a href="index.html" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-text">Home</span>
     </a>
-  </nav>
+    <a href="leaderboards.html" class="nav-item">
+        <span class="nav-icon">🏆</span>
+        <span class="nav-text">Rankings</span>
+    </a>
+    <a href="profile.html" class="nav-item active">
+        <span class="nav-icon">�</span>
+        <span class="nav-text">Pro</span>
+    </a>
+    </nav>
 
   <!-- Notification Toast -->
   <div class="notification-toast" id="notificationToast">
@@ -293,5 +298,68 @@
 
   <!-- Dashboard JS -->
   <script src="dashboard.js"></script>
+
+  <script>
+    // Enhanced bottom nav interaction and animations
+    document.addEventListener('DOMContentLoaded', function() {
+      // Bottom nav active state
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+          navItems.forEach(nav => nav.classList.remove('active'));
+          this.classList.add('active');
+          this.style.transform = 'scale(0.95)';
+          setTimeout(() => { this.style.transform = ''; }, 150);
+        });
+      });
+
+      // Button click feedback
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn')) {
+          const btn = e.target.closest('.btn');
+          btn.style.transform = 'scale(0.98)';
+          setTimeout(() => { btn.style.transform = ''; }, 150);
+        }
+      });
+
+      // Prevent context menu on interactive elements
+      document.addEventListener('contextmenu', function(e) {
+        if (e.target.closest('.btn') || e.target.closest('.nav-item') || e.target.closest('a')) {
+          e.preventDefault();
+        }
+      });
+
+      // Touch device optimizations
+      if ('ontouchstart' in window) {
+        document.body.classList.add('touch-device');
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+          const now = (new Date()).getTime();
+          if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, false);
+      }
+
+      // Show Organizer nav only for admins
+      // Replace this with your actual admin check logic
+      function isAdmin() {
+        // Example: check localStorage, cookie, or Firebase user role
+        // return true if user is admin
+        // For demo, set to false; replace with real check
+        return localStorage.getItem('isAdmin') === 'true';
+      }
+      const organizerNav = document.getElementById('organizerNav');
+      if (organizerNav) {
+        if (isAdmin()) {
+          organizerNav.style.display = '';
+        } else {
+          organizerNav.style.display = 'none';
+        }
+      }
+    });
+  </script>
 </body>
 </html>

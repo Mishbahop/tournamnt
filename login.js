@@ -12,6 +12,7 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore ? firebase.firestore() : null;
 
 // DOM Elements
 const loadingScreen = document.getElementById('loadingScreen');
@@ -28,11 +29,16 @@ const notificationToast = document.getElementById('notificationToast');
 const toastIcon = document.getElementById('toastIcon');
 const toastMessage = document.getElementById('toastMessage');
 const toastClose = document.getElementById('toastClose');
+const googleSignInBtn = document.getElementById('googleSignIn');
 
 // Initialize Application
 function initApp() {
   console.log('Initializing login application...');
-  
+  // Set auth persistence based on "Remember me" saved preference
+  const remember = localStorage.getItem('tourneyhub_remember_me') === 'true';
+  const persistence = remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+  auth.setPersistence(persistence).catch(err => console.warn('setPersistence failed', err));
+
   // Check if user is already logged in
   auth.onAuthStateChanged((user) => {
     if (user) {
@@ -114,11 +120,11 @@ function showNotification(message, type = 'info') {
     warning: '⚠️'
   };
   
-  toastIcon.textContent = icons[type] || icons.info;
-  toastMessage.textContent = message;
+  if (toastIcon) toastIcon.textContent = icons[type] || icons.info;
+  if (toastMessage) toastMessage.textContent = message;
   
   // Set toast class based on type
-  notificationToast.className = `notification-toast show ${type}`;
+  if (notificationToast) notificationToast.className = `notification-toast show ${type}`;
   
   // Auto-hide after 5 seconds for success/info, 8 seconds for errors
   const hideTime = type === 'error' ? 8000 : 5000;
@@ -235,6 +241,41 @@ async function handleLogin(event) {
   }
 }
 
+// Google Sign-In
+async function handleGoogleSignIn() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    // Use popup for web app
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+
+    // Ensure user record exists in Firestore
+    if (db && user) {
+      const userRef = db.collection('users').doc(user.uid);
+      const snap = await userRef.get();
+      if (!snap.exists) {
+        await userRef.set({
+          email: user.email,
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+          role: 'user',
+          verified: true,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+
+    showNotification('Signed in with Google', 'success');
+    setTimeout(() => {
+      window.location.href = getRedirectUrl() || 'tournaments.html';
+    }, 700);
+  } catch (error) {
+    console.error('Google sign-in error:', error);
+    showNotification(error.message || 'Google sign-in failed', 'error');
+  }
+}
+
 // Handle forgot password
 async function handleForgotPassword() {
   const email = emailInput.value.trim();
@@ -324,6 +365,20 @@ function setupEventListeners() {
       }
     });
   }
+}
+
+// Hook Google sign-in button
+if (googleSignInBtn) {
+  googleSignInBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // ensure persistence mode is set according to remember me before sign-in
+    const remember = localStorage.getItem('tourneyhub_remember_me') === 'true';
+    const persistence = remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+    auth.setPersistence(persistence).then(() => handleGoogleSignIn()).catch(err => {
+      console.warn('Failed to set persistence before Google sign-in', err);
+      handleGoogleSignIn();
+    });
+  });
 }
 
 // Initialize when DOM is loaded

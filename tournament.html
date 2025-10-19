@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Tournaments - TourneyHub</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="no-select">
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <span class="logo-icon">⚔️</span>
+                <span class="logo-text">TourneyHub</span>
+            </div>
+            <div class="loading-spinner"></div>
+            <p class="loading-subtitle">Loading Tournaments...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header" id="mainHeader">
+        <div class="header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🏆</span>
+                <span class="logo-text">TourneyHub</span>
+            </a>
+            
+            <nav class="header-nav">
+                <a href="tournaments.html" class="nav-link active">Tournaments</a>
+                <a href="games.html" class="nav-link">Games</a>
+                <a href="leaderboards.html" class="nav-link">Leaderboards</a>
+                <a href="how-to-play.html" class="nav-link">How to Play</a>
+            </nav>
+            
+            <div class="auth-buttons">
+                <a href="login.html" class="btn btn-secondary">Login</a>
+                <a href="register.html" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section" style="min-height: 50vh; padding: 100px 16px 40px;">
+        <div class="hero-glow"></div>
+        <div class="hero-container">
+            <div class="hero-badge">
+                <span>⚔️</span>
+                <span id="pageSubtitle">Official Tournaments</span>
+            </div>
+            <h1 class="hero-title" id="pageTitle">Live <span class="gradient-text">Tournaments</span></h1>
+            <p class="hero-description" id="pageDescription">Compete in officially organized tournaments created by TourneyHub admins with verified prize pools.</p>
+            
+            <div class="hero-actions">
+                <button class="btn btn-primary" onclick="filterTournaments('all')">
+                    <span class="btn-icon">🔥</span>
+                    All Games
+                </button>
+                <button class="btn btn-secondary" onclick="showGameFilter()">
+                    <span class="btn-icon">🎮</span>
+                    Filter by Game
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tournaments Section -->
+    <section class="trending-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="fire-icon">⚡</span>
+                <span id="sectionTitle">Active Tournaments</span>
+            </h2>
+            <div class="tab-bar">
+                <button class="tab active" onclick="filterByStatus('all')">All</button>
+                <button class="tab" onclick="filterByStatus('active')">
+                    <span class="live-pulse"></span>
+                    Live
+                </button>
+                <button class="tab" onclick="filterByStatus('upcoming')">Upcoming</button>
+                <button class="tab" onclick="filterByStatus('registering')">Registering</button>
+            </div>
+        </div>
+        
+        <div class="tournaments-grid" id="tournamentsList">
+            <div class="loading-tournaments">
+                <div class="loading-spinner"></div>
+                <p>Loading official tournaments...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- No Tournaments Message -->
+    <div id="noTournamentsMessage" class="features-section" style="display: none;">
+        <div class="section-header center">
+            <div class="feature-icon">⏰</div>
+            <h2 class="section-title">No Tournaments Available</h2>
+            <p class="section-subtitle" id="noTournamentsText">There are no official tournaments available at the moment. Check back later for new competitions.</p>
+            <div class="hero-actions">
+                <a href="games.html" class="btn btn-primary">
+                    <span class="btn-icon">🎮</span>
+                    Browse All Games
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Filter Modal -->
+    <div class="notification" id="gameFilter" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; z-index: 10001; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);">
+        <div class="notification-content" style="flex-direction: column; align-items: stretch;">
+            <h3 style="margin-bottom: 1rem; text-align: center;">Filter by Game</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <button class="btn-sm btn-register" onclick="filterTournaments('all')">All Games</button>
+                <button class="btn-sm" onclick="filterTournaments('BGMI')">BGMI</button>
+                <button class="btn-sm" onclick="filterTournaments('Free Fire')">Free Fire</button>
+                <button class="btn-sm" onclick="filterTournaments('Call of Duty')">Call of Duty</button>
+                <button class="btn-sm" onclick="filterTournaments('Clash Royale')">Clash Royale</button>
+                <button class="btn-sm" onclick="filterTournaments('8 Ball Pool')">8 Ball Pool</button>
+                <button class="btn-sm" onclick="filterTournaments('Valorant')">Valorant</button>
+            </div>
+            <button class="notification-close" onclick="hideGameFilter()" style="position: absolute; top: 10px; right: 10px;">×</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="tournaments.html" class="nav-item">
+            <span class="nav-icon">⚔️</span>
+            <span class="nav-text">Tourneys</span>
+        </a>
+        <a href="games.html" class="nav-item">
+            <span class="nav-icon">🎮</span>
+            <span class="nav-text">Games</span>
+        </a>
+        <a href="index.html" class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
+        </a>
+        <a href="wallet.html" class="nav-item">
+            <span class="nav-icon">💰</span>
+            <span class="nav-text">Wallet</span>
+        </a>
+        <a href="dashboard.html" class="nav-item">
+            <span class="nav-icon">👑</span>
+            <span class="nav-text">Pro</span>
+        </a>
+    </nav>
+
+    <!-- Firebase & JavaScript -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+            authDomain: "authapp-386ee.firebaseapp.com",
+            projectId: "authapp-386ee",
+            storageBucket: "authapp-386ee.appspot.com",
+            messagingSenderId: "809698525310",
+            appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+            measurementId: "G-EJZTSBSGQT"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedGame = urlParams.get('game');
+        let currentFilter = selectedGame || 'all';
+        let currentStatus = 'all';
+
+        // Update page based on selected game
+        function updatePageForGame(game) {
+            if (game && game !== 'all') {
+                document.getElementById('pageSubtitle').textContent = `${game} Official Tournaments`;
+                document.getElementById('pageTitle').innerHTML = `${game} <span class="gradient-text">Tournaments</span>`;
+                document.getElementById('pageDescription').textContent = `Official ${game} tournaments created by TourneyHub admins. Compete for verified prize pools.`;
+                document.getElementById('sectionTitle').textContent = `${game} Official Tournaments`;
+            } else {
+                document.getElementById('pageSubtitle').textContent = 'All Official Tournaments';
+                document.getElementById('pageTitle').innerHTML = 'Live <span class="gradient-text">Tournaments</span>';
+                document.getElementById('pageDescription').textContent = 'All officially organized tournaments across all games with verified prize pools.';
+                document.getElementById('sectionTitle').textContent = 'All Official Tournaments';
+            }
+        }
+
+        // Load tournaments (only admin-created ones)
+        async function loadTournaments() {
+            try {
+                console.log('Loading tournaments with filter:', currentFilter, 'status:', currentStatus);
+                
+                // First approach: Try to get tournaments where createdBy is 'admin'
+                let query = db.collection('tournaments');
+                
+                // Apply game filter if specific game is selected
+                if (currentFilter !== 'all') {
+                    query = query.where('game', '==', currentFilter);
+                }
+                
+                // Apply status filter
+                if (currentStatus !== 'all') {
+                    query = query.where('status', '==', currentStatus);
+                } else {
+                    // Show all active statuses by default
+                    query = query.where('status', 'in', ['active', 'upcoming', 'registering']);
+                }
+                
+                const snapshot = await query.orderBy('createdAt', 'desc').get();
+                let tournaments = [];
+                
+                snapshot.forEach(doc => {
+                    const tournament = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                    
+                    // Check if tournament is admin-created (either createdBy field exists and is admin, or no createdBy field but assume it's admin)
+                    // In your system, tournaments from admins.html should have createdBy = 'admin'
+                    if (!tournament.createdBy || tournament.createdBy === 'admin') {
+                        tournaments.push(tournament);
+                    }
+                });
+                
+                console.log('Found tournaments:', tournaments.length);
+                displayTournaments(tournaments);
+                
+            } catch (error) {
+                console.error('Error loading tournaments:', error);
+                
+                // Fallback: Try without the status filter (in case of index issues)
+                try {
+                    console.log('Trying fallback loading method...');
+                    let fallbackQuery = db.collection('tournaments');
+                    
+                    if (currentFilter !== 'all') {
+                        fallbackQuery = fallbackQuery.where('game', '==', currentFilter);
+                    }
+                    
+                    const fallbackSnapshot = await fallbackQuery.get();
+                    let fallbackTournaments = [];
+                    
+                    fallbackSnapshot.forEach(doc => {
+                        const tournament = {
+                            id: doc.id,
+                            ...doc.data()
+                        };
+                        
+                        // Filter by status manually
+                        if (currentStatus === 'all' || tournament.status === currentStatus) {
+                            if (!tournament.createdBy || tournament.createdBy === 'admin') {
+                                fallbackTournaments.push(tournament);
+                            }
+                        }
+                    });
+                    
+                    console.log('Fallback found tournaments:', fallbackTournaments.length);
+                    displayTournaments(fallbackTournaments);
+                    
+                } catch (fallbackError) {
+                    console.error('Fallback also failed:', fallbackError);
+                    document.getElementById('tournamentsList').innerHTML = `
+                        <div class="loading-tournaments">
+                            <p>Error loading tournaments. Please try again.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function displayTournaments(tournaments) {
+            const container = document.getElementById('tournamentsList');
+            const noTournamentsMsg = document.getElementById('noTournamentsMessage');
+            const noTournamentsText = document.getElementById('noTournamentsText');
+            
+            if (tournaments.length === 0) {
+                container.style.display = 'none';
+                noTournamentsMsg.style.display = 'block';
+                
+                if (currentFilter !== 'all') {
+                    noTournamentsText.textContent = `There are no official ${currentFilter} tournaments at the moment. Check back later or browse other games.`;
+                } else {
+                    noTournamentsText.textContent = 'There are no official tournaments available at the moment. Check back later for new competitions.';
+                }
+                return;
+            }
+            
+            container.style.display = 'grid';
+            noTournamentsMsg.style.display = 'none';
+            
+            container.innerHTML = tournaments.map(tournament => `
+                <div class="tournament-card ${tournament.featured ? 'featured' : ''} fade-in">
+                    ${tournament.featured ? '<div class="tournament-card featured"></div>' : ''}
+                    <div class="tournament-header">
+                        <div class="tournament-game">
+                            <div class="game-icon">
+                                ${getGameIcon(tournament.game)}
+                            </div>
+                            <div class="game-info">
+                                <div class="game-name">${tournament.game || 'General'}</div>
+                                <div class="game-category">Official Tournament</div>
+                            </div>
+                        </div>
+                        <div class="tournament-status status-${tournament.status || 'upcoming'}">
+                            ${tournament.status ? tournament.status.charAt(0).toUpperCase() + tournament.status.slice(1) : 'Upcoming'}
+                        </div>
+                    </div>
+                    
+                    <div class="tournament-body">
+                        <h3 class="tournament-title">${tournament.title || 'Untitled Tournament'}</h3>
+                        <p>${tournament.description || 'Official tournament organized by TourneyHub admins. Compete for verified prize pools.'}</p>
+                        
+                        <div class="tournament-details">
+                            <div class="tournament-detail">
+                                <span class="detail-icon">💰</span>
+                                <span>₹${tournament.entryFee || 0} Entry</span>
+                            </div>
+                            <div class="tournament-detail">
+                                <span class="detail-icon">⏰</span>
+                                <span>${formatDate(tournament.startDate)}</span>
+                            </div>
+                            <div class="tournament-detail">
+                                <span class="detail-icon">👥</span>
+                                <span>${tournament.maxPlayers || '∞'} Max</span>
+                            </div>
+                        </div>
+                        
+                        <div class="tournament-prize">
+                            <span class="prize-icon">🏆</span>
+                            ₹${tournament.prizePool || 0} Verified Prize Pool
+                        </div>
+                        
+                        ${tournament.progress ? `
+                        <div class="tournament-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${tournament.progress}%"></div>
+                            </div>
+                            <div class="progress-text">${tournament.progress}% Filled</div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="tournament-detail" style="margin-top: 10px;">
+                            <span class="detail-icon">🛡️</span>
+                            <span>Organized by TourneyHub Admins</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tournament-footer">
+                        <div class="tournament-entries">
+                            <span class="entries-icon">👥</span>
+                            <span class="entries-count">${tournament.currentPlayers || 0}</span>/${tournament.maxPlayers || '∞'} Players
+                        </div>
+                        <div class="tournament-actions">
+                            <button class="btn-sm btn-register" onclick="registerForTournament('${tournament.id}')">
+                                Register Now
+                            </button>
+                            <button class="btn-sm btn-details" onclick="viewTournamentDetails('${tournament.id}')">
+                                Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getGameIcon(gameName) {
+            const icons = {
+                'BGMI': '📱',
+                'Free Fire': '🔥',
+                'Call of Duty': '🎯',
+                'Clash Royale': '👑',
+                '8 Ball Pool': '🎱',
+                'Valorant': '🎭'
+            };
+            return icons[gameName] || '🎮';
+        }
+        
+        function formatDate(timestamp) {
+            if (!timestamp) return 'TBD';
+            
+            try {
+                if (timestamp.toDate) {
+                    // Firestore timestamp
+                    const date = timestamp.toDate();
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                } else if (typeof timestamp === 'string') {
+                    // String timestamp
+                    const date = new Date(timestamp);
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                } else if (timestamp.seconds) {
+                    // Firestore timestamp in seconds
+                    const date = new Date(timestamp.seconds * 1000);
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+            } catch (e) {
+                console.error('Error formatting date:', e);
+            }
+            
+            return 'TBD';
+        }
+        
+        function filterTournaments(game) {
+            currentFilter = game;
+            updatePageForGame(game);
+            loadTournaments();
+            hideGameFilter();
+            
+            // Update URL without page reload
+            const newUrl = game === 'all' ? 'tournament.html' : `tournament.html?game=${encodeURIComponent(game)}`;
+            window.history.replaceState({}, '', newUrl);
+        }
+        
+        function filterByStatus(status) {
+            currentStatus = status;
+            
+            // Update tab active states
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            loadTournaments();
+        }
+        
+        function showGameFilter() {
+            document.getElementById('gameFilter').style.display = 'block';
+        }
+        
+        function hideGameFilter() {
+            document.getElementById('gameFilter').style.display = 'none';
+        }
+        
+        function registerForTournament(tournamentId) {
+            if (!auth.currentUser) {
+                alert('Please log in to register for tournaments');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Implement tournament registration logic
+            alert(`Registering for tournament: ${tournamentId}`);
+            // You would typically:
+            // 1. Check if user has sufficient balance
+            // 2. Add user to tournament participants
+            // 3. Deduct entry fee from user's wallet
+            // 4. Update tournament player count
+        }
+        
+        function viewTournamentDetails(tournamentId) {
+            window.location.href = `tournament-details.html?id=${tournamentId}`;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial filter based on URL parameter
+            updatePageForGame(currentFilter);
+            
+            // Enhanced loading screen
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.classList.add('hidden');
+                }
+            }, 1500);
+
+            loadTournaments();
+            
+            // Header scroll effect
+            const header = document.getElementById('mainHeader');
+            if (header) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 50) {
+                        header.classList.add('scrolled');
+                    } else {
+                        header.classList.remove('scrolled');
+                    }
+                });
+            }
+            
+            // Close game filter when clicking outside
+            document.addEventListener('click', function(e) {
+                const filter = document.getElementById('gameFilter');
+                if (filter && !filter.contains(e.target) && !e.target.closest('.btn-secondary')) {
+                    hideGameFilter();
+                }
+            });
+        });
+
+        // Real-time updates for tournaments
+        function setupRealTimeUpdates() {
+            // This would set up real-time listeners for tournament updates
+            // For now, we'll just reload every 30 seconds
+            setInterval(loadTournaments, 30000);
+        }
+
+        // Handle authentication state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User is signed in:', user.email);
+                setupRealTimeUpdates();
+            } else {
+                console.log('User is not signed in');
+                // Still load tournaments, but registration will require login
+                setupRealTimeUpdates();
+            }
+        });
+    </script>
+</body>
+</html>

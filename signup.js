@@ -28,43 +28,60 @@ const db = firebase.firestore();
 // 🎯 DOM ELEMENTS
 // =============================================
 
-// 🖼️ Layout Elements
-const loadingScreen = document.getElementById('loadingScreen');
-const mainContent = document.getElementById('mainContent');
-const signupForm = document.getElementById('signupForm');
-const verificationNotice = document.getElementById('verificationNotice');
+// Move DOM queries into DOMContentLoaded to ensure elements exist and provide fallbacks
+let loadingScreen, mainContent, signupForm, verificationNotice;
+let emailInput, passwordInput, confirmPasswordInput;
+let passwordToggle, confirmPasswordToggle;
+let signupBtn, resendVerificationBtn, continueToLoginBtn;
+let agreeTerms, newsletter, signupSpinner;
+let emailHint, passwordStrength, strengthFill, strengthText, confirmHint;
+let notificationToast, toastIcon, toastMessage, toastClose;
 
-// 📝 Form Inputs
-const emailInput = document.getElementById('signup-email');
-const passwordInput = document.getElementById('signup-password');
-const confirmPasswordInput = document.getElementById('confirm-password');
+document.addEventListener('DOMContentLoaded', () => {
+  // 🖼️ Layout Elements
+  loadingScreen = document.getElementById('loadingScreen');
+  mainContent = document.getElementById('mainContent');
+  signupForm = document.getElementById('signupForm');
+  verificationNotice = document.getElementById('verificationNotice');
 
-// 👁️ Password Toggles
-const passwordToggle = document.getElementById('passwordToggle');
-const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+  // 📝 Form Inputs
+  emailInput = document.getElementById('signup-email');
+  passwordInput = document.getElementById('signup-password');
+  confirmPasswordInput = document.getElementById('confirm-password');
 
-// 🔘 Buttons
-const signupBtn = document.getElementById('signupBtn');
-const resendVerificationBtn = document.getElementById('resendVerification');
-const continueToLoginBtn = document.getElementById('continueToLogin');
+  // 👁️ Password Toggles
+  passwordToggle = document.getElementById('passwordToggle');
+  confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
 
-// 🎛️ Form Elements
-const agreeTerms = document.getElementById('agreeTerms');
-const newsletter = document.getElementById('newsletter');
-const signupSpinner = document.getElementById('signupSpinner');
+  // 🔘 Buttons
+  signupBtn = document.getElementById('signupBtn');
+  resendVerificationBtn = document.getElementById('resendVerification');
+  continueToLoginBtn = document.getElementById('continueToLogin');
 
-// 💬 Hints & Feedback
-const emailHint = document.getElementById('emailHint');
-const passwordStrength = document.getElementById('passwordStrength');
-const strengthFill = document.getElementById('strengthFill');
-const strengthText = document.getElementById('strengthText');
-const confirmHint = document.getElementById('confirmHint');
+  // 🎛️ Form Elements
+  agreeTerms = document.getElementById('agreeTerms');
+  newsletter = document.getElementById('newsletter');
+  signupSpinner = document.getElementById('signupSpinner');
 
-// 🔔 Notifications
-const notificationToast = document.getElementById('notificationToast');
-const toastIcon = document.getElementById('toastIcon');
-const toastMessage = document.getElementById('toastMessage');
-const toastClose = document.getElementById('toastClose');
+  // 💬 Hints & Feedback
+  emailHint = document.getElementById('emailHint');
+  passwordStrength = document.getElementById('passwordStrength');
+  strengthFill = document.getElementById('strengthFill') || (passwordStrength ? passwordStrength.querySelector('.strength-fill') : null);
+  strengthText = document.getElementById('strengthText');
+  confirmHint = document.getElementById('confirmHint');
+
+  // 🔔 Notifications
+  notificationToast = document.getElementById('notificationToast');
+  toastIcon = document.getElementById('toastIcon');
+  toastMessage = document.getElementById('toastMessage');
+  toastClose = document.getElementById('toastClose');
+
+  // Setup event listeners (existing function)
+  setupEventListeners();
+
+  // Initialize app (existing function)
+  initApp();
+});
 
 // =============================================
 // 🎮 STATE MANAGEMENT

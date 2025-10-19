@@ -1,4 +1,189 @@
+/* Global design system for TourneyHub — variables + common components */
 
+:root{
+	/* color palette */
+	--bg: #0b0f1a;
+	--surface: #0f1724;
+	--muted-surface: rgba(255,255,255,0.04);
+	--card: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+	--accent: #6c63ff;
+	--accent-2: #4ecdc4;
+	--danger: #ff6b6b;
+	--success: #00c853;
+	--text: #e6eef8;
+	--muted: #9aa4bf;
+	--glass: rgba(255,255,255,0.04);
+
+	--radius-sm: 8px;
+	--radius: 14px;
+	--radius-lg: 20px;
+
+	--shadow-sm: 0 6px 18px rgba(5,8,20,0.6);
+	--shadow-pop: 0 10px 38px rgba(12,14,30,0.7);
+
+	--container-width: 1120px;
+
+	--focus-ring: 0 0 0 4px rgba(108,99,255,0.12);
+}
+
+/* Base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+	background:var(--bg);
+	color:var(--text);
+	font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+	-webkit-font-smoothing:antialiased;
+	-moz-osx-font-smoothing:grayscale;
+	margin:0;
+	line-height:1.45;
+}
+
+/* Layout helpers */
+.container{
+	max-width:var(--container-width);
+	margin:0 auto;
+	padding:20px;
+}
+
+/* Header / Navigation */
+.site-header{
+	background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+	backdrop-filter: blur(6px);
+	border-bottom: 1px solid var(--muted-surface);
+	position:sticky;
+	top:0;
+	z-index:40;
+}
+.header-bar{
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	max-width:var(--container-width);
+	margin:0 auto;
+	padding:12px 20px;
+}
+.logo{
+	font-weight:700;
+	font-size:1.2rem;
+	letter-spacing:0.2px;
+	color:var(--text);
+	text-decoration:none;
+	display:inline-flex;
+	align-items:center;
+	gap:10px;
+}
+.logo .logo-icon{font-size:1.4rem}
+
+/* Primary nav */
+.site-nav{
+	display:flex;
+	align-items:center;
+	gap:12px;
+	padding:6px 20px;
+}
+.site-nav a, .site-nav button{
+	color:var(--muted);
+	text-decoration:none;
+	padding:8px 12px;
+	border-radius:999px;
+	font-weight:600;
+	background:transparent;
+	border:0;
+	cursor:pointer;
+}
+.site-nav a:hover, .site-nav button:hover{ color:var(--text); background:var(--muted-surface); }
+.site-nav a.active{ color:var(--text); background:linear-gradient(90deg,var(--accent),var(--accent-2)); box-shadow:var(--shadow-sm) }
+
+/* Mobile menu toggle */
+.menu-toggle{ display:none; background:none; border:0; color:var(--text); padding:8px }
+
+/* Cards */
+.card{
+	background:var(--card);
+	border:1px solid var(--muted-surface);
+	border-radius:var(--radius);
+	padding:18px;
+	box-shadow:var(--shadow-sm);
+}
+
+/* Buttons (primary / outline / small) */
+.btn{
+	display:inline-flex;
+	align-items:center;
+	gap:10px;
+	padding:10px 14px;
+	border-radius:999px;
+	font-weight:700;
+	cursor:pointer;
+	border:0;
+	transition:transform .12s ease, box-shadow .12s ease;
+	background:var(--muted-surface);
+	color:var(--text);
+}
+.btn:hover{ transform:translateY(-2px); box-shadow:var(--shadow-pop) }
+.btn:active{ transform:translateY(0) }
+
+/* variations */
+.btn-primary{
+	background:linear-gradient(90deg,var(--accent),var(--accent-2));
+	color:#fff;
+}
+.btn-outline{
+	background:transparent;
+	border:1px solid rgba(255,255,255,0.06);
+	color:var(--text);
+}
+
+/* Forms */
+label.input{display:block;margin-bottom:12px;color:var(--muted)}
+input.form-input, textarea.form-input, select.form-input{
+	width:100%;
+	padding:10px 12px;
+	border-radius:10px;
+	background: rgba(255,255,255,0.02);
+	border:1px solid rgba(255,255,255,0.04);
+	color:var(--text);
+	font-size:0.95rem;
+}
+input.form-input:focus, textarea.form-input:focus, select.form-input:focus{
+	outline: none;
+	box-shadow:var(--focus-ring);
+	border-color:var(--accent);
+}
+
+/* Tabs */
+.tab-bar{display:flex;gap:8px}
+.tab{
+	padding:10px 14px;
+	background:transparent;
+	border-radius:10px;
+	color:var(--muted);
+	cursor:pointer;
+	border:0;font-weight:700;
+}
+.tab.active{ background: linear-gradient(90deg,var(--accent),var(--accent-2)); color:#fff; box-shadow:var(--shadow-sm) }
+
+/* List / item */
+.list{display:flex;flex-direction:column;gap:12px;}
+.item{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center}
+
+/* Utility */
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+.tiny{font-size:0.82rem;color:var(--muted)}
+.muted{color:var(--muted)}
+
+/* Responsive */
+@media (max-width: 900px){
+	.container{padding:12px}
+	.site-nav{display:none}
+	.menu-toggle{display:inline-flex}
+	.header-bar{padding:12px}
+	.tab{padding:8px 10px;font-size:0.92rem}
+}
+
+/* Accessibility focus */
+a:focus, button:focus, input:focus, select:focus { box-shadow: var(--focus-ring); outline:none }
 /* Ultra-Modern Mobile Gaming Design */
 :root {
   --neon-primary: #6c63ff;
@@ -233,7 +418,6 @@ a, button, .btn, .nav-item {
   background: var(--gradient-neon);
   transition: left 0.3s ease;
   z-index: -1;
-  border-radius: 16px;
 }
 
 .nav-item.active::before {
@@ -1440,7 +1624,6 @@ a, button, .btn, .nav-item {
   background: var(--neon-accent);
   border-radius: 50%;
   animation: dotPulse 1.5s ease-in-out infinite;
-  z-index: 2;
 }
 
 @keyframes dotPulse {

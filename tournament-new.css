@@ -1,0 +1,270 @@
+/* Tournament Selection Page Styles */
+
+/* Game Grid */
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.game-card {
+    background: var(--tournament-card-bg);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border-color: var(--tournament-primary);
+}
+
+.game-image {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+}
+
+.game-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover .game-image img {
+    transform: scale(1.05);
+}
+
+.game-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    color: var(--tournament-success);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.game-status i {
+    font-size: 0.8em;
+}
+
+.game-info {
+    padding: 20px;
+}
+
+.game-info h3 {
+    margin: 0 0 8px 0;
+    color: var(--tournament-text-primary);
+    font-size: 1.4em;
+}
+
+.game-info p {
+    margin: 0;
+    color: var(--tournament-text-secondary);
+    font-size: 0.9em;
+}
+
+.tournament-count {
+    margin-top: 12px;
+    padding: 6px 12px;
+    background: var(--tournament-bg);
+    border-radius: 6px;
+    font-size: 0.9em;
+    color: var(--tournament-text-secondary);
+    display: inline-block;
+}
+
+/* Categories Section */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.category-card {
+    background: var(--tournament-card-bg);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--tournament-primary);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.category-icon {
+    font-size: 2em;
+    margin-bottom: 16px;
+    color: var(--tournament-primary);
+}
+
+.category-name {
+    font-size: 1.3em;
+    color: var(--tournament-text-primary);
+    margin-bottom: 12px;
+}
+
+.category-details {
+    color: var(--tournament-text-secondary);
+    font-size: 0.9em;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.category-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--tournament-border);
+}
+
+.prize-range, .entry-fee {
+    font-size: 0.9em;
+    color: var(--tournament-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.prize-range i, .entry-fee i {
+    color: var(--tournament-primary);
+}
+
+/* Back Button */
+.back-button {
+    background: transparent;
+    border: 2px solid var(--tournament-primary);
+    color: var(--tournament-primary);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s;
+    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-button:hover {
+    background: var(--tournament-primary);
+    color: white;
+}
+
+/* Helper Classes */
+.hidden {
+    display: none;
+}
+
+/* Loading States */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--tournament-text-secondary);
+}
+
+.loading::after {
+    content: "...";
+    animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: "."; }
+    40% { content: ".."; }
+    60%, 100% { content: "..."; }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .game-grid, .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .game-image {
+        height: 140px;
+    }
+
+    .game-info {
+        padding: 16px;
+    }
+
+    .game-info h3 {
+        font-size: 1.2em;
+    }
+
+    .category-card {
+        padding: 20px;
+    }
+
+    .category-icon {
+        font-size: 1.8em;
+    }
+
+    .category-name {
+        font-size: 1.2em;
+    }
+
+    .back-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+/* Accessibility */
+.game-card:focus,
+.category-card:focus,
+.back-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(109, 72, 229, 0.3);
+}
+
+/* Dark mode specific */
+@media (prefers-color-scheme: dark) {
+    .game-status {
+        background: rgba(0, 0, 0, 0.8);
+    }
+}

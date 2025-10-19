@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Registration</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="css/tournament-common.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <style>
+        .registration-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .registration-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .tournament-summary {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .wallet-info {
+            background: var(--success-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wallet-balance {
+            color: var(--success);
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .registration-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .registration-btn:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .registration-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .success-message {
+            color: var(--success);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .back-button {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Wallet Balance Card Styles */
+        .balance-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .balance-info {
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .balance-label {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 1.5em;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .balance-subtitle {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .balance-graphic {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        .wallet-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Debug Wallet Info Styles */
+        .debug-wallet {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 0.95em;
+            border-radius: 8px;
+        }
+
+        .debug-wallet strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .debug-wallet span {
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <img src="logo.png" alt="Logo" class="nav-logo">
+            <span class="nav-title">Tournament Hub</span>
+        </div>
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-link">Dashboard</a>
+            <a href="tournament-new.html" class="nav-link active">Tournaments</a>
+            <a href="wallet.html" class="nav-link">Wallet</a>
+            <a href="profile.html" class="nav-link">Profile</a>
+            <button id="logout-btn" class="nav-btn">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="registration-container">
+        <button class="back-button" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+
+        <!-- Wallet Balance Card (from wallet.html) -->
+        <div class="balance-card" style="margin-bottom: 32px;">
+            <div class="balance-info">
+                <div class="balance-label">Available Balance</div>
+                <div class="balance-amount" id="balanceAmount">₹0.00</div>
+                <div class="balance-subtitle" id="balanceSubtitle">Total funds available</div>
+            </div>
+            <div class="balance-graphic">
+                <div class="wallet-icon">💳</div>
+            </div>
+        </div>
+
+        <!-- Debug Wallet Info -->
+        <div class="debug-wallet" style="background:#f9f9f9;border:1px solid #ddd;padding:12px;margin-bottom:16px;font-size:0.95em;">
+          <strong>Wallet Debug Info:</strong><br>
+          Deposits: <span id="debugDeposits">0</span><br>
+          Withdrawals: <span id="debugWithdrawals">0</span><br>
+          Calculated Balance: <span id="debugCalcBalance">0</span>
+        </div>
+
+        <div class="registration-card">
+            <h2>Tournament Registration</h2>
+            
+            <!-- Tournament Summary -->
+            <div class="tournament-summary">
+                <div class="summary-row">
+                    <span class="summary-label">Game</span>
+                    <span class="summary-value" id="game-name">Loading...</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Category</span>
+                    <span class="summary-value" id="category-name">Loading...</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Type</span>
+                    <span class="summary-value" id="type-name">Loading...</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Entry Fee</span>
+                    <span class="summary-value" id="entry-fee">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Wallet Info -->
+            <div class="wallet-info">
+                <span>Your Wallet Balance</span>
+                <span class="wallet-balance" id="wallet-balance">Loading...</span>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="registration-form">
+                <div class="form-group">
+                    <label class="form-label" for="game-username">In-Game Username</label>
+                    <input type="text" id="game-username" class="form-input" required
+                           placeholder="Enter your BGMI username">
+                    <div id="username-error" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="game-id">Game ID</label>
+                    <input type="text" id="game-id" class="form-input" required
+                           placeholder="Enter your BGMI ID">
+                    <div id="id-error" class="error-message"></div>
+                </div>
+
+                <button type="submit" class="registration-btn" id="register-btn">
+                    Register & Pay ₹<span id="fee-amount">0</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+            authDomain: "authapp-386ee.firebaseapp.com",
+            projectId: "authapp-386ee",
+            storageBucket: "authapp-386ee.appspot.com",
+            messagingSenderId: "809698525310",
+            appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+            measurementId: "G-EJZTSBSGQT"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedGame = urlParams.get('game');
+        const selectedCategory = urlParams.get('category');
+        const selectedType = urlParams.get('type');
+
+        // Entry fees for different tournament types
+        const entryFees = {
+            'solo': 100,
+            'duo': 200,
+            'squad': 400,
+            'custom': 150
+        };
+
+        let currentUser = null;
+        let userWallet = 0;
+
+        // Load user's wallet balance using wallet.js logic
+        async function updateWalletBalance() {
+            if (!currentUser || !db) return;
+            try {
+                const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
+                    db.collection('deposits').where('userId', '==', currentUser.uid).where('status', '==', 'approved').get(),
+                    db.collection('withdrawals').where('userId', '==', currentUser.uid).where('status', '==', 'approved').get()
+                ]);
+
+                let totalDeposits = 0;
+                depositsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const amount = parseFloat(data.amount) || 0;
+                    totalDeposits += amount;
+                });
+
+                let totalWithdrawals = 0;
+                withdrawalsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const amount = parseFloat(data.amount) || 0;
+                    totalWithdrawals += amount;
+                });
+
+                userWallet = totalDeposits - totalWithdrawals;
+
+                document.getElementById('balanceAmount').textContent = `₹${userWallet.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+                document.getElementById('balanceSubtitle').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+
+                // Debug info
+                document.getElementById('debugDeposits').textContent = totalDeposits.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                document.getElementById('debugWithdrawals').textContent = totalWithdrawals.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                document.getElementById('debugCalcBalance').textContent = userWallet.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+            } catch (error) {
+                document.getElementById('balanceAmount').textContent = '₹—';
+                document.getElementById('balanceSubtitle').textContent = 'Unable to load balance';
+                document.getElementById('debugDeposits').textContent = '—';
+                document.getElementById('debugWithdrawals').textContent = '—';
+                document.getElementById('debugCalcBalance').textContent = '—';
+            }
+        }
+
+        // Auth state observer
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+                return;
+            }
+            currentUser = user;
+            await updateWalletBalance();
+            // Only update UI if all parameters are present
+            if (selectedGame && selectedCategory && selectedType) {
+                updateUI();
+            } else {
+                document.getElementById('game-name').textContent = 'Missing game';
+                document.getElementById('category-name').textContent = 'Missing category';
+                document.getElementById('type-name').textContent = 'Missing type';
+                document.getElementById('entry-fee').textContent = 'Missing fee';
+            }
+        });
+
+        // Update UI with tournament and wallet info
+        function updateUI() {
+            console.log('[UI] Updating tournament info:', selectedGame, selectedCategory, selectedType);
+            document.getElementById('game-name').textContent = selectedGame.toUpperCase();
+            document.getElementById('category-name').textContent = 
+                selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
+            document.getElementById('type-name').textContent = 
+                selectedType.charAt(0).toUpperCase() + selectedType.slice(1);
+
+            const entryFee = entryFees[selectedType];
+            console.log('[UI] Entry fee:', entryFee);
+            document.getElementById('entry-fee').textContent = WalletManager.formatCurrency(entryFee);
+            document.getElementById('fee-amount').textContent = entryFee;
+            document.getElementById('wallet-balance').textContent = WalletManager.formatCurrency(userWallet);
+
+            // Disable register button if insufficient balance
+            const registerBtn = document.getElementById('register-btn');
+            registerBtn.disabled = userWallet < entryFee;
+            if (registerBtn.disabled) {
+                registerBtn.textContent = 'Insufficient Balance';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('registration-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const registerBtn = document.getElementById('register-btn');
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'Processing...';
+
+            const gameUsername = document.getElementById('game-username').value;
+            const gameId = document.getElementById('game-id').value;
+            const entryFee = entryFees[selectedType];
+
+            // Use calculated wallet balance for validation
+            if (userWallet < entryFee) {
+                alert('Insufficient balance. Please deposit more funds.');
+                registerBtn.disabled = false;
+                registerBtn.textContent = `Register & Pay ₹${entryFee}`;
+                return;
+            }
+
+            try {
+                // Create registration document
+                await db.collection('tournament_registrations').add({
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    game: selectedGame,
+                    category: selectedCategory,
+                    tournamentType: selectedType,
+                    gameUsername: gameUsername,
+                    gameId: gameId,
+                    entryFee: entryFee,
+                    registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'registered'
+                });
+
+                // Deduct entry fee by creating a withdrawal record
+                await db.collection('withdrawals').add({
+                    userId: currentUser.uid,
+                    email: currentUser.email,
+                    amount: entryFee,
+                    details: `Tournament Registration: ${selectedGame} ${selectedCategory} ${selectedType}`,
+                    status: 'approved',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAtClient: new Date().toISOString()
+                });
+
+                alert('Registration successful! You will receive a confirmation email shortly.');
+                window.location.href = 'tournaments.html';
+
+            } catch (error) {
+                alert('Error during registration: ' + error.message);
+                registerBtn.disabled = false;
+                registerBtn.textContent = `Register & Pay ₹${entryFee}`;
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+            });
+        });
+    </script>
+    <script src="js/tournament-utils.js"></script>
+    <script src="js/wallet-manager.js"></script>
+</body>
+</html>

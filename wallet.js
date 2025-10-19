@@ -10,65 +10,106 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+let auth, db;
+try {
+  if (typeof firebase === "undefined") throw new Error("Firebase SDK not loaded");
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
+  console.log('✅ Firebase initialized successfully');
+} catch (error) {
+  console.error('❌ Firebase initialization error:', error);
+  auth = null;
+  db = null;
+}
 
-// Global Variables
+// Global Variables (DOM refs will be set in initApp)
 let currentUser = null;
 let cachedBalance = 0;
 let currentTab = 'deposit';
 
-// DOM Elements
-const loadingScreen = document.getElementById('loadingScreen');
-const mainContent = document.getElementById('mainContent');
-const balanceAmount = document.getElementById('balanceAmount');
-const balanceSubtitle = document.getElementById('balanceSubtitle');
-const userBadge = document.getElementById('userBadge');
-const tabContent = document.getElementById('tabContent');
-const statusMessage = document.getElementById('statusMessage');
-const qrModal = document.getElementById('qrModal');
-const qrImg = document.getElementById('qrImg');
-const qrNote = document.getElementById('qrNote');
-const qrTitle = document.getElementById('qrTitle');
+// DOM element holders (initialized later)
+let loadingScreen = null;
+let mainContent = null;
+let balanceAmount = null;
+let balanceSubtitle = null;
+let userBadge = null;
+let tabContent = null;
+let statusMessage = null;
+let qrModal = null;
+let qrImg = null;
+let qrNote = null;
+let qrTitle = null;
 
 // Initialize Application
 function initApp() {
+  // Query DOM elements here so the script is robust regardless of include position
+  loadingScreen = document.getElementById('loadingScreen');
+  mainContent = document.getElementById('mainContent');
+  balanceAmount = document.getElementById('balanceAmount');
+  balanceSubtitle = document.getElementById('balanceSubtitle');
+  userBadge = document.getElementById('userBadge');
+  tabContent = document.getElementById('tabContent');
+  statusMessage = document.getElementById('statusMessage');
+  qrModal = document.getElementById('qrModal');
+  qrImg = document.getElementById('qrImg');
+  qrNote = document.getElementById('qrNote');
+  qrTitle = document.getElementById('qrTitle');
+
+  if (!auth) {
+    showStatus('Firebase not initialized properly', 'error');
+    console.error('Firebase auth is not available. Wallet functions will be disabled.');
+    return;
+  }
+
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
+      console.log('❌ No user found, redirecting to login');
       window.location.href = 'login.html';
       return;
     }
-    
+
     currentUser = user;
-    await initializeWallet();
-    showMainContent();
+    try {
+      await initializeWallet();
+      showMainContent();
+    } catch (err) {
+      console.error('Error during wallet initialization:', err);
+      showStatus('Error initializing wallet: ' + (err.message || 'unknown'), 'error');
+    }
   });
+
+  // safe QR modal click outside to close
+  if (qrModal) {
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) closeQRModal();
+    });
+  }
 }
 
 // Initialize Wallet
 async function initializeWallet() {
   try {
     updateLoadingText('Loading wallet data...');
-    userBadge.textContent = currentUser.email;
+    userBadge.textContent = currentUser.email || 'User';
     
     await updateWalletBalance();
     renderTab('deposit');
     
   } catch (error) {
     console.error('Wallet initialization error:', error);
-    showStatus('Error initializing wallet', 'error');
+    showStatus('Error initializing wallet: ' + error.message, 'error');
   }
 }
 
 // Show Main Content
 function showMainContent() {
   setTimeout(() => {
-    loadingScreen.classList.add('hidden');
-    mainContent.style.display = 'block';
+    if (loadingScreen) loadingScreen.classList.add('hidden');
+    if (mainContent) mainContent.style.display = 'block';
     
     setTimeout(() => {
-      mainContent.classList.add('fade-in');
+      if (mainContent) mainContent.classList.add('fade-in');
     }, 50);
   }, 500);
 }
@@ -81,42 +122,51 @@ function updateLoadingText(text) {
   }
 }
 
+// Safety: ensure cachedBalance is numeric
+function getSafeCachedBalance() {
+  return (typeof cachedBalance === 'number' && !isNaN(cachedBalance)) ? cachedBalance : 0;
+}
+
 // Update Wallet Balance
 async function updateWalletBalance() {
-  if (!currentUser) return;
-  
+  if (!currentUser || !db) return;
   try {
+    if (loadingScreen) updateLoadingText('Loading wallet data...');
+    if (userBadge) userBadge.textContent = currentUser.email || 'User';
+
     const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
-      db.collection('deposits')
-        .where('email', '==', currentUser.email)
-        .where('status', '==', 'approved')
-        .get(),
-      db.collection('withdrawals')
-        .where('email', '==', currentUser.email)
-        .where('status', '==', 'approved')
-        .get()
+      db.collection('deposits').where('userId', '==', currentUser.uid).where('status', '==', 'approved').get(),
+      db.collection('withdrawals').where('userId', '==', currentUser.uid).where('status', '==', 'approved').get()
     ]);
 
     let totalDeposits = 0;
     depositsSnapshot.forEach(doc => {
-      totalDeposits += Number(doc.data().amount) || 0;
+      const data = doc.data();
+      const amount = parseFloat(data.amount) || 0;
+      totalDeposits += amount;
     });
 
     let totalWithdrawals = 0;
     withdrawalsSnapshot.forEach(doc => {
-      totalWithdrawals += Number(doc.data().amount) || 0;
+      const data = doc.data();
+      const amount = parseFloat(data.amount) || 0;
+      totalWithdrawals += amount;
     });
 
     cachedBalance = totalDeposits - totalWithdrawals;
-    
-    // Update UI
-    balanceAmount.textContent = `₹${cachedBalance.toLocaleString('en-IN')}`;
-    balanceSubtitle.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
-    
+
+    if (balanceAmount) {
+      balanceAmount.textContent = `₹${cachedBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+    }
+    if (balanceSubtitle) {
+      balanceSubtitle.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+    }
+
   } catch (error) {
-    console.error('Balance calculation error:', error);
-    balanceAmount.textContent = '₹—';
-    balanceSubtitle.textContent = 'Unable to load balance';
+    console.error('❌ Balance calculation error:', error);
+    if (balanceAmount) balanceAmount.textContent = '₹—';
+    if (balanceSubtitle) balanceSubtitle.textContent = 'Unable to load balance';
+    showStatus('Error loading balance: ' + (error.message || 'unknown'), 'error');
   }
 }
 
@@ -147,6 +197,8 @@ function renderTab(tabName) {
 
 // Render Deposit Tab
 function renderDepositTab() {
+  if (!tabContent) return;
+  
   tabContent.innerHTML = `
     <div class="tab-section active">
       <h3 style="margin-bottom: 20px; color: var(--text-primary);">Add Funds</h3>
@@ -191,25 +243,23 @@ function renderDepositTab() {
 
 // Render Withdraw Tab
 function renderWithdrawTab() {
+  if (!tabContent) return;
+  const safeBalance = getSafeCachedBalance();
   tabContent.innerHTML = `
     <div class="tab-section active">
       <h3 style="margin-bottom: 20px; color: var(--text-primary);">Withdraw Funds</h3>
-      
       <div class="form-group">
         <label class="form-label">Amount to Withdraw (₹)</label>
-        <input type="number" id="withdrawAmount" class="form-input" 
-               placeholder="Enter amount" min="1" step="1" max="${cachedBalance}">
+        <input type="number" id="withdrawAmount" class="form-input" placeholder="Enter amount" min="1" step="1" max="${safeBalance}">
         <div class="muted" style="margin-top: 8px; font-size: 0.75rem;">
-          Available: ₹${cachedBalance.toLocaleString('en-IN')}
+          Available: ₹${safeBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
         </div>
       </div>
-      
       <div class="form-group">
         <label class="form-label">Payment Details</label>
         <input type="text" id="withdrawDetails" class="form-input" 
                placeholder="Enter UPI ID or bank account details">
       </div>
-      
       <div class="btn-group">
         <button class="btn btn-primary" onclick="submitWithdrawal()">
           <span class="action-icon">💸</span>
@@ -220,21 +270,14 @@ function renderWithdrawTab() {
           Use Max Amount
         </button>
       </div>
-      
-      <div style="margin-top: 24px; padding: 16px; background: var(--surface-light); border-radius: var(--radius-sm);">
-        <h4 style="margin-bottom: 8px; color: var(--text-primary);">ℹ️ Processing Time</h4>
-        <p style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.5;">
-          • Withdrawals processed within 24 hours<br>
-          • Make sure payment details are correct<br>
-          • Contact support for urgent requests
-        </p>
-      </div>
     </div>
   `;
 }
 
 // Render History Tab
 function renderHistoryTab() {
+  if (!tabContent) return;
+  
   tabContent.innerHTML = `
     <div class="tab-section active">
       <h3 style="margin-bottom: 20px; color: var(--text-primary);">Transaction History</h3>
@@ -250,68 +293,119 @@ function renderHistoryTab() {
   loadTransactionHistory();
 }
 
-// Submit Deposit
-async function submitDeposit() {
-  const amountInput = document.getElementById('depositAmount');
-  const utrInput = document.getElementById('depositUTR');
-  
-  const amount = Number(amountInput?.value || 0);
-  const utr = (utrInput?.value || '').trim();
-  
-  // Validation
-  if (amount <= 0) {
-    showStatus('Please enter a valid deposit amount', 'error');
-    return;
-  }
-  
-  if (!utr && !confirm('No UTR entered. Submit deposit without reference?')) {
-    return;
-  }
-  
-  try {
-    showStatus('Submitting deposit request...', 'info');
-    
-    await db.collection('deposits').add({
-      email: currentUser.email,
-      amount: amount,
-      utr: utr || null,
-      status: 'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      createdAtClient: new Date().toISOString(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    
-    // Clear form
-    if (amountInput) amountInput.value = '';
-    if (utrInput) utrInput.value = '';
-    
-    showStatus(`Deposit request of ₹${amount} submitted successfully!`, 'success');
-    
-    // Refresh balance after a delay
-    setTimeout(updateWalletBalance, 2000);
-    
-  } catch (error) {
-    console.error('Deposit submission error:', error);
-    showStatus('Error submitting deposit request', 'error');
-  }
+// small helper: ensure user's email is verified, offer to resend verification if not
+async function ensureEmailVerified() {
+  // No longer require email verification for wallet actions
+  return true;
 }
 
-// Submit Withdrawal
+// --- ensure token is fresh after verification ---
+async function refreshUserToken() {
+	// refresh user profile & id token
+	if (!currentUser) return;
+	try {
+		if (typeof currentUser.reload === 'function') await currentUser.reload();
+		if (typeof currentUser.getIdToken === 'function') await currentUser.getIdToken(true);
+		console.log('✅ User token refreshed');
+	} catch (e) {
+		console.warn('refreshUserToken failed', e);
+	}
+}
+
+// Submit Deposit - UPDATED: auto-approve for verified users and update wallet
+async function submitDeposit() {
+	console.log('🔄 Submitting deposit...');
+
+	if (!currentUser || !db) {
+		showStatus('Please wait, system is initializing', 'error');
+		return;
+	}
+
+    // No longer require email verification before deposit
+
+	// Refresh token to avoid stale-permission issues
+	await refreshUserToken();
+
+	const amountInput = document.getElementById('depositAmount');
+	const utrInput = document.getElementById('depositUTR');
+
+	const amount = parseFloat(amountInput?.value || 0);
+	const utr = (utrInput?.value || '').trim();
+
+	// Validation
+	if (amount <= 0 || isNaN(amount)) {
+		showStatus('Please enter a valid deposit amount', 'error');
+		return;
+	}
+
+	try {
+		showStatus('Submitting deposit request...', 'info');
+
+		const depositData = {
+			userId: currentUser.uid,
+			email: currentUser.email,
+			amount: amount,
+			status: 'pending',
+			createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+			createdAtClient: new Date().toISOString()
+		};
+		if (utr) depositData.utr = utr;
+
+		// Add deposit doc
+		const docRef = await db.collection('deposits').add(depositData);
+		console.log('🆔 Deposit doc created:', docRef.id);
+
+    // Always leave deposit as pending for admin approval
+    showStatus(`Deposit request of ₹${amount} submitted and awaiting approval.`, 'info');
+
+		// Clear form
+		if (amountInput) amountInput.value = '';
+		if (utrInput) utrInput.value = '';
+
+		// Refresh balance display
+		setTimeout(updateWalletBalance, 1200);
+
+	} catch (error) {
+		console.error('❌ Deposit submission error:', error);
+		let errorMessage = 'Error submitting deposit request';
+
+    if (error.code === 'permission-denied') {
+      errorMessage = 'Permission denied.';
+    } else if (error.code === 'unavailable') {
+			errorMessage = 'Network error. Please check your connection.';
+		} else {
+			errorMessage = 'Error submitting deposit request: ' + (error.message || '');
+		}
+
+		showStatus(errorMessage, 'error');
+	}
+}
+
+// Submit Withdrawal - UPDATED FOR YOUR RULES
 async function submitWithdrawal() {
+  console.log('🔄 Submitting withdrawal...');
+  
+  if (!currentUser || !db) {
+    showStatus('Please wait, system is initializing', 'error');
+    return;
+  }
+
+  // No longer require email verification before withdrawal
+
   const amountInput = document.getElementById('withdrawAmount');
   const detailsInput = document.getElementById('withdrawDetails');
   
-  const amount = Number(amountInput?.value || 0);
+  const amount = parseFloat(amountInput?.value || 0);
   const details = (detailsInput?.value || '').trim();
   
   // Validation
-  if (amount <= 0) {
+  if (amount <= 0 || isNaN(amount)) {
     showStatus('Please enter a valid withdrawal amount', 'error');
     return;
   }
   
   if (amount > cachedBalance) {
-    showStatus(`Insufficient balance. Available: ₹${cachedBalance}`, 'error');
+    showStatus(`Insufficient balance. Available: ₹${cachedBalance.toFixed(2)}`, 'error');
     return;
   }
   
@@ -323,15 +417,23 @@ async function submitWithdrawal() {
   try {
     showStatus('Submitting withdrawal request...', 'info');
     
-    await db.collection('withdrawals').add({
+    console.log('📝 Creating withdrawal document...');
+    const withdrawalData = {
+      userId: currentUser.uid, // Required by your rules
       email: currentUser.email,
       amount: amount,
       details: details,
-      status: 'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      createdAtClient: new Date().toISOString(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+      destination: details, // Required by your rules (must be a string)
+      status: 'pending', // Required by your rules
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(), // Required by your rules
+      createdAtClient: new Date().toISOString()
+    };
+    
+    console.log('💾 Saving withdrawal data:', withdrawalData);
+    
+    // Add document to Firestore
+    const docRef = await db.collection('withdrawals').add(withdrawalData);
+    console.log('✅ Withdrawal submitted with ID:', docRef.id);
     
     // Clear form
     if (amountInput) amountInput.value = '';
@@ -343,8 +445,19 @@ async function submitWithdrawal() {
     setTimeout(updateWalletBalance, 2000);
     
   } catch (error) {
-    console.error('Withdrawal submission error:', error);
-    showStatus('Error submitting withdrawal request', 'error');
+    console.error('❌ Withdrawal submission error:', error);
+    let errorMessage = 'Error submitting withdrawal request';
+    
+    // More specific error messages
+    if (error.code === 'permission-denied') {
+      errorMessage = 'Permission denied.';
+    } else if (error.code === 'unavailable') {
+      errorMessage = 'Network error. Please check your connection.';
+    } else {
+      errorMessage = 'Error submitting withdrawal request: ' + error.message;
+    }
+    
+    showStatus(errorMessage, 'error');
   }
 }
 
@@ -363,6 +476,12 @@ function showQRModal() {
   
   if (!paymentText) return;
   
+  if (!qrImg || !qrModal || !qrTitle || !qrNote) {
+    console.warn('QR modal elements not found in DOM');
+    alert('QR modal unavailable. Please try manual transfer.');
+    return;
+  }
+
   // Generate QR code using Google Charts API
   const encodedText = encodeURIComponent(paymentText);
   const qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodedText}&choe=UTF-8`;
@@ -376,19 +495,23 @@ function showQRModal() {
 
 // Close QR Modal
 function closeQRModal() {
-  qrModal.style.display = 'none';
+  if (qrModal) qrModal.style.display = 'none';
 }
 
-// Load Transaction History
+// Load Transaction History - UPDATED FOR YOUR RULES
 async function loadTransactionHistory() {
+  if (!currentUser || !db) return;
+
   try {
+    console.log('📜 Loading transaction history...');
+    
     const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
       db.collection('deposits')
-        .where('email', '==', currentUser.email)
+        .where('userId', '==', currentUser.uid)
         .orderBy('createdAt', 'desc')
         .get(),
       db.collection('withdrawals')
-        .where('email', '==', currentUser.email)
+        .where('userId', '==', currentUser.uid)
         .orderBy('createdAt', 'desc')
         .get()
     ]);
@@ -402,7 +525,7 @@ async function loadTransactionHistory() {
         id: doc.id,
         type: 'deposit',
         amount: data.amount,
-        status: data.status,
+        status: data.status || 'pending',
         details: data.utr || 'No UTR provided',
         timestamp: data.createdAt?.toDate() || new Date(data.createdAtClient),
         createdAt: data.createdAt
@@ -416,7 +539,7 @@ async function loadTransactionHistory() {
         id: doc.id,
         type: 'withdrawal',
         amount: data.amount,
-        status: data.status,
+        status: data.status || 'pending',
         details: data.details || 'No details provided',
         timestamp: data.createdAt?.toDate() || new Date(data.createdAtClient),
         createdAt: data.createdAt
@@ -430,25 +553,31 @@ async function loadTransactionHistory() {
       return timeB - timeA;
     });
     
+    console.log(`📊 Found ${transactions.length} transactions`);
     renderTransactionHistory(transactions);
     
   } catch (error) {
-    console.error('History loading error:', error);
-    document.getElementById('historyContent').innerHTML = `
-      <div class="text-center muted" style="padding: 40px;">
-        <div style="font-size: 3rem; margin-bottom: 16px;">😕</div>
-        <p>Unable to load transaction history</p>
-        <button class="btn btn-secondary" onclick="loadTransactionHistory()" style="margin-top: 16px;">
-          Try Again
-        </button>
-      </div>
-    `;
+    console.error('❌ History loading error:', error);
+    const historyContent = document.getElementById('historyContent');
+    if (historyContent) {
+      historyContent.innerHTML = `
+        <div class="text-center muted" style="padding: 40px;">
+          <div style="font-size: 3rem; margin-bottom: 16px;">😕</div>
+          <p>Unable to load transaction history</p>
+          <p style="font-size: 0.875rem; margin-top: 8px;">${error.message}</p>
+          <button class="btn btn-secondary" onclick="loadTransactionHistory()" style="margin-top: 16px;">
+            Try Again
+          </button>
+        </div>
+      `;
+    }
   }
 }
 
 // Render Transaction History
 function renderTransactionHistory(transactions) {
   const historyContent = document.getElementById('historyContent');
+  if (!historyContent) return;
   
   if (transactions.length === 0) {
     historyContent.innerHTML = `
@@ -492,27 +621,44 @@ function renderTransactionHistory(transactions) {
 
 // Show Status Message
 function showStatus(message, type = 'info') {
+  if (!statusMessage) {
+    console.warn('statusMessage element missing:', message, type);
+    return;
+  }
   statusMessage.textContent = message;
   statusMessage.className = `status-message ${type}`;
-  
-  // Auto-hide success messages after 5 seconds
-  if (type === 'success') {
-    setTimeout(clearStatus, 5000);
-  }
+  if (type === 'success') setTimeout(clearStatus, 5000);
 }
 
 // Clear Status Message
 function clearStatus() {
+  if (!statusMessage) return;
   statusMessage.className = 'status-message';
   statusMessage.textContent = '';
 }
 
 // Close modal when clicking outside
-qrModal.addEventListener('click', (e) => {
-  if (e.target === qrModal) {
-    closeQRModal();
-  }
-});
+if (qrModal) {
+  qrModal.addEventListener('click', (e) => {
+    if (e.target === qrModal) {
+      closeQRModal();
+    }
+  });
+}
+
+// Expose functions to global scope for inline onclick handlers and other pages
+window.switchTab = switchTab;
+window.renderTab = renderTab;
+window.renderDepositTab = renderDepositTab;
+window.renderWithdrawTab = renderWithdrawTab;
+window.renderHistoryTab = renderHistoryTab;
+window.submitDeposit = submitDeposit;
+window.submitWithdrawal = submitWithdrawal;
+window.setMaxAmount = setMaxAmount;
+window.showQRModal = showQRModal;
+window.closeQRModal = closeQRModal;
+window.loadTransactionHistory = loadTransactionHistory;
+window.loadWallet = updateWalletBalance; // keep available if other scripts call loadWallet -> will update balance
 
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', initApp);

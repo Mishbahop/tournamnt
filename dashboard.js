@@ -14,10 +14,9 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// DOM Elements
+// --- DOM Elements (as before) ---
 const loadingScreen = document.getElementById('loadingScreen');
 const mainContent = document.getElementById('mainContent');
-const userInfo = document.getElementById('userInfo');
 const userName = document.getElementById('userName');
 const userEmail = document.getElementById('userEmail');
 const profileName = document.getElementById('profileName');
@@ -27,768 +26,345 @@ const notificationToast = document.getElementById('notificationToast');
 const toastIcon = document.getElementById('toastIcon');
 const toastMessage = document.getElementById('toastMessage');
 const toastClose = document.getElementById('toastClose');
-
-// Stats Elements
 const tournamentsJoined = document.getElementById('tournamentsJoined');
 const tournamentsWon = document.getElementById('tournamentsWon');
 const walletBalance = document.getElementById('walletBalance');
 const winRate = document.getElementById('winRate');
 const detailedBalance = document.getElementById('detailedBalance');
-
-// Content Elements
 const tournamentsList = document.getElementById('tournamentsList');
-const matchesList = document.getElementById('matchesList');
 const transactionsList = document.getElementById('transactionsList');
-const profileContent = document.getElementById('profileContent');
 const verifiedBadge = document.getElementById('verifiedBadge');
 const memberSince = document.getElementById('memberSince');
 const profileTournaments = document.getElementById('profileTournaments');
 const profileWins = document.getElementById('profileWins');
 const profileWinRate = document.getElementById('profileWinRate');
 
-// Global Variables
 let currentUser = null;
-let userData = null;
 
-// Initialize Application
+// =================================================================
+// INITIALIZATION
+// =================================================================
 function initApp() {
-  console.log('Initializing dashboard...');
-  
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
-      // User not logged in, redirect to login
       window.location.href = 'login.html';
       return;
     }
-    
     currentUser = user;
-    await loadUserData();
+    await loadDashboardData();
     showMainContent();
   });
 }
 
-// Load User Data from Firestore
-async function loadUserData() {
+async function loadDashboardData() {
   try {
-    console.log('Loading user data...');
-    
-    // Get user document from Firestore
+    // These now run in parallel for faster loading
+    await Promise.all([
+        updateUserProfile(),
+        loadWalletData(),
+        loadUserTournaments(),
+        loadRecentTransactions()
+    ]);
+  } catch (error) {
+    console.error('Error loading dashboard data:', error);
+    showNotification('Error loading your dashboard', 'error');
+  }
+}
+
+
+// =================================================================
+// USER AND PROFILE LOGIC
+// =================================================================
+async function updateUserProfile() {
     const userDoc = await db.collection('users').doc(currentUser.uid).get();
-    
-    if (userDoc.exists) {
-      userData = userDoc.data();
-      console.log('User data loaded:', userData);
-      
-      // Update UI with user data
-      updateUserProfile();
-      await loadUserStats();
-      await loadUserTournaments();
-      await loadWalletData();
-      await loadRecentTransactions();
+    let userData = userDoc.exists ? userDoc.data() : {};
+
+    const displayName = userData?.displayName || currentUser.email.split('@')[0];
+    const email = currentUser.email;
+  
+    if (userName) userName.textContent = displayName;
+    if (userEmail) userEmail.textContent = email;
+    if (profileName) profileName.textContent = displayName;
+    if (profileEmail) profileEmail.textContent = email;
+  
+    if (verifiedBadge) {
+        if (currentUser.emailVerified) {
+            verifiedBadge.textContent = '✓ Verified';
+            verifiedBadge.className = 'badge verified';
+        } else {
+            verifiedBadge.textContent = '✗ Unverified';
+            verifiedBadge.className = 'badge warning';
+        }
+    }
+  
+    if (memberSince && currentUser.metadata.creationTime) {
+        const joinDate = new Date(currentUser.metadata.creationTime);
+        memberSince.textContent = `Member since ${joinDate.getFullYear()}`;
+    }
+}
+
+
+// =================================================================
+// WALLET & TRANSACTION LOGIC (FIXED)
+// =================================================================
+
+// FIX #1: Using the same self-healing logic from wallet.js to ensure consistency
+async function loadWalletData() {
+  if (!currentUser || !db) return;
+  try {
+    const walletRef = db.collection('wallets').doc(currentUser.uid);
+    const walletDoc = await walletRef.get();
+    let finalBalance = 0;
+
+    if (walletDoc.exists && typeof walletDoc.data().balance !== 'undefined') {
+      finalBalance = walletDoc.data().balance;
     } else {
-      // Create user document if it doesn't exist
-      await createUserProfile();
-      userData = {
-        email: currentUser.email,
-        displayName: currentUser.email.split('@')[0],
-        role: 'user',
-        walletBalance: 0,
-        tournamentsJoined: 0,
-        tournamentsWon: 0,
-        createdAt: new Date()
-      };
-      updateUserProfile();
+      // Fallback for new users - calculate and create the wallet document
+      console.warn("Wallet document not found for user. Calculating from history...");
+      const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
+        db.collection('deposits').where('userId', '==', currentUser.uid).where('status', '==', 'approved').get(),
+        db.collection('withdrawals').where('userId', '==', currentUser.uid).where('status', '==', 'approved').get()
+      ]);
+      let totalDeposits = 0;
+      depositsSnapshot.forEach(doc => totalDeposits += (parseFloat(doc.data().amount) || 0));
+      let totalWithdrawals = 0;
+      withdrawalsSnapshot.forEach(doc => totalWithdrawals += (parseFloat(doc.data().amount) || 0));
+      finalBalance = totalDeposits - totalWithdrawals;
+      // Create the wallet doc so this calculation is not needed again
+      await walletRef.set({ balance: finalBalance, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+
+    if (walletBalance) walletBalance.textContent = `₹${Math.round(finalBalance).toLocaleString()}`;
+    if (detailedBalance) detailedBalance.textContent = `₹${finalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+  } catch (error) {
+    console.error('Error loading wallet data:', error);
+    if (walletBalance) walletBalance.textContent = '₹?';
+    showNotification('Error loading wallet information', 'error');
+  }
+}
+
+async function loadRecentTransactions() {
+  if (!transactionsList || !currentUser) return;
+  try {
+    const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
+        db.collection('deposits').where('userId', '==', currentUser.uid).orderBy('createdAt', 'desc').limit(3).get(),
+        db.collection('withdrawals').where('userId', '==', currentUser.uid).orderBy('createdAt', 'desc').limit(3).get()
+    ]);
+    const transactions = [];
+    depositsSnapshot.forEach(doc => transactions.push({ type: 'deposit', ...doc.data(), date: doc.data().createdAt?.toDate() || new Date() }));
+    withdrawalsSnapshot.forEach(doc => transactions.push({ type: 'withdrawal', ...doc.data(), date: doc.data().createdAt?.toDate() || new Date() }));
+    
+    transactions.sort((a, b) => b.date - a.date);
+    displayTransactions(transactions.slice(0, 5));
+  } catch (error) {
+    console.error('Error loading transactions:', error);
+    if (transactionsList) transactionsList.innerHTML = '<div class="muted">Error loading transactions</div>';
+  }
+}
+
+function displayTransactions(transactions) {
+    if (!transactionsList) return;
+    if (transactions.length === 0) {
+        transactionsList.innerHTML = `<div class="empty-state"><div class="empty-icon">💸</div><p>No recent transactions</p></div>`;
+        return;
+    }
+    const html = transactions.map(t => `
+        <div class="transaction-item">
+            <div class="transaction-info">
+                <div class="transaction-type">${t.type === 'deposit' ? '💰 Deposit' : '💸 Withdrawal'}
+                    <span class="badge ${t.status}">${t.status}</span>
+                </div>
+                <div class="transaction-date">${t.date.toLocaleDateString()}</div>
+            </div>
+            <div class="transaction-amount ${t.type === 'deposit' ? 'amount-positive' : 'amount-negative'}">
+                ${t.type === 'deposit' ? '+' : '-'}₹${t.amount}
+            </div>
+        </div>`).join('');
+    transactionsList.innerHTML = html;
+}
+
+// =================================================================
+// TOURNAMENT LOGIC (FIXED)
+// =================================================================
+
+// FIX #2: Load REAL tournaments from Firestore instead of sample data
+async function loadUserTournaments() {
+  if (!tournamentsList || !currentUser) return;
+
+  try {
+    // Step 1: Get the list of tournament IDs the user has joined
+    const userTournamentsDoc = await db.collection('userTournaments').doc(currentUser.uid).get();
+
+    if (!userTournamentsDoc.exists || !userTournamentsDoc.data().tournamentIds || userTournamentsDoc.data().tournamentIds.length === 0) {
+      displayTournaments([]); // Show empty state
+      if (tournamentsJoined) tournamentsJoined.textContent = 0;
+      return;
     }
     
-  } catch (error) {
-    console.error('Error loading user data:', error);
-    showNotification('Error loading user data', 'error');
-  }
-}
+    const tournamentIds = userTournamentsDoc.data().tournamentIds;
 
-// Create User Profile in Firestore
-async function createUserProfile() {
-  try {
-    await db.collection('users').doc(currentUser.uid).set({
-      email: currentUser.email,
-      displayName: currentUser.email.split('@')[0],
-      role: 'user',
-      walletBalance: 0,
-      tournamentsJoined: 0,
-      tournamentsWon: 0,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      emailVerified: currentUser.emailVerified
-    });
-    console.log('User profile created');
-  } catch (error) {
-    console.error('Error creating user profile:', error);
-  }
-}
+    // Step 2: Fetch the details for all those tournaments in a single query
+    const tournamentsSnapshot = await db.collection('tournaments')
+      .where(firebase.firestore.FieldPath.documentId(), 'in', tournamentIds)
+      .get();
+      
+    const tournaments = tournamentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-// Update User Profile UI
-function updateUserProfile() {
-  const displayName = userData?.displayName || currentUser.email.split('@')[0];
-  const email = currentUser.email;
-  
-  // Update header
-  userName.textContent = displayName;
-  userEmail.textContent = email;
-  
-  // Update profile section
-  profileName.textContent = displayName;
-  profileEmail.textContent = email;
-  
-  // Update verification badge
-  if (currentUser.emailVerified) {
-    verifiedBadge.textContent = '✓ Verified';
-    verifiedBadge.className = 'badge verified';
-  } else {
-    verifiedBadge.textContent = '✗ Unverified';
-    verifiedBadge.className = 'badge warning';
-    verifiedBadge.style.background = 'rgba(245, 158, 11, 0.2)';
-    verifiedBadge.style.color = 'var(--warning)';
-    verifiedBadge.style.border = '1px solid var(--warning)';
-  }
-  
-  // Update member since
-  if (userData?.createdAt) {
-    const joinDate = userData.createdAt.toDate ? userData.createdAt.toDate() : new Date(userData.createdAt);
-    memberSince.textContent = `Member since ${joinDate.getFullYear()}`;
-  }
-}
+    // Step 3: Update stats based on real data
+    if (tournamentsJoined) tournamentsJoined.textContent = tournaments.length;
+    // Note: 'wins' would need a more complex system (e.g., checking results subcollection), for now we use a placeholder.
+    if (tournamentsWon) tournamentsWon.textContent = 0; // Placeholder
 
-// Load User Stats
-async function loadUserStats() {
-  if (!userData) return;
-  
-  // Update stats from user data
-  tournamentsJoined.textContent = userData.tournamentsJoined || 0;
-  tournamentsWon.textContent = userData.tournamentsWon || 0;
-  walletBalance.textContent = `₹${(userData.walletBalance || 0).toLocaleString()}`;
-  detailedBalance.textContent = `₹${(userData.walletBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-  
-  // Calculate win rate
-  const joined = userData.tournamentsJoined || 0;
-  const won = userData.tournamentsWon || 0;
-  const winRateValue = joined > 0 ? Math.round((won / joined) * 100) : 0;
-  winRate.textContent = `${winRateValue}%`;
-  
-  // Update profile stats
-  profileTournaments.textContent = userData.tournamentsJoined || 0;
-  profileWins.textContent = userData.tournamentsWon || 0;
-  profileWinRate.textContent = `${winRateValue}%`;
-}
+    displayTournaments(tournaments);
 
-// Load User Tournaments
-async function loadUserTournaments() {
-  try {
-    // In a real app, you would query tournaments where user is registered
-    // For now, we'll use sample data
-    const sampleTournaments = [
-      {
-        id: 1,
-        title: 'Valorant Showdown Championship',
-        game: 'Valorant',
-        status: 'upcoming',
-        prize: '₹50,000',
-        entryFee: '₹500',
-        startDate: '2024-12-20',
-        players: '32/64'
-      },
-      {
-        id: 2,
-        title: 'Free Fire Clash Royale',
-        game: 'Free Fire',
-        status: 'live',
-        prize: '₹25,000',
-        entryFee: '₹300',
-        startDate: '2024-12-15',
-        players: '24/32'
-      },
-      {
-        id: 3,
-        title: 'COD Mobile Masters Cup',
-        game: 'COD Mobile',
-        status: 'completed',
-        prize: '₹40,000',
-        entryFee: '₹400',
-        startDate: '2024-12-10',
-        players: '48/48',
-        position: '3rd'
-      }
-    ];
-    
-    displayTournaments(sampleTournaments);
-    
   } catch (error) {
     console.error('Error loading tournaments:', error);
-    tournamentsList.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">😕</div>
-        <h4>Error Loading Tournaments</h4>
-        <p>Unable to load your tournament data</p>
-        <button class="btn btn-secondary" onclick="loadUserTournaments()">Try Again</button>
-      </div>
-    `;
+    tournamentsList.innerHTML = `<div class="empty-state"><h4>Error Loading Tournaments</h4><p>${error.message}</p></div>`;
   }
 }
 
-// Display Tournaments
+// FIX #3: Display tournaments categorized by status
 function displayTournaments(tournaments) {
-  if (!tournaments || tournaments.length === 0) {
+  if (!tournamentsList) return;
+
+  if (tournaments.length === 0) {
     tournamentsList.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">🎮</div>
         <h4>No Tournaments Yet</h4>
         <p>Join your first tournament to get started!</p>
         <a href="tournaments.html" class="btn btn-primary">Find Tournaments</a>
-      </div>
-    `;
+      </div>`;
     return;
   }
   
-  const tournamentsHTML = tournaments.map(tournament => `
+  // Categorize tournaments
+  const live = tournaments.filter(t => t.status === 'active');
+  const upcoming = tournaments.filter(t => ['upcoming', 'registering'].includes(t.status));
+  const completed = tournaments.filter(t => t.status === 'completed');
+
+  let finalHTML = '';
+
+  const createTournamentHTML = (t) => `
     <div class="tournament-item">
       <div class="tournament-header">
         <div>
-          <div class="tournament-title">${tournament.title}</div>
-          <div class="tournament-game muted">${tournament.game}</div>
+          <div class="tournament-title">${t.title}</div>
+          <div class="tournament-game muted">${t.game}</div>
         </div>
-        <span class="tournament-status status-${tournament.status}">
-          ${tournament.status.toUpperCase()}
-        </span>
+        <span class="tournament-status status-${t.status}">${t.status}</span>
       </div>
-      
       <div class="tournament-details">
         <div class="tournament-detail">
           <div class="detail-label">Prize Pool</div>
-          <div class="detail-value prize-value">${tournament.prize}</div>
+          <div class="detail-value prize-value">₹${t.prizePool?.toLocaleString() || 0}</div>
         </div>
         <div class="tournament-detail">
           <div class="detail-label">Entry Fee</div>
-          <div class="detail-value">${tournament.entryFee}</div>
+          <div class="detail-value">₹${t.entryFee?.toLocaleString() || 0}</div>
         </div>
         <div class="tournament-detail">
-          <div class="detail-label">Start Date</div>
-          <div class="detail-value">${tournament.startDate}</div>
+          <div class="detail-label">Starts</div>
+          <div class="detail-value">${t.startDate?.toDate().toLocaleDateString() || 'TBD'}</div>
         </div>
         <div class="tournament-detail">
           <div class="detail-label">Players</div>
-          <div class="detail-value">${tournament.players}</div>
+          <div class="detail-value">${t.currentPlayers || 0} / ${t.maxPlayers || '∞'}</div>
         </div>
       </div>
-      
       <div class="tournament-actions">
-        <button class="btn btn-primary" onclick="viewTournament(${tournament.id})">
-          <span class="btn-icon">👁️</span>
-          View Details
-        </button>
-        ${tournament.status === 'upcoming' ? `
-          <button class="btn btn-secondary" onclick="withdrawFromTournament(${tournament.id})">
-            <span class="btn-icon">🚫</span>
-            Withdraw
-          </button>
-        ` : ''}
-        ${tournament.position ? `
-          <div class="tournament-position">
-            <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning);">
-              Finished ${tournament.position}
-            </span>
-          </div>
-        ` : ''}
+        <button class="btn btn-primary" onclick="viewTournamentDetails('${t.id}')">View Details</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
   
-  tournamentsList.innerHTML = tournamentsHTML;
-}
-
-// Load Wallet Data
-async function loadWalletData() {
-  try {
-    // Calculate balance from deposits and withdrawals
-    const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
-      db.collection('deposits')
-        .where('email', '==', currentUser.email)
-        .where('status', '==', 'approved')
-        .get(),
-      db.collection('withdrawals')
-        .where('email', '==', currentUser.email)
-        .where('status', '==', 'approved')
-        .get()
-    ]);
-
-    let totalDeposits = 0;
-    depositsSnapshot.forEach(doc => {
-      totalDeposits += Number(doc.data().amount) || 0;
-    });
-
-    let totalWithdrawals = 0;
-    withdrawalsSnapshot.forEach(doc => {
-      totalWithdrawals += Number(doc.data().amount) || 0;
-    });
-
-    const balance = totalDeposits - totalWithdrawals;
-    
-    // Update wallet balance
-    walletBalance.textContent = `₹${balance.toLocaleString()}`;
-    detailedBalance.textContent = `₹${balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-    
-  } catch (error) {
-    console.error('Error loading wallet data:', error);
-    showNotification('Error loading wallet information', 'error');
+  if (live.length > 0) {
+    finalHTML += `<h3>Live</h3><div class="tournaments-grid">` + live.map(createTournamentHTML).join('') + `</div>`;
   }
-}
-
-// Load Recent Transactions
-async function loadRecentTransactions() {
-  try {
-    const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
-      db.collection('deposits')
-        .where('email', '==', currentUser.email)
-        .orderBy('createdAt', 'desc')
-        .limit(5)
-        .get(),
-      db.collection('withdrawals')
-        .where('email', '==', currentUser.email)
-        .orderBy('createdAt', 'desc')
-        .limit(5)
-        .get()
-    ]);
-    
-    const transactions = [];
-    
-    // Process deposits
-    depositsSnapshot.forEach(doc => {
-      const data = doc.data();
-      transactions.push({
-        type: 'deposit',
-        amount: data.amount,
-        status: data.status,
-        date: data.createdAt?.toDate() || new Date(),
-        id: doc.id
-      });
-    });
-    
-    // Process withdrawals
-    withdrawalsSnapshot.forEach(doc => {
-      const data = doc.data();
-      transactions.push({
-        type: 'withdrawal',
-        amount: data.amount,
-        status: data.status,
-        date: data.createdAt?.toDate() || new Date(),
-        id: doc.id
-      });
-    });
-    
-    // Sort by date and display
-    transactions.sort((a, b) => b.date - a.date);
-    displayTransactions(transactions.slice(0, 5));
-    
-  } catch (error) {
-    console.error('Error loading transactions:', error);
-    transactionsList.innerHTML = '<div class="muted">Error loading transactions</div>';
+  if (upcoming.length > 0) {
+    finalHTML += `<h3>Upcoming</h3><div class="tournaments-grid">` + upcoming.map(createTournamentHTML).join('') + `</div>`;
   }
-}
-
-// Display Transactions
-function displayTransactions(transactions) {
-  if (!transactions || transactions.length === 0) {
-    transactionsList.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">💸</div>
-        <p>No transactions yet</p>
-      </div>
-    `;
-    return;
+  if (completed.length > 0) {
+    finalHTML += `<h3>Completed</h3><div class="tournaments-grid">` + completed.map(createTournamentHTML).join('') + `</div>`;
   }
-  
-  const transactionsHTML = transactions.map(transaction => `
-    <div class="transaction-item">
-      <div class="transaction-info">
-        <div class="transaction-type">
-          ${transaction.type === 'deposit' ? '💰 Deposit' : '💸 Withdrawal'}
-          <span class="transaction-status" style="
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            margin-left: 8px;
-            background: ${transaction.status === 'approved' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)'};
-            color: ${transaction.status === 'approved' ? 'var(--success)' : 'var(--warning)'};
-            border: 1px solid ${transaction.status === 'approved' ? 'var(--success)' : 'var(--warning)'};
-          ">
-            ${transaction.status}
-          </span>
-        </div>
-        <div class="transaction-date">
-          ${transaction.date.toLocaleDateString()}
-        </div>
-      </div>
-      <div class="transaction-amount ${transaction.type === 'deposit' ? 'amount-positive' : 'amount-negative'}">
-        ${transaction.type === 'deposit' ? '+' : '-'}₹${transaction.amount}
-      </div>
-    </div>
-  `).join('');
-  
-  transactionsList.innerHTML = transactionsHTML;
+
+  tournamentsList.innerHTML = finalHTML;
 }
 
-// Show Main Content
+
+// =================================================================
+// UTILITY & UI FUNCTIONS
+// =================================================================
 function showMainContent() {
-  console.log('Showing dashboard content...');
-  
   setTimeout(() => {
-    if (loadingScreen) {
-      loadingScreen.classList.add('hidden');
-    }
-    
-    if (mainContent) {
-      mainContent.style.opacity = '1';
-    }
-    
-    // Initialize tab functionality
+    if (loadingScreen) loadingScreen.classList.add('hidden');
+    if (mainContent) mainContent.style.opacity = '1';
     initTabs();
-    
-  }, 1000);
+  }, 500);
 }
 
-// Initialize Tab Functionality
 function initTabs() {
   const tabs = document.querySelectorAll('.tab');
   const panels = document.querySelectorAll('.tab-panel');
-  
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      const targetTab = tab.getAttribute('data-tab');
-      
-      // Update active tab
       tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
-      
-      // Show corresponding panel
-      panels.forEach(panel => {
-        panel.classList.remove('active');
-        if (panel.id === `${targetTab}-panel`) {
-          panel.classList.add('active');
-        }
-      });
+      document.getElementById(`${tab.dataset.tab}-panel`).classList.add('active');
     });
   });
 }
 
-// Show Notification
 function showNotification(message, type = 'info') {
-  const icons = {
-    success: '✅',
-    error: '❌',
-    info: 'ℹ️',
-    warning: '⚠️'
-  };
-  
-  toastIcon.textContent = icons[type] || icons.info;
-  toastMessage.textContent = message;
-  notificationToast.className = `notification-toast show ${type}`;
-  
-  setTimeout(() => {
-    hideNotification();
-  }, 5000);
+    if (!notificationToast) return;
+    toastIcon.textContent = { success: '✅', error: '❌', info: 'ℹ️' }[type] || 'ℹ️';
+    toastMessage.textContent = message;
+    notificationToast.className = `notification-toast show ${type}`;
+    setTimeout(hideNotification, 5000);
 }
 
-// Hide Notification
 function hideNotification() {
-  notificationToast.classList.remove('show');
+    if (notificationToast) notificationToast.classList.remove('show');
 }
 
-// Refresh Tournaments
 function refreshTournaments() {
-  tournamentsList.innerHTML = `
-    <div class="loading-state">
-      <div class="loading-spinner-small"></div>
-      <p>Refreshing tournaments...</p>
-    </div>
-  `;
-  
+  if (tournamentsList) tournamentsList.innerHTML = `<div class="loading-state"><div class="loading-spinner-small"></div><p>Refreshing...</p></div>`;
   setTimeout(() => {
     loadUserTournaments();
-    showNotification('Tournaments refreshed', 'success');
+    showNotification('Tournaments refreshed!', 'success');
   }, 1000);
 }
 
-// View Tournament
-function viewTournament(tournamentId) {
-  showNotification(`Opening tournament ${tournamentId}...`, 'info');
-  // In real app, redirect to tournament page
-  // window.location.href = `tournament-new.html?id=${tournamentId}`;
+function viewTournamentDetails(tournamentId) {
+    window.location.href = `tournament.html?id=${tournamentId}`; // Link to your main tournament page
 }
 
-// Withdraw from Tournament
-function withdrawFromTournament(tournamentId) {
-  if (confirm('Are you sure you want to withdraw from this tournament?')) {
-    showNotification('Withdrawal request submitted', 'success');
-    // In real app, implement withdrawal logic
-  }
-}
-
-// Edit Profile
-function editProfile() {
-  showNotification('Profile editing feature coming soon!', 'info');
-}
-
-// Verify Email
-function verifyEmail() {
-  if (currentUser.emailVerified) {
-    showNotification('Email is already verified', 'success');
-    return;
-  }
-  
-  currentUser.sendEmailVerification()
-    .then(() => {
-      showNotification('Verification email sent! Please check your inbox.', 'success');
-    })
-    .catch(error => {
-      console.error('Error sending verification email:', error);
-      showNotification('Error sending verification email', 'error');
-    });
-}
-
-// Sign Out
 function signOut() {
-  auth.signOut()
-    .then(() => {
-      showNotification('Signed out successfully', 'success');
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 1000);
-    })
-    .catch(error => {
-      console.error('Sign out error:', error);
-      showNotification('Error signing out', 'error');
-    });
+  auth.signOut().then(() => {
+    window.location.href = 'login.html';
+  }).catch(error => {
+    console.error('Sign out error:', error);
+    showNotification('Error signing out', 'error');
+  });
 }
 
-// Event Listeners
+// =================================================================
+// EVENT LISTENERS
+// =================================================================
 function setupEventListeners() {
-  // Sign out button
-  if (signOutBtn) {
-    signOutBtn.addEventListener('click', signOut);
-  }
-  
-  // Toast close button
-  if (toastClose) {
-    toastClose.addEventListener('click', hideNotification);
-  }
-  
-  // Profile settings in quick actions
-  const profileSettings = document.getElementById('profileSettings');
-  if (profileSettings) {
-    profileSettings.addEventListener('click', () => {
-      // Switch to profile tab
-      document.querySelector('[data-tab="profile"]').click();
-    });
-  }
-}
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Dashboard DOM loaded');
-  setupEventListeners();
-  initApp();
-});
-
-// Fallback: if loading takes too long, force show content
-setTimeout(() => {
-  if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
-    console.log('Fallback: forcing content to show');
-    showMainContent();
-  }
-}, 5000);
-// Enhanced Navigation & Trending Tournaments Interactions
-// Create mobile navigation
-const mobileNav = document.createElement('div');
-mobileNav.className = 'mobile-nav';
-mobileNav.innerHTML = `
-  <div class="mobile-nav-links">
-    <a href="tournaments.html" class="mobile-nav-link">Tournaments</a>
-    <a href="wallet.html" class="mobile-nav-link">Wallet</a>
-    <a href="dashboard.html" class="mobile-nav-link">Profile</a>
-    <a href="admin.html" class="mobile-nav-link">Organizer</a>
-  </div>
-`;
-
-// Add mobile menu button to header
-const headerContainer = document.querySelector('.header-container');
-headerContainer.appendChild(mobileMenuBtn);
-document.body.appendChild(mobileNav);
-
-// Toggle mobile menu
-mobileMenuBtn.addEventListener('click', function() {
-  this.classList.toggle('active');
-  mobileNav.classList.toggle('active');
-  document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
-});
-
-// Close mobile menu when clicking on a link
-document.querySelectorAll('.mobile-nav-link').forEach(link => {
-  link.addEventListener('click', () => {
-    mobileMenuBtn.classList.remove('active');
-    mobileNav.classList.remove('active');
-    document.body.style.overflow = '';
-  });
-});
-
-// Header scroll effect
-window.addEventListener('scroll', () => {
-  const header = document.querySelector('.main-header');
-  if (window.scrollY > 50) {
-    header.classList.add('scrolled');
-  } else {
-    header.classList.remove('scrolled');
-  }
-});
-
-// Enhanced trending tournaments data
-const trendingTournamentsData = [
-  {
-    id: 1,
-    game: "Valorant",
-    gameIcon: "🎯",
-    category: "5v5 Tactical",
-    status: "live",
-    title: "Valorant Champions Showdown",
-    date: "2024-03-15",
-    time: "18:00 IST",
-    format: "Single Elimination",
-    prize: "₹50,000",
-    entries: "24/32",
-    featured: true
-  },
-  {
-    id: 2,
-    game: "Free Fire",
-    gameIcon: "🔥",
-    category: "Battle Royale",
-    status: "registering",
-    title: "Free Fire Clash Royale",
-    date: "2024-03-18",
-    time: "20:00 IST",
-    format: "Squad Battle",
-    prize: "₹25,000",
-    entries: "18/48",
-    featured: false
-  },
-  {
-    id: 3,
-    game: "COD Mobile",
-    gameIcon: "🎮",
-    category: "FPS",
-    status: "upcoming",
-    title: "COD Mobile Masters Cup",
-    date: "2024-03-20",
-    time: "17:00 IST",
-    format: "Team Deathmatch",
-    prize: "₹40,000",
-    entries: "12/24",
-    featured: false
-  },
-  {
-    id: 4,
-    game: "BGMI",
-    gameIcon: "🏹",
-    category: "Battle Royale",
-    status: "registering",
-    title: "BGMI India Showdown",
-    date: "2024-03-22",
-    time: "16:00 IST",
-    format: "Squad Battle",
-    prize: "₹75,000",
-    entries: "36/64",
-    featured: true
-  }
-];
-
-// Render trending tournaments
-function renderTrendingTournaments() {
-  const container = document.getElementById('trendingTournaments');
-  
-  if (!container) return;
-  
-  container.innerHTML = trendingTournamentsData.map(tournament => `
-    <div class="tournament-card ${tournament.featured ? 'featured' : ''}">
-      <div class="tournament-header">
-        <div class="tournament-game">
-          <div class="game-icon">${tournament.gameIcon}</div>
-          <div class="game-info">
-            <div class="game-name">${tournament.game}</div>
-            <div class="game-category">${tournament.category}</div>
-          </div>
-        </div>
-        <div class="tournament-status status-${tournament.status}">
-          ${tournament.status.toUpperCase()}
-        </div>
-      </div>
-      <div class="tournament-body">
-        <h3 class="tournament-title">${tournament.title}</h3>
-        <div class="tournament-details">
-          <div class="tournament-detail">
-            <span class="detail-icon">📅</span>
-            <span>${tournament.date}</span>
-          </div>
-          <div class="tournament-detail">
-            <span class="detail-icon">🕒</span>
-            <span>${tournament.time}</span>
-          </div>
-          <div class="tournament-detail">
-            <span class="detail-icon">⚙️</span>
-            <span>${tournament.format}</span>
-          </div>
-        </div>
-        <div class="tournament-prize">
-          <span class="prize-icon">💰</span>
-          <span>${tournament.prize}</span>
-        </div>
-      </div>
-      <div class="tournament-footer">
-        <div class="tournament-entries">
-          <span class="entries-icon">👥</span>
-          <span class="entries-count">${tournament.entries}</span>
-          <span>Players</span>
-        </div>
-        <div class="tournament-actions">
-          <button class="btn btn-sm btn-register">Register</button>
-          <button class="btn btn-sm btn-details">Details</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-  
-  // Add scroll animation for tournament cards
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1 });
-  
-  document.querySelectorAll('.tournament-card').forEach(card => {
-    observer.observe(card);
-  });
-}
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  renderTrendingTournaments();
-  
-  // Add active class to current page in bottom nav
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  const navItems = document.querySelectorAll('.nav-item');
-  
-  navItems.forEach(item => {
-    const link = item.getAttribute('href');
-    if (link === currentPage) {
-      item.classList.add('active');
+    if (signOutBtn) signOutBtn.addEventListener('click', signOut);
+    if (toastClose) toastClose.addEventListener('click', hideNotification);
+    
+    const profileSettings = document.getElementById('profileSettings');
+    if (profileSettings) {
+        profileSettings.addEventListener('click', () => {
+            document.querySelector('[data-tab="profile"]')?.click();
+        });
     }
-  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    initApp();
 });

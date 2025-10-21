@@ -1,0 +1,636 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Tournament Details - TourneyHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles adapted from tournaments.html for consistency */
+        :root {
+            --neon-primary: #6c63ff;
+            --neon-secondary: #ff6b6b;
+            --neon-accent: #4ecdc4;
+            --neon-purple: #a363ff;
+            --dark-bg: #0f0f1a;
+            --darker-bg: #080811;
+            --card-bg: rgba(30, 30, 46, 0.8);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8d0;
+            --success: #00ff88;
+            --warning: #ffcc00;
+            --danger: #ff4757;
+            
+            --gradient-neon: linear-gradient(135deg, var(--neon-primary), var(--neon-purple));
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+            
+            --border-radius: 20px;
+            --border-radius-sm: 12px;
+            --border-radius-lg: 30px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { 
+            background: var(--dark-bg); 
+            color: var(--text-primary); 
+            min-height: 100vh;
+            padding-top: 80px; 
+            padding-bottom: 20px;
+            overflow-x: hidden;
+        }
+
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 15, 26, 0.95);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            padding: 15px 0;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        .logo-icon, .logo-text {
+            background: var(--gradient-neon);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .tournament-summary {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: var(--shadow-card);
+        }
+        
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .game-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-neon);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+        }
+        
+        .summary-title h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .summary-title p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .status-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .status-tag.active { background: #ff6b6b; color: white; }
+        .status-tag.upcoming { background: #4ecdc4; color: var(--dark-bg); }
+        .status-tag.completed { background: #b8b8d0; color: var(--dark-bg); }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .stat-item .label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .stat-item .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .stat-item .value.prize { color: var(--success); }
+        
+        /* Tabs Styling (reusing from tournaments.html) */
+        .tabs-container {
+            background: var(--darker-bg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            padding: 0 20px;
+            gap: 5px;
+        }
+
+        .tab {
+            padding: 15px 20px;
+            white-space: nowrap;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            flex-grow: 1;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .tab.active {
+            color: var(--text-primary);
+            border-bottom: 3px solid var(--neon-primary);
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* General Card for Content */
+        .content-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .detail-item .label { color: var(--text-secondary); }
+        .detail-item .value { font-weight: 600; }
+        
+        /* List Styles (Participants/Matches) */
+        .list-item {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .list-item:last-child { border-bottom: none; }
+        
+        .list-info strong {
+            display: block;
+            font-size: 1.1rem;
+        }
+        .list-info span {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .list-tag {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--neon-primary);
+        }
+        
+        /* Match specific */
+        .match-status-tag {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .match-status-tag.scheduled { background: rgba(78, 205, 196, 0.2); color: var(--neon-accent); }
+        .match-status-tag.in-progress { background: rgba(255, 107, 107, 0.2); color: var(--neon-secondary); }
+        .match-status-tag.completed { background: rgba(184, 184, 208, 0.2); color: var(--text-secondary); }
+
+        .loading, .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Professional Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo" onclick="window.location.href='tournaments.html'">
+                <span class="logo-icon">🏆</span>
+                <span class="logo-text">TourneyHub</span>
+            </div>
+            <!-- Logout Button Placeholder (assuming a common button from other files) -->
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Tournament Summary / Header Section -->
+        <div class="tournament-summary">
+            <div id="tournamentHeader" style="display:none;">
+                <div class="summary-header">
+                    <div class="game-icon" id="headerGameIcon">🎮</div>
+                    <div class="summary-title">
+                        <h1 id="headerTitle">Loading Tournament...</h1>
+                        <p id="headerGame">Game Title</p>
+                    </div>
+                </div>
+                <span class="status-tag" id="headerStatus">Loading</span>
+                
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <div class="label">Entry Fee</div>
+                        <div class="value" id="statEntryFee">...</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">Prize Pool</div>
+                        <div class="value prize" id="statPrizePool">...</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">Players</div>
+                        <div class="value" id="statPlayers">...</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">Start Date</div>
+                        <div class="value" id="statStartDate">...</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 20px;" onclick="window.location.href='tournament-register.html?id=' + tournamentId">
+                    Register / View Registration
+                </button>
+            </div>
+            <div id="loadingMessage" class="loading">Fetching tournament details...</div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs-container" id="tabsContainer" style="display:none;">
+            <div class="tabs">
+                <button class="tab active" data-target="details">
+                    <i class="fas fa-info-circle"></i> Details
+                </button>
+                <button class="tab" data-target="participants">
+                    <i class="fas fa-users"></i> Participants (<span id="participantCount">0</span>)
+                </button>
+                <button class="tab" data-target="matches">
+                    <i class="fas fa-swords"></i> Matches
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="tab-content active" id="details-section">
+            <div class="content-card">
+                <h3>General Information</h3>
+                <div id="detailsInfo">
+                    <!-- Details will be injected here -->
+                    <div class="loading">Loading details...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="participants-section">
+            <div class="content-card">
+                <h3>Registered Participants</h3>
+                <div id="participantsList">
+                    <div class="loading">Loading participants...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="matches-section">
+            <div class="content-card">
+                <h3>Upcoming & Recent Matches</h3>
+                <div id="matchesList">
+                    <div class="loading">Loading matches...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase configuration (Copied from tournaments.html for local testing)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+            authDomain: "authapp-386ee.firebaseapp.com",
+            projectId: "authapp-386ee",
+            storageBucket: "authapp-386ee.appspot.com",
+            messagingSenderId: "809698525310",
+            appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+            measurementId: "G-EJZTSBSGQT"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUser = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const tournamentId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!tournamentId) {
+                document.getElementById('loadingMessage').textContent = 'Error: Tournament ID is missing from URL.';
+                return;
+            }
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    window.location.href = "login.html";
+                    return;
+                }
+                currentUser = user;
+                loadTournamentDetails();
+                setupTabs();
+            });
+        });
+        
+        // ======================= CORE FUNCTIONS =======================
+
+        async function loadTournamentDetails() {
+            try {
+                const doc = await db.collection('tournaments').doc(tournamentId).get();
+                if (!doc.exists) {
+                    document.getElementById('loadingMessage').textContent = 'Tournament not found.';
+                    return;
+                }
+                const details = doc.data();
+                
+                // Update Page Title
+                document.getElementById('pageTitle').textContent = `${details.title} - TourneyHub`;
+                
+                // Populate Header Summary
+                document.getElementById('headerTitle').textContent = details.title || 'Untitled Tournament';
+                document.getElementById('headerGame').textContent = details.game || 'Game';
+                document.getElementById('headerGameIcon').textContent = getGameIcon(details.game);
+                
+                const statusElement = document.getElementById('headerStatus');
+                statusElement.textContent = details.status ? details.status.toUpperCase() : 'UNKNOWN';
+                statusElement.className = `status-tag ${details.status}`;
+                
+                document.getElementById('statEntryFee').textContent = `₹${formatCurrency(details.entryFee || 0)}`;
+                document.getElementById('statPrizePool').textContent = `₹${formatCurrency(details.prizePool || 0)}`;
+                document.getElementById('statPlayers').textContent = `${details.currentPlayers || 0} / ${details.maxPlayers || '∞'}`;
+                document.getElementById('statStartDate').textContent = formatDate(details.startDate);
+
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('tournamentHeader').style.display = 'block';
+                document.getElementById('tabsContainer').style.display = 'block';
+                
+                // Populate Details Tab
+                renderDetailsTab(details);
+                
+                // Load sub-data for other tabs
+                loadParticipants();
+                loadMatches();
+
+            } catch (error) {
+                console.error('Error loading tournament details:', error);
+                document.getElementById('loadingMessage').textContent = 'Failed to load data: ' + error.message;
+            }
+        }
+        
+        function renderDetailsTab(details) {
+            const container = document.getElementById('detailsInfo');
+            container.innerHTML = `
+                <div class="detail-item">
+                    <span class="label">Game Type</span>
+                    <span class="value">${details.gameType || 'Standard'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Match Format</span>
+                    <span class="value">${details.matchType || 'Single Elimination'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Map</span>
+                    <span class="value">${details.map || 'Default'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Max Players</span>
+                    <span class="value">${details.maxPlayers || 'Unlimited'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Created By</span>
+                    <span class="value">${details.createdBy || 'Admin'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Tournament ID</span>
+                    <span class="value">${tournamentId}</span>
+                </div>
+                <!-- Add more details as needed -->
+            `;
+        }
+
+        async function loadParticipants() {
+            const container = document.getElementById('participantsList');
+            container.innerHTML = '<div class="loading">Fetching participants...</div>';
+            
+            try {
+                const snapshot = await db.collection('tournaments').doc(tournamentId).collection('participants')
+                                        .orderBy('registeredAt', 'asc')
+                                        .get();
+
+                document.getElementById('participantCount').textContent = snapshot.size;
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="no-data">No participants registered yet.</div>';
+                    return;
+                }
+
+                const participantsHTML = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const isCurrentUser = data.userId === currentUser.uid;
+                    return `
+                        <div class="list-item">
+                            <div class="list-info">
+                                <strong>${data.email || 'Anonymous User'} ${isCurrentUser ? '(You)' : ''}</strong>
+                                <span>${data.teamName || 'Solo Player'}</span>
+                            </div>
+                            <div class="list-tag">
+                                ${formatDate(data.registeredAt, { month: 'short', day: 'numeric' })}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = participantsHTML;
+
+            } catch (error) {
+                console.error('Error loading participants:', error);
+                container.innerHTML = '<div class="no-data">Error loading participants.</div>';
+            }
+        }
+
+        async function loadMatches() {
+            const container = document.getElementById('matchesList');
+            container.innerHTML = '<div class="loading">Fetching matches...</div>';
+            
+            try {
+                // Assuming a 'matches' collection where tournamentId is stored
+                const snapshot = await db.collection('matches')
+                                        .where('tournamentId', '==', tournamentId)
+                                        .orderBy('scheduledTime', 'asc')
+                                        .limit(10)
+                                        .get();
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="no-data">No matches scheduled for this tournament yet.</div>';
+                    return;
+                }
+
+                const matchesHTML = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const statusClass = data.status || 'scheduled';
+                    const round = data.round || 'Round 1';
+                    const timeString = formatDate(data.scheduledTime);
+                    
+                    return `
+                        <div class="list-item">
+                            <div class="list-info">
+                                <strong>${round}</strong>
+                                <span>${data.teamA || 'TBD'} vs ${data.teamB || 'TBD'}</span>
+                                <span><i class="far fa-clock"></i> ${timeString}</span>
+                            </div>
+                            <div class="match-status-tag ${statusClass}">
+                                ${statusClass.toUpperCase()}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = matchesHTML;
+
+            } catch (error) {
+                console.error('Error loading matches:', error);
+                container.innerHTML = '<div class="no-data">Error loading matches.</div>';
+            }
+        }
+
+        // ======================= UTILITIES & TAB LOGIC =======================
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const target = this.dataset.target;
+                    
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(`${target}-section`).classList.add('active');
+                });
+            });
+        }
+        
+        function getGameIcon(game) {
+            const icons = {
+                'BGMI': '🎯',
+                'Free Fire': '🔫',
+                'Call of Duty Mobile': '💥',
+                'Clash Royale': '⚔️',
+                '8 Ball Pool': '🎱'
+            };
+            return icons[game] || '🎮';
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0 }).format(amount);
+        }
+
+        function formatDate(timestamp, options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) {
+            if (!timestamp) return 'TBD';
+            try {
+                let date;
+                if (timestamp.toDate) {
+                    date = timestamp.toDate();
+                } else if (typeof timestamp === 'string') {
+                    date = new Date(timestamp);
+                } else if (timestamp.seconds) {
+                    date = new Date(timestamp.seconds * 1000);
+                } else {
+                    return 'TBD';
+                }
+                return date.toLocaleDateString('en-US', options);
+            } catch (e) {
+                return 'TBD';
+            }
+        }
+    </script>
+</body>
+</html>

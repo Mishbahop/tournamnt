@@ -3,1817 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TourneyHub - Tournament Dashboard</title>
+    <title>TourneyHub - All Tournaments</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/navigation.css">
-    <link rel="stylesheet" href="tournament.css">
-        <link rel="stylesheet" href="css/tournament-common.css">
-    <link rel="stylesheet" href="css/navigation.css">
-    <link rel="stylesheet" href="tournament.css">
     <style>
-        /* Ultra-Modern Mobile Gaming Design */
+        /* CSS Variables - Ultra-Modern Mobile Gaming Design */
         :root {
-            --neon-primary: #6c63ff;
-            --neon-secondary: #ff6b6b;
-            --neon-accent: #4ecdc4;
-            --neon-purple: #a363ff;
-            --dark-bg: #0f0f1a;
-            --darker-bg: #080811;
-            --card-bg: rgba(30, 30, 46, 0.8);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --text-primary: #ffffff;
-            --text-secondary: #b8b8d0;
-            --success: #00ff88;
-            --warning: #ffcc00;
-            --danger: #ff4757;
-            
+            --neon-primary: #6c63ff; --neon-secondary: #ff6b6b; --neon-accent: #4ecdc4;
+            --neon-purple: #a363ff; --dark-bg: #0f0f1a; --darker-bg: #080811;
+            --card-bg: rgba(30, 30, 46, 0.8); --glass-bg: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff; --text-secondary: #b8b8d0; --success: #00ff88;
+            --warning: #ffcc00; --danger: #ff4757;
             --gradient-neon: linear-gradient(135deg, var(--neon-primary), var(--neon-purple));
             --gradient-fire: linear-gradient(135deg, var(--neon-secondary), #ff8e00);
             --gradient-ocean: linear-gradient(135deg, var(--neon-accent), #00a8ff);
             --gradient-dark: linear-gradient(135deg, #1a1a2e, #16213e);
-            
             --shadow-glow: 0 0 20px rgba(108, 99, 255, 0.4);
             --shadow-glow-red: 0 0 20px rgba(255, 107, 107, 0.4);
             --shadow-glow-green: 0 0 20px rgba(0, 255, 136, 0.4);
             --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
-            
-            --border-radius: 20px;
-            --border-radius-sm: 12px;
-            --border-radius-lg: 30px;
+            --border-radius: 20px; --border-radius-sm: 12px;
         }
 
-        /* Reset & Base */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
+        /* Base & Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: var(--dark-bg);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            padding-bottom: 90px;
+            background: var(--dark-bg); color: var(--text-primary);
+            overflow-x: hidden; -webkit-font-smoothing: antialiased; padding-bottom: 90px;
         }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Professional Header */
+        /* Header */
         .main-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(15, 15, 26, 0.95);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: rgba(15, 15, 26, 0.9); backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
-            padding: 15px 0;
+            z-index: 1000; padding: 15px 0;
         }
-
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.6rem;
-            font-weight: 800;
-        }
-
-        .logo-icon {
-            font-size: 2rem;
-            background: var(--gradient-neon);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .logo-text {
-            background: var(--gradient-neon);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Main Content */
-        .main-content {
-            padding-top: 80px;
-            min-height: 100vh;
-        }
-
-        /* Dashboard Header */
+        .header-container { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 1.6rem; font-weight: 800; }
+        .logo-icon, .logo-text { background: var(--gradient-neon); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        
+        /* Main Content & Page Header */
+        .main-content { padding-top: 80px; min-height: 100vh; }
         .dashboard-header {
-            padding: 30px 20px;
-            text-align: center;
-            background: var(--gradient-dark);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 20px; text-align: center;
+            background: var(--gradient-dark); border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .dashboard-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #ffffff 0%, var(--neon-primary) 50%, var(--neon-accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffffff, var(--neon-primary), var(--neon-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
-        .dashboard-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
+        .dashboard-subtitle { color: var(--text-secondary); font-size: 1.1rem; }
 
         /* Tabs Navigation */
         .tabs-container {
-            background: var(--darker-bg);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 70px;
-            z-index: 100;
+            background: var(--darker-bg); border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky; top: 71px; z-index: 100;
         }
-
-        .tabs {
-            display: flex;
-            overflow-x: auto;
-            padding: 0 20px;
-            gap: 5px;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .tabs::-webkit-scrollbar {
-            display: none;
-        }
-
+        .tabs { display: flex; overflow-x: auto; padding: 0 20px; gap: 5px; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
         .tab {
-            padding: 15px 20px;
-            white-space: nowrap;
-            font-weight: 600;
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
+            padding: 15px 20px; white-space: nowrap; font-weight: 600;
+            border-radius: 12px 12px 0 0; transition: all 0.3s ease;
+            cursor: pointer; background: transparent; border: none; color: var(--text-secondary);
         }
+        .tab.active { background: var(--card-bg); color: var(--text-primary); border-bottom: 3px solid var(--neon-primary); }
+        .tab:hover { background: rgba(255, 255, 255, 0.05); }
 
-        .tab.active {
-            background: var(--card-bg);
-            color: var(--text-primary);
-            border-bottom: 3px solid var(--neon-primary);
-        }
+        /* Tab Content & Grid */
+        .tab-content { display: none; padding: 30px 20px; animation: fadeIn 0.5s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tournaments-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
 
-        .tab:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        /* Tab Content */
-        .tab-content {
-            display: none;
-            padding: 30px 20px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Section Headers */
-        .section-header {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-icon {
-            font-size: 1.5rem;
-        }
-
-        .section-subtitle {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        /* Tournament Cards */
-        .tournaments-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
+        /* Universal Tournament Card */
         .tournament-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative;
-            box-shadow: var(--shadow-card);
-        }
-
-        .tournament-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(108, 99, 255, 0.3);
-            box-shadow: var(--shadow-glow), var(--shadow-card);
-        }
-
-        .tournament-card.featured {
-            border: 2px solid;
-            border-image: var(--gradient-fire) 1;
-        }
-
-        .tournament-card.featured::after {
-            content: '🔥 FEATURED';
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: var(--gradient-fire);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 6px 12px;
-            border-radius: 20px;
-            z-index: 2;
-            letter-spacing: 1px;
-            box-shadow: var(--shadow-glow-red);
-        }
-
-        .tournament-header {
-            padding: 20px 20px 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .tournament-game {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .game-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--gradient-neon);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
-        }
-
-        .game-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .game-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-        }
-
-        .game-category {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .tournament-status {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-live {
-            background: var(--gradient-fire);
-            color: white;
-            animation: pulse 2s infinite;
-            box-shadow: var(--shadow-glow-red);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .live-pulse {
-            width: 8px;
-            height: 8px;
-            background: white;
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-
-        .status-upcoming {
-            background: var(--gradient-ocean);
-            color: white;
-        }
-
-        .status-registering {
-            background: linear-gradient(135deg, var(--success), #00cc77);
-            color: white;
-            box-shadow: var(--shadow-glow-green);
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.7; }
-        }
-
-        .tournament-body {
-            padding: 0 20px 15px;
-        }
-
-        .tournament-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            line-height: 1.3;
-        }
-
-        .tournament-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .tournament-detail {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .detail-icon {
-            font-size: 1rem;
-            opacity: 0.7;
-        }
-
-        .tournament-prize {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--success);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .prize-icon {
-            font-size: 1.3rem;
-        }
-
-        .tournament-progress {
-            margin: 15px 0;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--gradient-neon);
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-
-        .progress-text {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            text-align: right;
-            margin-top: 5px;
-        }
-
-        .tournament-footer {
-            padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .tournament-timer {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .timer-icon {
-            font-size: 1rem;
-        }
-
-        .tournament-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative;
-            overflow: hidden;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary {
-            background: var(--gradient-neon);
-            color: white;
-            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        /* Match Cards */
-        .match-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .match-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(108, 99, 255, 0.3);
-            box-shadow: var(--shadow-card);
-        }
-
-        .match-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .match-header h4 {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .match-round {
-            background: rgba(108, 99, 255, 0.2);
-            color: var(--neon-primary);
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .match-body {
-            margin-bottom: 15px;
-        }
-
-        .match-vs {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: var(--border-radius-sm);
-        }
-
-        .player {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            flex: 1;
-        }
-
-        .player-name {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .player-status {
-            font-size: 0.8rem;
-            padding: 3px 8px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .you .player-status {
-            background: var(--success);
-            color: white;
-        }
-
-        .vs {
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: var(--neon-primary);
-            margin: 0 10px;
-        }
-
-        .match-info {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .match-detail {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .match-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* Wallet Cards */
-        .wallet-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius);
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-        }
-
-        .wallet-header {
-            margin-bottom: 20px;
-        }
-
-        .wallet-header h3 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-        }
-
-        .balance-amount {
-            font-size: 3rem;
-            font-weight: 800;
-            background: var(--gradient-neon);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 10px 0;
-        }
-
-        .wallet-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .transactions-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .transactions-card h4 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-        }
-
-        .transaction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-
-        .transaction-info {
-            flex: 1;
-        }
-
-        .transaction-description {
-            font-weight: 500;
-            margin-bottom: 3px;
-        }
-
-        .transaction-date {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        .transaction-amount {
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .transaction-amount.positive {
-            color: var(--success);
-        }
-
-        .transaction-amount.negative {
-            color: var(--danger);
-        }
-
-        .no-transactions {
-            text-align: center;
-            padding: 30px;
-            color: var(--text-secondary);
-        }
-
-        /* Profile Card */
-        .profile-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius);
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .profile-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .info-label {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .info-value {
-            font-weight: 600;
-        }
-
-        /* Loading and No Data States */
-        .loading, .no-data {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-
-        .loading {
-            font-size: 1.1rem;
-        }
-
-        .no-data {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .no-data-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        .no-data h3 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-        }
-
-        .no-data p {
-            font-size: 1rem;
-            color: var(--text-secondary);
-        }
-
- 
-
-        /* Responsive Design */
-        @media (min-width: 768px) {
-            .tournaments-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .tabs {
-                justify-content: center;
-            }
-            
-            .wallet-actions {
-                flex-wrap: nowrap;
-            }
-        }
-
-        @media (min-width: 992px) {
-            .tournaments-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .bottom-nav {
-                display: none;
-            }
-            
-            body {
-                padding-bottom: 0;
-            }
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--darker-bg);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--gradient-neon);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--neon-purple);
-        }
+            background: var(--card-bg); backdrop-filter: blur(15px); border-radius: var(--border-radius);
+            overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease; box-shadow: var(--shadow-card);
+        }
+        .tournament-card:hover { transform: translateY(-5px); border-color: var(--neon-primary); box-shadow: var(--shadow-glow); }
+        .tournament-header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .tournament-game { display: flex; align-items: center; gap: 12px; }
+        .game-icon { width: 50px; height: 50px; background: var(--gradient-neon); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .game-name { font-weight: 700; font-size: 1.1rem; }
+        .game-category { font-size: 0.85rem; color: var(--text-secondary); }
+        .tournament-status { padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-active, .status-live { background: var(--gradient-fire); color: white; animation: pulse 2s infinite; }
+        .status-upcoming, .status-registering { background: var(--gradient-ocean); color: white; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .tournament-body { padding: 0 20px 15px; }
+        .tournament-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 15px; }
+        .tournament-prize { font-size: 1.4rem; font-weight: 800; color: var(--success); margin-bottom: 15px; }
+        .tournament-progress { margin: 15px 0; }
+        .progress-bar { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .progress-fill { height: 100%; background: var(--gradient-neon); border-radius: 10px; }
+        .progress-text { font-size: 0.8rem; color: var(--text-secondary); text-align: right; margin-top: 5px; }
+        .tournament-footer { padding: 15px 20px; background: rgba(0, 0, 0, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; }
+        .tournament-timer { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+
+        /* Wallet & Profile Cards (simplified for this page) */
+        .wallet-card, .profile-card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: var(--border-radius); padding: 25px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; max-width: 400px; margin: auto; }
+        .balance-amount { font-size: 3rem; font-weight: 800; background: var(--gradient-neon); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 10px 0; }
+        .wallet-actions { display: flex; gap: 10px; justify-content: center; }
+        .profile-info { text-align: left; } .info-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); } .info-label { color: var(--text-secondary); }
+
+        /* States & Buttons */
+        .loading, .no-data { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+        .no-data { background: var(--card-bg); border-radius: var(--border-radius); }
+        .no-data-icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; border: none; cursor: pointer; text-decoration: none; }
+        .btn-primary { background: var(--gradient-neon); color: white; box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4); }
+        .btn-danger { background: var(--gradient-fire); color: white; }
+
+        /* Navigation (Generic styles) */
+        .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: rgba(15, 15, 26, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; display: flex; justify-content: space-around; padding: 10px 5px; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-secondary); padding: 8px; flex: 1; border-radius: 20px; }
+        .nav-item.active, .nav-item:hover { color: var(--text-primary); background: var(--glass-bg); }
+        .nav-icon { font-size: 1.4rem; }
+        .nav-text { font-size: 0.7rem; }
     </style>
 </head>
 <body>
-    <!-- Professional Header -->
     <header class="main-header">
         <div class="header-container">
-            <div class="logo">
+            <a href="index.html" class="logo">
                 <span class="logo-icon">🏆</span>
                 <span class="logo-text">TourneyHub</span>
-            </div>
+            </a>
+            <!-- Could add user icon here later -->
         </div>
     </header>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Dashboard Header -->
         <section class="dashboard-header">
-            <h1 class="dashboard-title">Tournament Dashboard</h1>
-            <p class="dashboard-subtitle">Manage your tournaments, matches, and wallet</p>
+            <h1 class="dashboard-title">Tournament Universe</h1>
+            <p class="dashboard-subtitle">Discover live events and manage your competitions</p>
         </section>
 
-        <!-- Tabs Navigation -->
         <div class="tabs-container">
             <div class="tabs">
-                <button class="tab active" id="tab-live-tournaments">
-                    <i class="fas fa-fire"></i> Live Tournaments
-                </button>
-                <button class="tab" id="tab-my-tournaments">
-                    <i class="fas fa-trophy"></i> My Tournaments
-                </button>
-                <button class="tab" id="tab-my-matches">
-                    <i class="fas fa-swords"></i> My Matches
-                </button>
-                <button class="tab" id="tab-my-wallet">
-                    <i class="fas fa-wallet"></i> My Wallet
-                </button>
-                <button class="tab" id="tab-my-profile">
-                    <i class="fas fa-user"></i> My Profile
-                </button>
+                <button class="tab active" id="tab-live-tournaments">🔥 Live</button>
+                <button class="tab" id="tab-my-tournaments">🏆 My Tournaments</button>
+                <button class="tab" id="tab-my-matches">⚔️ My Matches</button>
+                <button class="tab" id="tab-my-wallet">💰 My Wallet</button>
+                <button class="tab" id="tab-my-profile">👤 My Profile</button>
             </div>
         </div>
 
-        <!-- Tab Contents -->
         <div class="container">
-            <!-- Live Tournaments Tab -->
+            <!-- Tab Panels -->
             <div class="tab-content active" id="live-tournaments-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">🔥</span>
-                        Live Tournaments
-                    </h2>
-                    <p class="section-subtitle">Join active tournaments and compete for prizes</p>
-                </div>
                 <div class="tournaments-grid" id="live-tournaments">
-                    <!-- Content will be loaded by JavaScript -->
-                    <div class="loading">Loading live tournaments...</div>
+                    <!-- JS will populate this -->
                 </div>
             </div>
-
-            <!-- My Tournaments Tab -->
             <div class="tab-content" id="my-tournaments-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">🏆</span>
-                        My Tournaments
-                    </h2>
-                    <p class="section-subtitle">Tournaments you've registered for</p>
-                </div>
                 <div class="tournaments-grid" id="my-tournaments">
-                    <!-- Content will be loaded by JavaScript -->
-                    <div class="loading">Loading your tournaments...</div>
+                    <!-- JS will populate this -->
                 </div>
             </div>
-
-            <!-- My Matches Tab -->
             <div class="tab-content" id="my-matches-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">⚔️</span>
-                        My Matches
-                    </h2>
-                    <p class="section-subtitle">Your upcoming and ongoing matches</p>
-                </div>
-                <div id="my-matches">
-                    <!-- Content will be loaded by JavaScript -->
-                    <div class="loading">Loading your matches...</div>
+                 <div id="my-matches">
+                    <!-- JS will populate this -->
                 </div>
             </div>
-
-            <!-- My Wallet Tab -->
             <div class="tab-content" id="my-wallet-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">💰</span>
-                        My Wallet
-                    </h2>
-                    <p class="section-subtitle">Manage your funds and transactions</p>
-                </div>
-                <div id="wallet-balance">
-                    <!-- Content will be loaded by JavaScript -->
-                    <div class="loading">Loading wallet...</div>
+                 <div id="my-wallet">
+                    <!-- JS will populate this -->
                 </div>
             </div>
-
-            <!-- My Profile Tab -->
             <div class="tab-content" id="my-profile-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">👤</span>
-                        My Profile
-                    </h2>
-                    <p class="section-subtitle">Your account information and settings</p>
-                </div>
-                <div id="my-profile">
-                    <!-- Content will be loaded by JavaScript -->
-                    <div class="loading">Loading profile...</div>
+                 <div id="my-profile">
+                    <!-- JS will populate this -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Professional Bottom Navigation (Mobile) -->
-        <nav class="bottom-nav">
-            <a href="tournaments.html" class="nav-item">
-                <span class="nav-icon">⚔️</span>
-                <span class="nav-text">Tourneys</span>
-            </a>
-            <a href="games.html" class="nav-item">
-                <span class="nav-icon">🎮</span>
-                <span class="nav-text">Games</span>
-            </a>
-            <a href="index.html" class="nav-item active">
-                <span class="nav-icon">🏠</span>
-                <span class="nav-text">Home</span>
-            </a>
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span class="nav-text">Home</span></a>
+        <a href="tournaments.html" class="nav-item active"><span class="nav-icon">⚔️</span><span class="nav-text">Tourneys</span></a>
+        <a href="wallet.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-text">Wallet</span></a>
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">👑</span><span class="nav-text">Pro</span></a>
+    </nav>
 
-          
-            <a href="profile.html" class="nav-item">
-                <span class="nav-icon">👑</span>
-                <span class="nav-text">Pro</span>
-            </a>
-            <a href="wallet.html" class="nav-item">
-      <span class="nav-icon">💰</span> 
-      <span class="nav-text">Wallet</span>
+    <!-- Firebase and Main Script -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-        </nav>
-
-    <!-- Firebase SDKs -->
-        <script>
-            // Enhanced bottom nav interaction and animations
-            document.addEventListener('DOMContentLoaded', function() {
-                // Bottom nav active state
-                const navItems = document.querySelectorAll('.nav-item');
-                navItems.forEach(item => {
-                    item.addEventListener('click', function(e) {
-                        navItems.forEach(nav => nav.classList.remove('active'));
-                        this.classList.add('active');
-                        this.style.transform = 'scale(0.95)';
-                        setTimeout(() => { this.style.transform = ''; }, 150);
-                    });
-                });
-
-                // Button click feedback
-                document.addEventListener('click', function(e) {
-                    if (e.target.closest('.btn')) {
-                        const btn = e.target.closest('.btn');
-                        btn.style.transform = 'scale(0.98)';
-                        setTimeout(() => { btn.style.transform = ''; }, 150);
-                    }
-                });
-
-                // Prevent context menu on interactive elements
-                document.addEventListener('contextmenu', function(e) {
-                    if (e.target.closest('.btn') || e.target.closest('.nav-item') || e.target.closest('a')) {
-                        e.preventDefault();
-                    }
-                });
-
-                // Touch device optimizations
-                if ('ontouchstart' in window) {
-                    document.body.classList.add('touch-device');
-                    document.addEventListener('touchstart', function() {}, { passive: true });
-                    let lastTouchEnd = 0;
-                    document.addEventListener('touchend', function(event) {
-                        const now = (new Date()).getTime();
-                        if (now - lastTouchEnd <= 300) {
-                            event.preventDefault();
-                        }
-                        lastTouchEnd = now;
-                    }, false);
-                }
-
-                // Show Organizer nav only for admins
-                // Replace this with your actual admin check logic
-                function isAdmin() {
-                    // Example: check localStorage, cookie, or Firebase user role
-                    // return true if user is admin
-                    // For demo, set to false; replace with real check
-                    return localStorage.getItem('isAdmin') === 'true';
-                }
-                const organizerNav = document.getElementById('organizerNav');
-                if (organizerNav) {
-                    if (isAdmin()) {
-                        organizerNav.style.display = '';
-                    } else {
-                        organizerNav.style.display = 'none';
-                    }
-                }
-            });
-        </script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
-
-    <!-- Tournament Dashboard JavaScript -->
     <script>
-       // Firebase configuration
-const firebaseConfig = {
-      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-  authDomain: "authapp-386ee.firebaseapp.com",
-  projectId: "authapp-386ee",
-  storageBucket: "authapp-386ee.appspot.com",
-  messagingSenderId: "809698525310",
-  appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-  measurementId: "G-EJZTSBSGQT"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// Global variables
-let currentUser = null;
-
-// Firebase Auth State Listener
-auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-        window.location.href = "login.html";
-        return;
-    }
-    
-    currentUser = user;
-    
-    // Update user info in header
-    const userInfo = document.getElementById("user-info");
-    if (userInfo) userInfo.textContent = user.email;
-    
-    renderProfile(user);
-    await loadingTournaments();
-    await loadingArticles();
-    await loadWallet();
-});
-
-// Profile Function
-function renderProfile(user) {
-    const myProfile = document.getElementById("my-profile");
-    if (!myProfile) return;
-    
-    myProfile.innerHTML = `
-    <div class="cart">
-        <b>${user.email}</b>
-        <div class="cart-meta">UID: ${user.uid}</div>
-        <div class="cart-meta">Created: ${new Date(user.metadata.creationTime).toLocaleString()}</div>
-        <div class="cart-meta">Last login: ${new Date(user.metadata.lastSignInTime).toLocaleString()}</div>
-        <button id="logout-btn" class="btn ghost">Logout</button>
-    </div>`;
-    
-    // Add logout functionality
-    const logoutBtn = document.getElementById("logout-btn");
-    if (logoutBtn) {
-        logoutBtn.onclick = async () => {
-            await auth.signOut();
-            window.location.href = "login.html";
+        // =================================================================
+        // SETUP & INITIALIZATION
+        // =================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+            authDomain: "authapp-386ee.firebaseapp.com",
+            projectId: "authapp-386ee",
+            storageBucket: "authapp-386ee.appspot.com",
+            messagingSenderId: "809698525310",
+            appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+            measurementId: "G-EJZTSBSGQT"
         };
-    }
-}
 
-// My Tournaments Function
-async function loadingTournaments() {
-    const container = document.getElementById("my-registrations");
-    if (!container) return;
-    
-    container.innerHTML = '<div class="no-data">Loading tournaments...</div>';
-    
-    try {
-        // Get user's tournament registrations
-        const userTournamentsRef = db.collection("userTournaments").doc(currentUser.uid);
-        const userDoc = await userTournamentsRef.get();
-        
-        if (!userDoc.exists) {
-            container.innerHTML = '<div class="no-data">No tournaments registered</div>';
-            return;
-        }
-        
-        const userData = userDoc.data();
-        const tournamentIds = userData.tournamentIds || [];
-        
-        if (tournamentIds.length === 0) {
-            container.innerHTML = '<div class="no-data">No tournaments registered</div>';
-            return;
-        }
-        
-        // Fetch tournament details for each tournament ID
-        const tournaments = [];
-        for (const tournamentId of tournamentIds.slice(0, 10)) { // Limit to 10 tournaments
-            try {
-                const tournamentDoc = await db.collection("tournaments").doc(tournamentId).get();
-                if (tournamentDoc.exists) {
-                    const tournamentData = tournamentDoc.data();
-                    tournaments.push({
-                        id: tournamentDoc.id,
-                        name: tournamentData.name || 'Unknown Tournament',
-                        game: tournamentData.game || 'Unknown Game',
-                        status: tournamentData.status || 'upcoming',
-                        prizePool: tournamentData.prizePool || 0,
-                        entryFee: tournamentData.entryFee || 0,
-                        startDate: tournamentData.startDate,
-                        maxPlayers: tournamentData.maxPlayers || 0,
-                        currentPlayers: tournamentData.currentPlayers || 0
-                    });
-                }
-            } catch (error) {
-                console.error(`Error fetching tournament ${tournamentId}:`, error);
-            }
-        }
-        
-        if (tournaments.length === 0) {
-            container.innerHTML = '<div class="no-data">No tournaments found</div>';
-            return;
-        }
-        
-        // Render tournaments
-        container.innerHTML = tournaments.map(tournament => `
-            <div class="card">
-                <h3>${tournament.name}</h3>
-                <div class="card-meta">🎮 ${tournament.game}</div>
-                <div class="card-meta">💰 Prize: $${tournament.prizePool.toLocaleString()}</div>
-                <div class="card-meta">🎯 Status: <span class="status-${tournament.status}">${tournament.status}</span></div>
-                <div class="card-meta">👥 Players: ${tournament.currentPlayers}/${tournament.maxPlayers}</div>
-                <div class="action-row">
-                    <button class="btn" onclick="viewTournament('${tournament.id}')">View Tournament</button>
-                    <button class="btn ghost" onclick="leaveTournament('${tournament.id}')">Leave</button>
-                </div>
-            </div>
-        `).join('');
-        
-    } catch (error) {
-        console.error("Error loading tournaments:", error);
-        container.innerHTML = '<div class="no-data">Error loading tournaments</div>';
-    }
-}
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentUser = null;
 
-// My Matches Function
-async function loadingMatches() {
-    const container = document.getElementById("my-matches");
-    if (!container) return;
-    
-    container.innerHTML = '<div class="no-data">Loading matches...</div>';
-    
-    try {
-        // Get matches where user is a participant
-        const matchesRef = db.collection("matches")
-            .where("participants", "array-contains", currentUser.uid)
-            .orderBy("scheduledTime", "desc")
-            .limit(5);
-        
-        const snapshot = await matchesRef.get();
-        const matches = [];
-        
-        snapshot.forEach(doc => {
-            const matchData = doc.data();
-            matches.push({
-                id: doc.id,
-                tournamentId: matchData.tournamentId,
-                tournamentName: matchData.tournamentName || 'Unknown Tournament',
-                opponent: matchData.opponent || 'TBD',
-                scheduledTime: matchData.scheduledTime,
-                status: matchData.status || 'scheduled',
-                round: matchData.round || 'Group Stage'
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                currentUser = user;
+                initializeDashboard();
             });
         });
-        
-        if (matches.length === 0) {
-            container.innerHTML = '<div class="no-data">No matches scheduled</div>';
-            return;
+
+        function initializeDashboard() {
+            setupTabs();
+            // Automatically load the content for the initially active tab
+            loadLiveTournaments();
         }
-        
-        // Render matches
-        container.innerHTML = matches.map(match => `
-            <div class="card">
-                <h3>${match.tournamentName}</h3>
-                <div class="card-meta">⚔️ vs ${match.opponent}</div>
-                <div class="card-meta">📅 ${match.scheduledTime ? new Date(match.scheduledTime.toDate()).toLocaleString() : 'TBD'}</div>
-                <div class="card-meta">🎯 Round: ${match.round}</div>
-                <div class="card-meta">📊 Status: <span class="status-${match.status}">${match.status}</span></div>
-                <div class="action-row">
-                    <button class="btn" onclick="viewMatch('${match.id}')">Match Details</button>
-                    ${match.status === 'scheduled' ? 
-                        `<button class="btn ghost" onclick="joinMatch('${match.id}')">Ready to Play</button>` : 
-                        ''
-                    }
-                </div>
-            </div>
-        `).join('');
-        
-    } catch (error) {
-        console.error("Error loading matches:", error);
-        container.innerHTML = '<div class="no-data">Error loading matches</div>';
-    }
-}
 
-// Wallet Function
-async function loadWallet() {
-    const container = document.getElementById("wallet-balance");
-    if (!container) return;
-    
-    container.innerHTML = '<div class="no-data">Loading wallet...</div>';
-    
-    try {
-        // Get user's wallet
-        const walletRef = db.collection("wallets").doc(currentUser.uid);
-        const walletDoc = await walletRef.get();
-        
-        let balance = 0;
-        let transactions = [];
-        
-        if (walletDoc.exists) {
-            const walletData = walletDoc.data();
-            balance = walletData.balance || 0;
-            transactions = walletData.transactions || [];
-        } else {
-            // Create wallet if it doesn't exist
-            await walletRef.set({
-                balance: 0,
-                transactions: [],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-        
-        // Render wallet
-        container.innerHTML = `
-            <div class="card">
-                <h3>💰 Wallet Balance</h3>
-                <div style="font-size: 2rem; font-weight: bold; color: var(--accent); margin: 1rem 0; text-align: center;">
-                    $${balance.toFixed(2)}
-                </div>
-                <div class="action-row">
-                    <button class="btn" onclick="depositFunds()">💳 Deposit</button>
-                    <button class="btn" onclick="withdrawFunds()">🏧 Withdraw</button>
-                    <button class="btn ghost" onclick="viewTransactionHistory()">📊 History</button>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>Recent Transactions</h3>
-                ${transactions.length > 0 ? 
-                    transactions.slice(0, 5).map(transaction => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--muted);">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 500;">${transaction.description || 'Transaction'}</div>
-                                <div style="font-size: 0.8rem; color: var(--muted);">
-                                    ${transaction.date ? new Date(transaction.date.toDate()).toLocaleDateString() : 'Recent'}
-                                </div>
-                            </div>
-                            <div style="font-weight: bold; color: ${transaction.amount >= 0 ? 'var(--ok)' : 'var(--danger)'}">
-                                ${transaction.amount >= 0 ? '+' : ''}$${Math.abs(transaction.amount).toFixed(2)}
-                            </div>
-                        </div>
-                    `).join('') :
-                    '<div class="no-data" style="text-align: center; padding: 2rem;">No transactions yet</div>'
-                }
-            </div>
-        `;
-        
-    } catch (error) {
-        console.error("Error loading wallet:", error);
-        container.innerHTML = '<div class="no-data">Error loading wallet</div>';
-    }
-}
-
-// Articles Function (Placeholder)
-async function loadingArticles() {
-    console.log("Loading articles functionality...");
-    // This can be implemented based on your articles structure
-}
-
-// Tab Management
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tab functionality
-    const tabs = document.querySelectorAll('.tab');
-    const sections = {
-        'my-tournaments': 'my-registrations-section',
-        'my-matches': 'my-matches-section',
-        'my-wallet': 'my-wallet-section',
-        'my-profile': 'my-profile-section'
-    };
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const target = this.id.replace('tab-', '');
-            const targetSection = sections[target];
-            
-            if (!targetSection) return;
-            
-            // Hide all sections
-            Object.values(sections).forEach(sectionId => {
-                const section = document.getElementById(sectionId);
-                if (section) section.style.display = 'none';
-            });
-            
-            // Show target section
-            const activeSection = document.getElementById(targetSection);
-            if (activeSection) {
-                activeSection.style.display = 'block';
-                
-                // Load section-specific data
-                switch(target) {
-                    case 'my-matches':
-                        loadingMatches();
-                        break;
-                    case 'my-wallet':
-                        loadWallet();
-                        break;
-                    case 'my-tournaments':
-                        loadingTournaments();
-                        break;
-                    case 'my-profile':
-                        // Profile is already loaded
-                        break;
-                }
-            }
-            
-            // Update active tab
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-    
-    // Set initial active tab
-    const initialTab = document.getElementById('tab-my-tournaments');
-    if (initialTab) initialTab.click();
-});
-
-// Action Functions
-function viewTournament(tournamentId) {
-    window.location.href = `../tournament/tournament-details.html?id=${tournamentId}`;
-}
-
-async function leaveTournament(tournamentId) {
-    if (!confirm('Are you sure you want to leave this tournament? This action cannot be undone.')) {
-        return;
-    }
-    
-    try {
-        // Remove tournament from user's registered tournaments
-        await db.collection("userTournaments").doc(currentUser.uid).update({
-            tournamentIds: firebase.firestore.FieldValue.arrayRemove(tournamentId)
-        });
-        
-        // Decrement player count in tournament
-        await db.collection("tournaments").doc(tournamentId).update({
-            currentPlayers: firebase.firestore.FieldValue.increment(-1)
-        });
-        
-        // Show success message
-        alert('Successfully left the tournament');
-        
-        // Reload tournaments
-        await loadingTournaments();
-        
-    } catch (error) {
-        console.error("Error leaving tournament:", error);
-        alert('Error leaving tournament. Please try again.');
-    }
-}
-
-function viewMatch(matchId) {
-    window.location.href = `../tournament/match-details.html?id=${matchId}`;
-}
-
-async function joinMatch(matchId) {
-    try {
-        // Update match status to ready
-        await db.collection("matches").doc(matchId).update({
-            status: 'ready',
-            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        alert('You are now marked as ready for the match!');
-        
-        // Reload matches
-        await loadingMatches();
-        
-    } catch (error) {
-        console.error("Error joining match:", error);
-        alert('Error joining match. Please try again.');
-    }
-}
-
-function depositFunds() {
-    const amount = prompt('Enter deposit amount ($):');
-    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-        alert('Please enter a valid amount greater than 0');
-        return;
-    }
-    
-    const depositAmount = parseFloat(amount);
-    
-    // In a real app, this would integrate with a payment processor
-    // For now, we'll simulate the deposit
-    simulateDeposit(depositAmount);
-}
-
-function withdrawFunds() {
-    const amount = prompt('Enter withdrawal amount ($):');
-    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-        alert('Please enter a valid amount greater than 0');
-        return;
-    }
-    
-    const withdrawAmount = parseFloat(amount);
-    
-    // Check if user has sufficient balance
-    // This would require getting current balance first
-    alert(`Withdrawal request submitted for $${withdrawAmount.toFixed(2)}. This may take 1-3 business days to process.`);
-}
-
-function viewTransactionHistory() {
-    alert('Transaction history page would open here');
-    // window.location.href = "../wallet/transaction-history.html";
-}
-
-// Simulate deposit (for demo purposes)
-async function simulateDeposit(amount) {
-    try {
-        const walletRef = db.collection("wallets").doc(currentUser.uid);
-        
-        // Add transaction
-        await walletRef.update({
-            balance: firebase.firestore.FieldValue.increment(amount),
-            transactions: firebase.firestore.FieldValue.arrayUnion({
-                amount: amount,
-                description: 'Deposit',
-                date: firebase.firestore.FieldValue.serverTimestamp(),
-                type: 'deposit',
-                status: 'completed'
-            })
-        });
-        
-        alert(`Successfully deposited $${amount.toFixed(2)}!`);
-        await loadWallet(); // Reload wallet display
-        
-    } catch (error) {
-        console.error("Error processing deposit:", error);
-        alert('Error processing deposit. Please try again.');
-    }
-}
-
-// Utility function to format dates
-function formatDate(date) {
-    if (!date) return 'N/A';
-    return new Date(date.toDate()).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-// Add some basic styles for status indicators
-const style = document.createElement('style');
-style.textContent = `
-    .status-active { color: var(--ok); font-weight: bold; }
-    .status-upcoming { color: var(--warning); font-weight: bold; }
-    .status-completed { color: var(--muted); font-weight: bold; }
-    .status-scheduled { color: var(--accent); font-weight: bold; }
-    .status-ready { color: var(--ok); font-weight: bold; }
-    .status-in-progress { color: var(--warning); font-weight: bold; }
-`;
-document.head.appendChild(style);
-
-// Export functions for global access
-window.viewTournament = viewTournament;
-window.leaveTournament = leaveTournament;
-window.viewMatch = viewMatch;
-window.joinMatch = joinMatch;
-window.depositFunds = depositFunds;
-window.withdrawFunds = withdrawFunds;
-window.viewTransactionHistory = viewTransactionHistory;
-
-// Initialize the dashboard when page loads
-console.log('Dashboard initialized');
-        // (The complete JavaScript code you provided earlier)
-        
-        // For now, I'll add a simple tab switching functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            // Tab switching functionality
+        function setupTabs() {
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
-            
+
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    const target = tab.id.replace('tab-', '');
-                    
-                    // Remove active class from all tabs and contents
+                    const targetId = tab.id.replace('tab-', '');
+
                     tabs.forEach(t => t.classList.remove('active'));
                     tabContents.forEach(c => c.classList.remove('active'));
-                    
-                    // Add active class to clicked tab and corresponding content
+
                     tab.classList.add('active');
-                    document.getElementById(`${target}-section`).classList.add('active');
+                    const activeContent = document.getElementById(`${targetId}-section`);
+                    if (activeContent) activeContent.classList.add('active');
+
+                    // Load content for the newly activated tab
+                    switch (targetId) {
+                        case 'live-tournaments': loadLiveTournaments(); break;
+                        case 'my-tournaments': loadMyTournaments(); break;
+                        case 'my-matches': loadMyMatches(); break;
+                        case 'my-wallet': loadMyWallet(); break;
+                        case 'my-profile': loadMyProfile(); break;
+                    }
                 });
             });
+        }
+
+        // =================================================================
+        // TAB CONTENT LOADERS
+        // =================================================================
+        async function loadLiveTournaments() {
+            const container = document.getElementById('live-tournaments');
+            container.innerHTML = '<div class="loading">Finding battles...</div>';
+
+            try {
+                const snapshot = await db.collection('tournaments')
+                    .where('status', 'in', ['registering', 'upcoming', 'active'])
+                    .orderBy('startDate', 'asc')
+                    .get();
+                
+                const tournaments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTournamentGrid(container, tournaments, 'No live tournaments right now. Check back soon!');
+            } catch (error) {
+                console.error("Error loading live tournaments:", error);
+                container.innerHTML = createErrorState("Could not load tournaments.");
+            }
+        }
+
+        async function loadMyTournaments() {
+            const container = document.getElementById('my-tournaments');
+            if (!currentUser) {
+                return container.innerHTML = createLoginPrompt("Please log in to see your tournaments.");
+            }
+            container.innerHTML = '<div class="loading">Loading your registrations...</div>';
             
-            // Load live and upcoming tournaments
-            loadLiveTournaments();
+            try {
+                const userTournamentsDoc = await db.collection('userTournaments').doc(currentUser.uid).get();
+
+                if (!userTournamentsDoc.exists || !userTournamentsDoc.data().tournamentIds?.length) {
+                    return renderTournamentGrid(container, [], "You haven't joined any tournaments yet. Join one from the 'Live' tab!");
+                }
+                const tournamentIds = userTournamentsDoc.data().tournamentIds;
+                
+                const tournamentsSnapshot = await db.collection('tournaments')
+                    .where(firebase.firestore.FieldPath.documentId(), 'in', tournamentIds)
+                    .get();
+                
+                const tournaments = tournamentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTournamentGrid(container, tournaments, "Could not fetch your tournament details.");
+
+            } catch (error) {
+                console.error("Error loading my tournaments:", error);
+                container.innerHTML = createErrorState("Could not load your tournaments.");
+            }
+        }
+        
+        function loadMyMatches() {
+            document.getElementById('my-matches').innerHTML = createEmptyState("⚔️", "My Matches", "Match schedules will appear here once they are generated. This feature is coming soon!");
+        }
+
+        async function loadMyWallet() {
+            const container = document.getElementById('my-wallet');
+             if (!currentUser) {
+                return container.innerHTML = createLoginPrompt("Log in to manage your wallet.");
+            }
+            container.innerHTML = '<div class="loading">Loading wallet...</div>';
+
+            const walletRef = db.collection('wallets').doc(currentUser.uid);
+            const walletDoc = await walletRef.get();
+            const balance = walletDoc.exists ? walletDoc.data().balance : 0;
             
-            // Function to load live tournaments
-            async function loadLiveTournaments() {
-                const container = document.getElementById('live-tournaments');
-                if (!container) return;
-                
-                container.innerHTML = '<div class="loading">Loading tournaments...</div>';
-                
-                try {
-                    const now = firebase.firestore.Timestamp.now();
-                    
-                    // Fetch active tournaments
-                    const activeTournamentsSnapshot = await db.collection('tournaments')
-                        .where('status', '==', 'active')
-                        .orderBy('startDate', 'desc')
-                        .get();
-                        
-                    // Fetch upcoming tournaments
-                    const upcomingTournamentsSnapshot = await db.collection('tournaments')
-                        .where('status', '==', 'upcoming')
-                        .where('startDate', '>', now)
-                        .orderBy('startDate', 'asc')
-                        .limit(5)
-                        .get();
-                    
-                    const tournaments = [];
-                    
-                    // Process active tournaments
-                    activeTournamentsSnapshot.forEach(doc => {
-                        tournaments.push({ id: doc.id, ...doc.data(), isActive: true });
-                    });
-                    
-                    // Process upcoming tournaments
-                    upcomingTournamentsSnapshot.forEach(doc => {
-                        tournaments.push({ id: doc.id, ...doc.data(), isActive: false });
-                    });
-                    
-                    if (tournaments.length === 0) {
-                        container.innerHTML = `
-                            <div class="no-data">
-                                <div class="no-data-icon">🏆</div>
-                                <h3>No Active Tournaments</h3>
-                                <p>Check back later for upcoming tournaments!</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    // Sort tournaments: active first, then by start date
-                    tournaments.sort((a, b) => {
-                        if (a.isActive && !b.isActive) return -1;
-                        if (!a.isActive && b.isActive) return 1;
-                        return a.startDate.toMillis() - b.startDate.toMillis();
-                    });
-                    
-                    // Render tournaments
-                    container.innerHTML = tournaments.map(tournament => `
-                        <div class="tournament-card ${tournament.isActive ? 'featured' : ''}">
-                            <div class="tournament-header">
-                                <div class="tournament-game">
-                                    <div class="game-icon">
-                                        ${getGameIcon(tournament.game)}
-                                    </div>
-                                    <div class="game-info">
-                                        <div class="game-name">${tournament.game || 'Unknown Game'}</div>
-                                        <div class="game-category">${tournament.gameType || 'Tournament'}</div>
-                                    </div>
-                                </div>
-                                <div class="tournament-status ${tournament.isActive ? 'status-live' : 'status-upcoming'}">
-                                    ${tournament.isActive ? '<span class="live-pulse"></span> LIVE' : 'UPCOMING'}
-                                </div>
-                            </div>
-                            <div class="tournament-body">
-                                <h3 class="tournament-title">${tournament.title || 'Untitled Tournament'}</h3>
-                                <div class="tournament-details">
-                                    <div class="tournament-detail">
-                                        <span class="detail-icon">💰</span>
-                                        <span>Prize: ₹${(tournament.prizePool || 0).toLocaleString()}</span>
-                                    </div>
-                                    <div class="tournament-detail">
-                                        <span class="detail-icon">🎫</span>
-                                        <span>Entry: ₹${(tournament.entryFee || 0).toLocaleString()}</span>
-                                    </div>
-                                    <div class="tournament-detail">
-                                        <span class="detail-icon">👥</span>
-                                        <span>${tournament.currentPlayers || 0}/${tournament.maxPlayers || '∞'} Players</span>
-                                    </div>
-                                </div>
-                                ${tournament.maxPlayers ? `
-                                    <div class="tournament-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: ${((tournament.currentPlayers || 0) / tournament.maxPlayers * 100)}%"></div>
-                                        </div>
-                                        <div class="progress-text">${Math.round((tournament.currentPlayers || 0) / tournament.maxPlayers * 100)}% filled</div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            <div class="tournament-footer">
-                                <div class="tournament-timer">
-                                    <span class="timer-icon">⏰</span>
-                                    <span>${tournament.isActive ? 
-                                        'Started: ' + formatTimeAgo(tournament.startDate) :
-                                        'Starts: ' + formatDate(tournament.startDate)
-                                    }</span>
-                                </div>
-                                <div class="tournament-actions">
-                                    ${canJoinTournament(tournament) ? `
-                                        <button class="btn btn-primary" onclick="joinTournament('${tournament.id}')">
-                                            🎮 Join Now
-                                        </button>
-                                    ` : ''}
-                                    <button class="btn btn-secondary" onclick="viewTournament('${tournament.id}')">
-                                        📊 Details
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
-                    
-                } catch (error) {
-                    console.error('Error loading tournaments:', error);
-                    container.innerHTML = `
-                        <div class="no-data">
-                            <div class="no-data-icon">❌</div>
-                            <h3>Error Loading Tournaments</h3>
-                            <p>Please try again later</p>
-                        </div>
-                    `;
-                }
-            }
+            container.innerHTML = `
+                <div class="wallet-card">
+                    <h3>Current Balance</h3>
+                    <div class="balance-amount">₹${balance.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                    <div class="wallet-actions">
+                        <a href="wallet.html" class="btn btn-primary">Manage Wallet</a>
+                    </div>
+                </div>`;
+        }
 
-            // Utility function to get game icon
-            function getGameIcon(game) {
-                const icons = {
-                    'BGMI': '🎯',
-                    'Free Fire': '🔫',
-                    'Call of Duty Mobile': '💥',
-                    'Clash Royale': '⚔️',
-                    '8 Ball Pool': '🎱'
-                };
-                return icons[game] || '🎮';
+        function loadMyProfile() {
+            const container = document.getElementById('my-profile');
+             if (!currentUser) {
+                return container.innerHTML = createLoginPrompt("Log in to view your profile.");
             }
+            container.innerHTML = `
+                <div class="profile-card">
+                    <h3>Account Info</h3>
+                    <div class="profile-info">
+                        <div class="info-item"><span class="info-label">Email</span><span class="info-value">${currentUser.email}</span></div>
+                        <div class="info-item"><span class="info-label">User ID</span><span class="info-value">${currentUser.uid}</span></div>
+                    </div>
+                     <div class="wallet-actions">
+                        <a href="dashboard.html" class="btn btn-primary">Full Dashboard</a>
+                        <button onclick="auth.signOut()" class="btn btn-danger">Sign Out</button>
+                    </div>
+                </div>`;
+        }
 
-            // Utility function to format time ago
-            function formatTimeAgo(timestamp) {
-                if (!timestamp) return 'N/A';
-                
-                const now = firebase.firestore.Timestamp.now();
-                const diff = now.seconds - timestamp.seconds;
-                
-                if (diff < 60) return 'Just now';
-                if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
-                if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
-                return Math.floor(diff / 86400) + ' days ago';
+        // =================================================================
+        // UI RENDERING & HELPERS
+        // =================================================================
+        function renderTournamentGrid(container, tournaments, emptyMessage) {
+            if (!tournaments || tournaments.length === 0) {
+                return container.innerHTML = createEmptyState("🏆", "No Tournaments Found", emptyMessage);
             }
+            const html = tournaments.map(t => {
+                const progress = t.maxPlayers > 0 ? (t.currentPlayers / t.maxPlayers) * 100 : 0;
+                return `
+                <div class="tournament-card">
+                    <div class="tournament-header">
+                        <div class="tournament-game"><div class="game-icon">${getGameIcon(t.game)}</div><div><div class="game-name">${t.game || 'TBD'}</div><div class="game-category">${t.gameType || 'Esports'}</div></div></div>
+                        <div class="tournament-status status-${t.status.toLowerCase()}">${t.status}</div>
+                    </div>
+                    <div class="tournament-body">
+                        <h3 class="tournament-title">${t.title || 'Untitled'}</h3>
+                        <div class="tournament-prize"><span class="prize-icon">💰</span>₹${(t.prizePool || 0).toLocaleString()}</div>
+                        ${t.maxPlayers ? `<div class="tournament-progress"><div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div><div class="progress-text">${t.currentPlayers || 0}/${t.maxPlayers} Players</div></div>` : ''}
+                    </div>
+                    <div class="tournament-footer">
+                        <div class="tournament-timer"><span class="timer-icon">⏰</span><span>Starts: ${formatDate(t.startDate)}</span></div>
+                        <div class="tournament-actions"><a href="tournament-register.html?id=${t.id}" class="btn btn-primary">View</a></div>
+                    </div>
+                </div>`;
+            }).join('');
+            container.innerHTML = html;
+        }
 
-            // Utility function to check if user can join tournament
-            function canJoinTournament(tournament) {
-                if (!currentUser) return false;
-                if (tournament.status === 'completed') return false;
-                if (tournament.currentPlayers >= tournament.maxPlayers) return false;
-                // Add more conditions as needed (e.g., check if user is already registered)
-                return true;
-            }
-
-            // Function to join tournament
-            async function joinTournament(tournamentId) {
-                if (!currentUser) {
-                    alert('Please sign in to join tournaments');
-                    return;
-                }
-                
-                try {
-                    // Get tournament data
-                    const tournamentDoc = await db.collection('tournaments').doc(tournamentId).get();
-                    const tournamentData = tournamentDoc.data();
-                    
-                    // Check if tournament is full
-                    if (tournamentData.currentPlayers >= tournamentData.maxPlayers) {
-                        alert('Tournament is full!');
-                        return;
-                    }
-                    
-                    // Check if user has sufficient balance
-                    const walletDoc = await db.collection('wallets').doc(currentUser.uid).get();
-                    const walletData = walletDoc.data() || { balance: 0 };
-                    
-                    if (walletData.balance < tournamentData.entryFee) {
-                        alert('Insufficient balance! Please add funds to your wallet.');
-                        return;
-                    }
-                    
-                    // Add user to tournament
-                    await db.runTransaction(async transaction => {
-                        // Update tournament player count
-                        transaction.update(db.collection('tournaments').doc(tournamentId), {
-                            currentPlayers: firebase.firestore.FieldValue.increment(1)
-                        });
-                        
-                        // Deduct entry fee from wallet
-                        transaction.update(db.collection('wallets').doc(currentUser.uid), {
-                            balance: firebase.firestore.FieldValue.increment(-tournamentData.entryFee),
-                            transactions: firebase.firestore.FieldValue.arrayUnion({
-                                amount: -tournamentData.entryFee,
-                                description: `Tournament Entry: ${tournamentData.title}`,
-                                date: firebase.firestore.FieldValue.serverTimestamp(),
-                                type: 'tournament_entry',
-                                status: 'completed',
-                                tournamentId
-                            })
-                        });
-                        
-                        // Add tournament to user's tournaments
-                        const userTournamentsRef = db.collection('userTournaments').doc(currentUser.uid);
-                        const userTournamentsDoc = await transaction.get(userTournamentsRef);
-                        
-                        if (!userTournamentsDoc.exists) {
-                            transaction.set(userTournamentsRef, {
-                                tournamentIds: [tournamentId]
-                            });
-                        } else {
-                            transaction.update(userTournamentsRef, {
-                                tournamentIds: firebase.firestore.FieldValue.arrayUnion(tournamentId)
-                            });
-                        }
-                    });
-                    
-                    alert('Successfully joined the tournament!');
-                    loadLiveTournaments(); // Refresh the list
-                    
-                } catch (error) {
-                    console.error('Error joining tournament:', error);
-                    alert('Error joining tournament. Please try again.');
-                }
-            }
-        });
+        function createEmptyState(icon, title, message) { return `<div class="no-data"><div class="no-data-icon">${icon}</div><h3>${title}</h3><p>${message}</p></div>`; }
+        function createErrorState(message) { return createEmptyState("❌", "An Error Occurred", message); }
+        function createLoginPrompt(message) { return `<div class="no-data"><div class="no-data-icon">👤</div><h3>Login Required</h3><p>${message}</p><a href="login.html" class="btn btn-primary">Login Now</a></div>`; }
+        function getGameIcon(game) {
+            const icons = {'BGMI': '🎯', 'Free Fire': '🔫', 'Valorant': '🔥', 'COD Mobile': '💥'};
+            return icons[game] || '🎮';
+        }
+        function formatDate(timestamp) {
+            if (!timestamp?.toDate) return 'TBD';
+            return timestamp.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
     </script>
 </body>
 </html>

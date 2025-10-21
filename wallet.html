@@ -113,60 +113,243 @@
   </nav>
 
   <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+ <!-- ... your HTML body and container ... -->
 
-  <!-- Wallet JS -->
-  <!-- Animations and nav bar styles are inherited from index.css. -->
-  <script>
-    // Enhanced bottom nav interaction and animations
-    document.addEventListener('DOMContentLoaded', function() {
-      // Button click feedback
-      document.addEventListener('click', function(e) {
-        if (e.target.closest('.btn')) {
-          const btn = e.target.closest('.btn');
-          btn.style.transform = 'scale(0.98)';
-          setTimeout(() => { btn.style.transform = ''; }, 150);
+    <!-- Firebase & JavaScript -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <!-- Referencing wallet.js. We rely on this to initialize 'auth' and 'db' globals. -->
+    <script src="wallet.js"></script>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const tournamentId = urlParams.get('id');
+        let tournamentDetails = null;
+        let registrationInProgress = false;
+        let currentUserBalance = 0;
+
+        function initializeRegistrationPage() {
+            if (typeof auth === 'undefined' || typeof db === 'undefined') {
+                console.log("Waiting for Firebase globals from wallet.js...");
+                setTimeout(initializeRegistrationPage, 100);
+                return;
+            }
+            document.getElementById('regContainer').style.display = 'block';
+            if (!tournamentId) {
+                showRegStatus('Error: Tournament ID is missing from URL.', 'error');
+                document.getElementById('loadingDetails').style.display = 'none';
+                return;
+            }
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    loadRegistrationData();
+                } else {
+                    setTimeout(() => window.location.href = 'login.html', 100);
+                }
+            });
         }
-      });
+        
+        document.addEventListener('DOMContentLoaded', initializeRegistrationPage);
 
-      // Prevent context menu on interactive elements
-      document.addEventListener('contextmenu', function(e) {
-        if (e.target.closest('.btn') || e.target.closest('.nav-item') || e.target.closest('a')) {
-          e.preventDefault();
+        // ======================= CORE FUNCTIONS =======================
+
+        // --- CORRECTED BALANCE LOGIC ---
+        async function fetchUserBalance() {
+            if (!auth.currentUser || !db) {
+                console.error("Firebase not ready to fetch balance.");
+                return 0;
+            }
+            try {
+                const userId = auth.currentUser.uid;
+                const walletRef = db.collection('wallets').doc(userId);
+                const walletDoc = await walletRef.get();
+
+                if (walletDoc.exists && typeof walletDoc.data().balance !== 'undefined') {
+                    // Priority 1: Use the authoritative balance from the wallet document.
+                    return walletDoc.data().balance;
+                } else {
+                    // Priority 2 (Fallback): Calculate from transactions ONLY if wallet doc doesn't exist.
+                    // This is a bootstrap for new users and is not the primary method.
+                    const [depositsSnapshot, withdrawalsSnapshot] = await Promise.all([
+                        db.collection('deposits').where('userId', '==', userId).where('status', '==', 'approved').get(),
+                        db.collection('withdrawals').where('userId', '==', userId).where('status', '==', 'approved').get()
+                    ]);
+                    let totalDeposits = 0;
+                    depositsSnapshot.forEach(doc => totalDeposits += (parseFloat(doc.data().amount) || 0));
+                    let totalWithdrawals = 0;
+                    withdrawalsSnapshot.forEach(doc => totalWithdrawals += (parseFloat(doc.data().amount) || 0));
+                    return totalDeposits - totalWithdrawals;
+                }
+            } catch (error) {
+                console.error("Error fetching balance directly:", error);
+                showRegStatus('Failed to retrieve current wallet balance.', 'error');
+                return 0;
+            }
         }
-      });
 
-      // Touch device optimizations
-      if ('ontouchstart' in window) {
-        document.body.classList.add('touch-device');
-        document.addEventListener('touchstart', function() {}, { passive: true });
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-          const now = (new Date()).getTime();
-          if (now - lastTouchEnd <= 300) {
-            event.preventDefault();
-          }
-          lastTouchEnd = now;
-        }, false);
-      }
+        async function loadRegistrationData() {
+            const loadingDetails = document.getElementById('loadingDetails');
+            const detailsContent = document.getElementById('detailsContent');
+            loadingDetails.style.display = 'block';
+            detailsContent.style.display = 'none';
 
-      // Show Organizer nav only for admins
-      function isAdmin() {
-        return localStorage.getItem('isAdmin') === 'true';
-      }
-      const organizerNav = document.getElementById('organizerNav');
-      if (organizerNav) {
-        organizerNav.style.display = 'none';
-        if (isAdmin()) {
-          organizerNav.style.display = '';
+            try {
+                const doc = await db.collection('tournaments').doc(tournamentId).get();
+                if (!doc.exists) {
+                    showRegStatus('Tournament not found.', 'error');
+                    return;
+                }
+                tournamentDetails = { id: doc.id, ...doc.data() };
+                currentUserBalance = await fetchUserBalance();
+                displayTournamentDetails();
+                await checkRegistrationStatus();
+            } catch (error) {
+                console.error('Error loading registration data:', error);
+                showRegStatus('Failed to load data: ' + error.message, 'error');
+            } finally {
+                loadingDetails.style.display = 'none';
+                detailsContent.style.display = 'block';
+            }
         }
-      }
-    });
-    // TEMP: Enable admin for demo/testing (remove in production)
-    localStorage.setItem('isAdmin', 'true');
-  </script>
-  <script src="wallet.js"></script>
+
+        function displayTournamentDetails() {
+            if (!tournamentDetails) return;
+            document.getElementById('tourneyTitle').textContent = tournamentDetails.title || 'Untitled Tournament';
+            document.getElementById('tourneyGame').textContent = tournamentDetails.game || 'General Game';
+            document.getElementById('entryFeeDisplay').textContent = `₹${formatCurrency(tournamentDetails.entryFee || 0)}`;
+            document.getElementById('prizePoolDisplay').textContent = `₹${formatCurrency(tournamentDetails.prizePool || 0)}`;
+            document.getElementById('startDateDisplay').textContent = formatDate(tournamentDetails.startDate);
+            document.getElementById('currentBalanceDisplay').textContent = `₹${formatCurrency(currentUserBalance || 0)}`;
+            checkBalanceAndToggleRegistration();
+        }
+
+        function checkBalanceAndToggleRegistration() {
+            const entryFee = tournamentDetails.entryFee || 0;
+            const balance = currentUserBalance || 0;
+            const registerBtn = document.getElementById('registerBtn');
+
+            if (registerBtn) {
+                if (balance < entryFee) {
+                    registerBtn.disabled = true;
+                    registerBtn.textContent = `Insufficient Balance`;
+                    showRegStatus(`Your balance is too low. Required: ₹${formatCurrency(entryFee)}.`, 'error');
+                } else if (tournamentDetails.status !== 'registering' && tournamentDetails.status !== 'upcoming') {
+                    registerBtn.disabled = true;
+                    registerBtn.textContent = `Registration Closed (${tournamentDetails.status})`;
+                } else {
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = `Register and Pay ₹${formatCurrency(entryFee)}`;
+                }
+            }
+        }
+
+        async function checkRegistrationStatus() {
+            if (!auth.currentUser) return;
+            const participantDoc = await db.collection('tournaments').doc(tournamentId).collection('participants').doc(auth.currentUser.uid).get();
+            if (participantDoc.exists) {
+                const registerBtn = document.getElementById('registerBtn');
+                if (registerBtn) {
+                    registerBtn.disabled = true;
+                    registerBtn.textContent = 'Already Registered ✅';
+                    showRegStatus('You are already registered for this tournament!', 'success');
+                }
+                return true;
+            }
+            return false;
+        }
+
+        async function handleRegistration() {
+            if (registrationInProgress) return;
+            registrationInProgress = true;
+            const registerBtn = document.getElementById('registerBtn');
+            const originalText = registerBtn.textContent;
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = `Processing... <span class="loading-spinner"></span>`;
+            const entryFee = tournamentDetails.entryFee || 0;
+            const freshBalance = await fetchUserBalance();
+            currentUserBalance = freshBalance;
+            if (await checkRegistrationStatus()) {
+                registrationInProgress = false; return;
+            }
+            if ((freshBalance || 0) < entryFee) {
+                showRegStatus('Registration Failed: Insufficient wallet balance.', 'error');
+                registrationInProgress = false;
+                checkBalanceAndToggleRegistration();
+                return;
+            }
+            try {
+                showRegStatus('Executing payment and registration...', 'info');
+                await db.runTransaction(async (transaction) => {
+                    const userId = auth.currentUser.uid;
+                    const userEmail = auth.currentUser.email;
+                    const walletRef = db.collection('wallets').doc(userId);
+                    const walletDoc = await transaction.get(walletRef);
+                    let currentBalance = 0;
+                    if (!walletDoc.exists) {
+                        transaction.set(walletRef, { balance: freshBalance, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                        currentBalance = freshBalance;
+                    } else {
+                        currentBalance = walletDoc.data().balance || 0;
+                    }
+                    if (currentBalance < entryFee) {
+                        throw new Error('Insufficient wallet balance during transaction.');
+                    }
+                    const participantRef = db.collection('tournaments').doc(tournamentId).collection('participants').doc(userId);
+                    const participantDoc = await transaction.get(participantRef);
+                    if (participantDoc.exists) {
+                        throw new Error('Already registered.');
+                    }
+                    const newTransaction = { amount: -entryFee, description: `Tournament Entry: ${tournamentDetails.title}`, date: firebase.firestore.FieldValue.serverTimestamp(), type: 'tournament_entry', status: 'completed', tournamentId: tournamentId };
+                    transaction.update(walletRef, { balance: firebase.firestore.FieldValue.increment(-entryFee), transactions: firebase.firestore.FieldValue.arrayUnion(newTransaction) });
+                    const participantData = { userId: userId, email: userEmail, registeredAt: firebase.firestore.FieldValue.serverTimestamp(), entryFeePaid: entryFee, };
+                    transaction.set(participantRef, participantData);
+                    const tournamentRef = db.collection('tournaments').doc(tournamentId);
+                    transaction.update(tournamentRef, { currentPlayers: firebase.firestore.FieldValue.increment(1) });
+                    const userTournamentsRef = db.collection('userTournaments').doc(userId);
+                    transaction.set(userTournamentsRef, { tournamentIds: firebase.firestore.FieldValue.arrayUnion(tournamentId) }, { merge: true });
+                });
+                showRegStatus('Registration successful! Fee deducted from wallet.', 'success');
+                registerBtn.textContent = 'Successfully Registered ✅';
+                registerBtn.disabled = true;
+                currentUserBalance = freshBalance - entryFee;
+                displayTournamentDetails();
+            } catch (error) {
+                console.error('Critical Registration Error:', error);
+                let errorMessage = 'Registration Failed.';
+                if (error.message.includes('Insufficient')) {
+                    errorMessage = 'Registration Failed: Insufficient wallet balance.';
+                } else if (error.message.includes('Already registered')) {
+                    errorMessage = 'Registration Failed: You are already registered.';
+                }
+                showRegStatus(errorMessage, 'error');
+                registerBtn.textContent = originalText;
+                registerBtn.disabled = false;
+                checkBalanceAndToggleRegistration();
+            } finally {
+                registrationInProgress = false;
+            }
+        }
+
+        // ======================= UTILITIES =======================
+        function showRegStatus(message, type = 'info') {
+            const statusEl = document.getElementById('regStatus');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+        }
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0 }).format(amount);
+        }
+        function formatDate(timestamp) {
+            if (!timestamp) return 'TBD';
+            try {
+                let date;
+                if (timestamp.toDate) date = timestamp.toDate();
+                else if (timestamp.seconds) date = new Date(timestamp.seconds * 1000);
+                else return 'TBD';
+                return date.toLocaleString();
+            } catch (e) { return 'TBD'; }
+        }
+    </script>
 </body>
 </html>

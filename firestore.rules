@@ -12,11 +12,17 @@ service cloud.firestore {
     }
 
     function getUserRole(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.role;
+      // Safely get user role with existence check
+      return exists(/databases/$(database)/documents/users/$(uid)) ? 
+        get(/databases/$(database)/documents/users/$(uid)).data.role : null;
     }
 
     function isAdmin() {
-      return isSignedIn() && getUserRole(request.auth.uid) == 'admin';
+      return isSignedIn() && getUserRole(authUid()) == 'admin';
+    }
+
+    function isModerator() {
+      return isSignedIn() && getUserRole(authUid()) == 'moderator';
     }
 
     function emailVerified() {
@@ -31,21 +37,59 @@ service cloud.firestore {
       return (request.resource.data[field] is number) && request.resource.data[field] > 0;
     }
 
+    function isNonNegativeNumber(field) {
+      return (request.resource.data[field] is number) && request.resource.data[field] >= 0;
+    }
+
+    function isValidStatus(statusField, validStatuses) {
+      return request.resource.data[statusField] in validStatuses;
+    }
+
+    function isValidTournamentStatus() {
+      return isValidStatus('status', ['draft', 'registering', 'upcoming', 'active', 'completed', 'cancelled']);
+    }
+
+    function isValidTransactionType() {
+      return isValidStatus('type', ['deposit', 'withdraw', 'tournament_entry', 'refund', 'bonus', 'penalty']);
+    }
+
+    function isValidTransactionStatus() {
+      return isValidStatus('status', ['pending', 'approved', 'rejected', 'processed', 'cancelled']);
+    }
+
     // ----------------- USERS -----------------
     match /users/{userId} {
       // Creation allowed by authenticated user for their own profile (signup flows)
       allow create: if isSignedIn() && authUid() == userId
-                    && request.resource.data.email == request.auth.token.email;
+                    && request.resource.data.email == request.auth.token.email
+                    && request.resource.data.createdAt == request.time
+                    && request.resource.data.role == 'user'
+                    && request.resource.data.balance == 0
+                    && request.resource.data.disabled == false;
 
-      // Read: owner or admin
-      allow get, list: if isSignedIn() && (authUid() == userId || isAdmin());
+      // Read: owner, admin, or moderator (moderators can view but not sensitive fields)
+      allow get: if isSignedIn() && (
+        authUid() == userId || 
+        isAdmin() || 
+        (isModerator() && resource.data.role != 'admin')
+      );
+      
+      allow list: if isAdmin() || isModerator();
 
-      // Update: owner may edit limited fields; admins may edit any field
+      // Update: owner may edit limited fields; admins may edit any field; moderators can edit non-admin users
       allow update: if isSignedIn() && (
-        isAdmin() || (
-          authUid() == userId
-          && !(request.resource.data.role is string && request.resource.data.role != resource.data.role)
-          && request.resource.data.email == resource.data.email
+        isAdmin() || 
+        (isModerator() && resource.data.role != 'admin' && request.resource.data.role != 'admin') ||
+        (
+          authUid() == userId &&
+          // Owner can only update these fields
+          request.resource.data.keys().hasOnly(['displayName', 'photoURL', 'phoneNumber', 'preferences']) &&
+          // Prevent role changes by owner
+          request.resource.data.role == resource.data.role &&
+          // Prevent balance changes by owner
+          request.resource.data.balance == resource.data.balance &&
+          // Email must remain unchanged
+          request.resource.data.email == resource.data.email
         )
       );
 
@@ -55,62 +99,86 @@ service cloud.firestore {
 
     // ----------------- TOURNAMENTS -----------------
     match /tournaments/{tid} {
-      // Public read access for listing and details
-      allow get, list: if true;
+      // Public read access for listing and details (non-sensitive data)
+      allow get: if true;
+      
+      // List: authenticated users can see public tournaments; admins/moderators see all
+      allow list: if isSignedIn() || resource.data.status in ['active', 'upcoming', 'completed'];
 
       // Admin-only write operations
-      allow create, update, delete: if isAdmin();
+      allow create, update: if isAdmin() && isValidTournamentStatus();
+      
+      // Only admins can delete tournaments
+      allow delete: if isAdmin();
 
       // participants subcollection: users can create their own registration document
       match /participants/{pid} {
         allow create: if isSignedIn()
                       && authUid() == pid
                       && request.resource.data.userId == authUid()
-                      && (request.resource.data.tournamentId == tid || request.resource.data.tournamentRef == resource.data.tournamentRef);
+                      && request.resource.data.tournamentId == tid
+                      && resource.data.status in ['registering', 'upcoming']
+                      && isNonNegativeNumber('entryFeePaid');
 
-        // owner can read their participant doc; admin can read all
-        allow get: if isSignedIn() && (authUid() == pid || isAdmin());
-        allow list: if isAdmin();
+        // owner can read their participant doc; admin/moderator can read all
+        allow get: if isSignedIn() && (authUid() == pid || isAdmin() || isModerator());
+        allow list: if isAdmin() || isModerator();
 
-        // user can delete their own participant doc to cancel registration
-        allow delete: if isSignedIn() && authUid() == pid;
+        // user can delete their own participant doc to cancel registration (only if tournament not started)
+        allow delete: if isSignedIn() && authUid() == pid && 
+                      get(/databases/$(database)/documents/tournaments/$(tid)).data.status in ['registering', 'upcoming'];
 
-        // only admin may update participant records (results, status)
-        allow update: if isAdmin();
+        // only admin/moderator may update participant records (results, status)
+        allow update: if isAdmin() || isModerator();
       }
 
       // results subcollection
       match /results/{rid} {
-        allow read: if isSignedIn() && (emailVerified() || isAdmin());
-        allow create, update, delete: if isAdmin();
+        allow read: if isSignedIn() && (emailVerified() || isAdmin() || isModerator());
+        allow create, update, delete: if isAdmin() || isModerator();
       }
     }
 
     // ----------------- WALLETS -----------------
     match /wallets/{walletUserId} {
-      // Owner or admin may read, but require email verified for reads involving money
-      allow get: if isSignedIn() && (authUid() == walletUserId || isAdmin()) && (emailVerified() || isAdmin());
-      allow list: if isAdmin();
+      // Owner or admin/moderator may read, but require email verified for reads involving money
+      allow get: if isSignedIn() && (
+        (authUid() == walletUserId && emailVerified()) || 
+        isAdmin() || 
+        isModerator()
+      );
+      allow list: if isAdmin() || isModerator();
 
       // Prevent clients from directly creating/updating wallet summaries; only admin/server
       allow create, update, delete: if isAdmin();
 
-      // Transactions subcollection handled below
+      // Transactions subcollection
       match /transactions/{txId} {
         // Create transactions (deposits/withdrawals) from owner only when email verified
         allow create: if isSignedIn()
                       && authUid() == walletUserId
                       && emailVerified()
-                      && (request.resource.data.amount is number)
-                      && (request.resource.data.type in ['deposit','withdraw','tournament_entry','refund'])
-                      && (request.resource.data.status in ['pending','approved','rejected'])
-                      && request.resource.data.userId == authUid();
+                      && isNonNegativeNumber('amount')
+                      && isValidTransactionType()
+                      && isValidTransactionStatus()
+                      && request.resource.data.userId == authUid()
+                      && request.resource.data.timestamp == request.time;
 
-        // Owner or admin can read their own transactions (admin can read all)
-        allow get, list: if isSignedIn() && (authUid() == walletUserId || isAdmin());
+        // Owner or admin/moderator can read their own transactions
+        allow get, list: if isSignedIn() && (
+          authUid() == walletUserId || 
+          isAdmin() || 
+          isModerator()
+        );
 
-        // Only admin or trusted server processes may update transaction status/details
-        allow update: if isAdmin();
+        // Only admin/moderator may update transaction status/details
+        allow update: if (isAdmin() || isModerator()) && 
+                      isValidTransactionStatus() &&
+                      // Prevent changing critical fields after creation
+                      request.resource.data.userId == resource.data.userId &&
+                      request.resource.data.type == resource.data.type &&
+                      request.resource.data.amount == resource.data.amount;
+
         allow delete: if isAdmin();
       }
     }
@@ -118,60 +186,88 @@ service cloud.firestore {
     // ----------------- DEPOSITS -----------------
     match /deposits/{depositId} {
       // Users can create deposit requests for themselves (must be email-verified)
-  allow create: if isSignedIn()
+      allow create: if isSignedIn()
         && request.resource.data.userId == authUid()
         && isPositiveNumber('amount')
-        && request.resource.data.status == 'pending';
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.transactionId is string
+        && request.resource.data.method in ['upi', 'bank_transfer', 'credit_card', 'debit_card'];
 
-      // Owner or admin can read
-      allow get, list: if isSignedIn() && (resource.data.userId == authUid() || isAdmin());
+      // Owner, admin, or moderator can read
+      allow get, list: if isSignedIn() && (
+        resource.data.userId == authUid() || 
+        isAdmin() || 
+        isModerator()
+      );
 
-      // Only admins may approve/reject (update status)
-      allow update: if isAdmin() && (request.resource.data.status in ['approved','rejected','cancelled']);
+      // Only admins/moderators may approve/reject (update status)
+      allow update: if (isAdmin() || isModerator()) && 
+                    isValidTransactionStatus() &&
+                    // Prevent changing critical fields
+                    request.resource.data.userId == resource.data.userId &&
+                    request.resource.data.amount == resource.data.amount;
 
       allow delete: if isAdmin();
     }
 
     // ----------------- WITHDRAWALS -----------------
     match /withdrawals/{withdrawalId} {
-  allow create: if isSignedIn()
+      allow create: if isSignedIn()
         && request.resource.data.userId == authUid()
         && isPositiveNumber('amount')
         && request.resource.data.status == 'pending'
-        && (request.resource.data.destination is string);
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.destination is string
+        && request.resource.data.method in ['bank_account', 'upi', 'paypal'];
 
-      allow get, list: if isSignedIn() && (resource.data.userId == authUid() || isAdmin());
+      allow get, list: if isSignedIn() && (
+        resource.data.userId == authUid() || 
+        isAdmin() || 
+        isModerator()
+      );
 
-      allow update: if isAdmin() && (request.resource.data.status in ['approved','rejected','cancelled']);
+      allow update: if (isAdmin() || isModerator()) && 
+                    isValidTransactionStatus() &&
+                    // Prevent changing critical fields
+                    request.resource.data.userId == resource.data.userId &&
+                    request.resource.data.amount == resource.data.amount;
+
       allow delete: if isAdmin();
     }
 
     // ----------------- USER TOURNAMENTS -----------------
     match /userTournaments/{userId} {
       // Allow a user to create/update their own document (array of tournament ids), but validate shape
-      allow create: if isSignedIn() && authUid() == userId && request.resource.data.tournamentIds is list;
-      allow get: if isSignedIn() && (authUid() == userId || isAdmin());
-      allow update: if isSignedIn() && authUid() == userId && request.resource.data.tournamentIds is list;
+      allow create: if isSignedIn() && authUid() == userId 
+                    && request.resource.data.tournamentIds is list
+                    && request.resource.data.createdAt == request.time;
+
+      allow get: if isSignedIn() && (authUid() == userId || isAdmin() || isModerator());
+      allow update: if isSignedIn() && authUid() == userId 
+                    && request.resource.data.tournamentIds is list
+                    && request.resource.data.updatedAt == request.time;
+
       allow delete: if isAdmin();
     }
 
     // ----------------- MATCHES -----------------
     match /matches/{matchId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || isModerator();
     }
 
     // ----------------- ADMIN LOGS -----------------
     match /adminLogs/{logId} {
-      allow create: if isAdmin();
-      allow get, list: if isAdmin();
+      allow create: if isAdmin() || isModerator();
+      allow get, list: if isAdmin() || isModerator();
       allow update, delete: if false; // immutable audit trail
     }
 
     // ----------------- REPORTS, SETTINGS, ANALYTICS -----------------
     match /reports/{reportId} {
       allow create: if isSignedIn();
-      allow get, list, update, delete: if isAdmin();
+      allow get, list, update, delete: if isAdmin() || isModerator();
     }
 
     match /systemSettings/{settingId} {
@@ -179,53 +275,86 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    match /analytics/{doc} {
-      allow get: if isAdmin();
-      allow create, update, delete: if false;
-    }
-
-    // Email verification tokens (for custom email verification flow if needed)
+    // ----------------- EMAIL VERIFICATION & PREFERENCES -----------------
     match /emailVerificationTokens/{token} {
       allow read, write: if isAdmin();
-      // Users can't directly read/write verification tokens for security
     }
 
-    // User email preferences
     match /userPreferences/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
-    // Optional adminConfigs collection
+    // ----------------- ADMIN CONFIGS -----------------
     match /adminConfigs/{docId} {
       allow get: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
-    // Email templates (for notifications, etc.)
+    // ----------------- EMAIL TEMPLATES -----------------
     match /emailTemplates/{templateId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isModerator();
       allow write: if isAdmin();
     }
 
-    // User sessions or login history
-    match /userSessions/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAdmin();
+    // ----------------- USER SESSIONS -----------------
+    match /userSessions/{userId}/{sessionId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin() || isModerator());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && request.auth.uid == userId;
+      allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
     }
 
-    // Analytics and statistics
+    // ----------------- ANALYTICS -----------------
     match /analytics/{document} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isModerator();
       allow write: if false; // Only written by cloud functions
     }
 
-    // Audit trail for critical actions
+    // ----------------- AUDIT LOGS -----------------
     match /auditLogs/{logId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isModerator();
       allow write: if false; // Only written by cloud functions or admin actions
     }
 
-    // Default deny all
+    // ----------------- NOTIFICATIONS -----------------
+    match /notifications/{userId}/{notificationId} {
+      allow read, update, delete: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isAdmin() || isModerator();
+    }
+
+    // ----------------- FEEDBACK & SUPPORT -----------------
+    match /supportTickets/{ticketId} {
+      allow create: if isSignedIn();
+      allow get: if isSignedIn() && (
+        resource.data.userId == authUid() || 
+        isAdmin() || 
+        isModerator()
+      );
+      allow list: if isAdmin() || isModerator();
+      allow update: if isAdmin() || isModerator() || 
+                    (isSignedIn() && resource.data.userId == authUid() && 
+                     request.resource.data.status in ['open', 'pending_user']);
+      allow delete: if isAdmin();
+    }
+
+    // ----------------- GAME INTEGRATIONS -----------------
+    match /gameIntegrations/{gameId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ----------------- PROMOTIONS & COUPONS -----------------
+    match /promotions/{promoId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /coupons/{couponId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Default deny all (safety net)
     match /{document=**} {
       allow read, write: if false;
     }

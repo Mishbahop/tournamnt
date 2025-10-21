@@ -1,353 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Choose Your Game - TourneyHub</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games Library - TourneyHub</title>
+  <link rel="stylesheet" href="index.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <style>
+    /* Optional visual polish — add fade transition and cards */
+    .game-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .game-card:hover {
+      transform: translateY(-6px);
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .game-icon {
+      font-size: 2rem;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      color: #fff;
+    }
+    .status-live {
+      color: #4ade80;
+      font-weight: 600;
+    }
+    .status-upcoming {
+      color: #fbbf24;
+      font-weight: 600;
+    }
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease;
+    }
+  </style>
 </head>
 <body class="no-select">
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loading-content">
-            <div class="loading-logo">
-                <span class="logo-icon">🎮</span>
-                <span class="logo-text">TourneyHub</span>
-            </div>
-            <div class="loading-spinner"></div>
-            <p class="loading-subtitle">Loading Games Library...</p>
-        </div>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <span class="logo-icon">🎮</span>
+        <span class="logo-text">TourneyHub</span>
+      </div>
+      <div class="loading-spinner"></div>
+      <p class="loading-subtitle">Loading games library...</p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="main-header" id="mainHeader">
+    <div class="header-container">
+      <a href="index.html" class="logo">
+        <span class="logo-icon">🏆</span>
+        <span class="logo-text">TourneyHub</span>
+      </a>
+
+      <nav class="header-nav">
+        <a href="tournaments.html" class="nav-link">Tournaments</a>
+        <a href="games.html" class="nav-link active">Games</a>
+        <a href="leaderboards.html" class="nav-link">Leaderboards</a>
+        <a href="how-to-play.html" class="nav-link">How to Play</a>
+      </nav>
+
+      <div class="auth-buttons">
+        <a href="login.html" class="btn btn-secondary">Login</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero-section" style="min-height:60vh;padding:100px 16px 60px;">
+    <div class="hero-glow"></div>
+    <div class="hero-container">
+      <div class="hero-badge">
+        <span>🎮</span><span>Game Library</span>
+      </div>
+      <h1 class="hero-title">
+        Choose Your <span class="gradient-text">Battlefield</span>
+      </h1>
+      <p class="hero-description">
+        Select your favorite game to view current and upcoming tournaments.
+        Compete and earn real prizes every day!
+      </p>
+    </div>
+  </section>
+
+  <!-- Games section -->
+  <section class="trending-section">
+    <div class="section-header">
+      <h2 class="section-title"><span class="fire-icon">🔥</span> Games</h2>
     </div>
 
-    <!-- Header -->
-    <header class="main-header" id="mainHeader">
-        <div class="header-container">
-            <a href="index.html" class="logo">
-                <span class="logo-icon">🏆</span>
-                <span class="logo-text">TourneyHub</span>
-            </a>
-            
-            <nav class="header-nav">
-                <a href="tournaments.html" class="nav-link">Tournaments</a>
-                <a href="games.html" class="nav-link active">Games</a>
-                <a href="leaderboards.html" class="nav-link">Leaderboards</a>
-                <a href="how-to-play.html" class="nav-link">How to Play</a>
-            </nav>
-            
-            <div class="auth-buttons">
-                <a href="login.html" class="btn btn-secondary">Login</a>
-                <a href="register.html" class="btn btn-primary">Sign Up</a>
-            </div>
-        </div>
-    </header>
+    <div class="tournaments-grid" id="gamesGrid">
+      <div class="loading-tournaments">
+        <div class="loading-spinner"></div>
+        <p>Loading games...</p>
+      </div>
+    </div>
+  </section>
 
-    <!-- Hero Section -->
-    <section class="hero-section" style="min-height: 60vh; padding: 100px 16px 60px;">
-        <div class="hero-glow"></div>
-        <div class="hero-container">
-            <div class="hero-badge">
-                <span>🎮</span>
-                <span>Game Library</span>
-            </div>
-            <h1 class="hero-title">Choose Your <span class="gradient-text">Battlefield</span></h1>
-            <p class="hero-description">Select your game to view live tournaments created by admins. Compete in official competitions with verified prize pools.</p>
-        </div>
-    </section>
+  <!-- Platform Stats -->
+  <section class="features-section">
+    <div class="section-header center">
+      <h2 class="section-title">📊 Platform Statistics</h2>
+      <p class="section-subtitle">
+        Join thousands of skilled gamers already playing on TourneyHub
+      </p>
+    </div>
 
-    <!-- Games Grid Section -->
-    <section class="trending-section">
-        <div class="section-header">
-            <h2 class="section-title">
-                <span class="fire-icon">🎯</span>
-                Available Games
-            </h2>
-            <div class="view-all">
-                <span>6 Games</span>
-            </div>
-        </div>
-        
-        <div class="tournaments-grid" id="gamesGrid">
-            <!-- Games will be loaded dynamically -->
-            <div class="loading-tournaments">
-                <div class="loading-spinner"></div>
-                <p>Loading games...</p>
-            </div>
-        </div>
-    </section>
+    <div
+      class="hero-stats"
+      style="justify-content: center; gap: 3rem; flex-wrap: wrap"
+    >
+      <div class="stat">
+        <div class="stat-number">50K+</div>
+        <div class="stat-label">Players</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">₹50L+</div>
+        <div class="stat-label">Prize Money</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">1K+</div>
+        <div class="stat-label">Tournaments</div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Stats Section -->
-    <section class="features-section">
-        <div class="section-header center">
-            <h2 class="section-title">📊 Platform Statistics</h2>
-            <p class="section-subtitle">Join thousands of gamers in our competitive ecosystem</p>
-        </div>
-        
-        <div class="hero-stats" style="justify-content: center; gap: 3rem;">
-            <div class="stat">
-                <div class="stat-number">50K+</div>
-                <div class="stat-label">Active Players</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">₹50L+</div>
-                <div class="stat-label">Prize Money</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">1K+</div>
-                <div class="stat-label">Tournaments</div>
-            </div>
-        </div>
-    </section>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="tournaments.html" class="nav-item"
+      ><span class="nav-icon">⚔️</span><span class="nav-text">Tourneys</span></a
+    >
+    <a href="games.html" class="nav-item active"
+      ><span class="nav-icon">🎮</span><span class="nav-text">Games</span></a
+    >
+    <a href="index.html" class="nav-item"
+      ><span class="nav-icon">🏠</span><span class="nav-text">Home</span></a
+    >
+    <a href="wallet.html" class="nav-item"
+      ><span class="nav-icon">💰</span><span class="nav-text">Wallet</span></a
+    >
+    <a href="dashboard.html" class="nav-item"
+      ><span class="nav-icon">👑</span><span class="nav-text">Pro</span></a
+    >
+  </nav>
 
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <a href="tournaments.html" class="nav-item">
-            <span class="nav-icon">⚔️</span>
-            <span class="nav-text">Tourneys</span>
-        </a>
-        <a href="games.html" class="nav-item active">
-            <span class="nav-icon">🎮</span>
-            <span class="nav-text">Games</span>
-        </a>
-        <a href="index.html" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-text">Home</span>
-        </a>
-        <a href="wallet.html" class="nav-item">
-            <span class="nav-icon">💰</span>
-            <span class="nav-text">Wallet</span>
-        </a>
-        <a href="dashboard.html" class="nav-item">
-            <span class="nav-icon">👑</span>
-            <span class="nav-text">Pro</span>
-        </a>
-    </nav>
+  <!-- Firebase & JS -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-    <!-- Firebase & JavaScript -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+      authDomain: "authapp-386ee.firebaseapp.com",
+      projectId: "authapp-386ee",
+      storageBucket: "authapp-386ee.appspot.com",
+      messagingSenderId: "809698525310",
+      appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+      measurementId: "G-EJZTSBSGQT",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-            authDomain: "authapp-386ee.firebaseapp.com",
-            projectId: "authapp-386ee",
-            storageBucket: "authapp-386ee.appspot.com",
-            messagingSenderId: "809698525310",
-            appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-            measurementId: "G-EJZTSBSGQT"
-        };
+    const games = [
+      { id: "BGMI", icon: "📱", color: "#ff6b35", desc: "Battle royale on mobile." },
+      { id: "Free Fire", icon: "🔥", color: "#ffd93d", desc: "Fast 10‑minute battles." },
+      { id: "Call of Duty", icon: "🎯", color: "#6bc7ff", desc: "Console FPS on mobile." },
+      { id: "Clash Royale", icon: "👑", color: "#ff96b7", desc: "Card duel arena." },
+      { id: "8 Ball Pool", icon: "🎱", color: "#4ecdc4", desc: "Classic pool legend." },
+      { id: "Valorant", icon: "🎭", color: "#ff4655", desc: "PC tactical shooter." },
+    ];
 
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+    async function loadGames() {
+      const grid = document.getElementById("gamesGrid");
+      try {
+        const snap = await db
+          .collection("tournaments")
+          .where("status", "in", ["active", "upcoming", "registering"])
+          .get();
+        const counts = {};
+        snap.forEach((doc) => {
+          const g = doc.data().game;
+          if (g) counts[g] = (counts[g] || 0) + 1;
+        });
+        renderGames(counts);
+      } catch (e) {
+        console.error(e);
+        renderGames({});
+      }
+    }
 
-        // Available games data
-        const games = [
-            {
-                id: 'bgmi',
-                name: 'BGMI',
-                fullName: 'Battlegrounds Mobile India',
-                icon: '📱',
-                description: 'The ultimate battle royale experience on mobile. Survive, loot, and be the last one standing.',
-                players: '50M+',
-                tournaments: '1.2K+',
-                color: '#ff6b35',
-                activeTournaments: 0 // Will be updated from Firebase
-            },
-            {
-                id: 'freefire',
-                name: 'Free Fire',
-                fullName: 'Garena Free Fire',
-                icon: '🔥',
-                description: 'Fast-paced 10-minute battles. Unique characters with special abilities.',
-                players: '80M+',
-                tournaments: '2.5K+',
-                color: '#ffd93d',
-                activeTournaments: 0
-            },
-            {
-                id: 'codm',
-                name: 'Call of Duty',
-                fullName: 'Call of Duty: Mobile',
-                icon: '🎯',
-                description: 'Console-quality FPS action on your mobile device. Multiple game modes.',
-                players: '30M+',
-                tournaments: '800+',
-                color: '#6bc7ff',
-                activeTournaments: 0
-            },
-            {
-                id: 'clashroyale',
-                name: 'Clash Royale',
-                fullName: 'Clash Royale',
-                icon: '👑',
-                description: 'Real-time multiplayer battles with your favorite Clash characters.',
-                players: '25M+',
-                tournaments: '600+',
-                color: '#ff96b7',
-                activeTournaments: 0
-            },
-            {
-                id: '8ballpool',
-                name: '8 Ball Pool',
-                fullName: '8 Ball Pool',
-                icon: '🎱',
-                description: 'The world\'s #1 pool game. Challenge friends and become a pool legend.',
-                players: '45M+',
-                tournaments: '900+',
-                color: '#4ecdc4',
-                activeTournaments: 0
-            },
-            {
-                id: 'valorant',
-                name: 'Valorant',
-                fullName: 'Valorant',
-                icon: '🎭',
-                description: 'Tactical shooter with unique agents and precise gunplay.',
-                players: '20M+',
-                tournaments: '500+',
-                color: '#ff4655',
-                activeTournaments: 0
-            }
-        ];
-
-        // Load games with live tournament counts
-        async function loadGames() {
-            try {
-                // Get active tournament counts for each game
-                const tournamentCounts = {};
-                
-                const snapshot = await db.collection('tournaments')
-                    .where('status', 'in', ['active', 'upcoming', 'registering'])
-                    .where('createdBy', '==', 'admin') // Only admin-created tournaments
-                    .get();
-                
-                snapshot.forEach(doc => {
-                    const tournament = doc.data();
-                    const game = tournament.game;
-                    if (game) {
-                        tournamentCounts[game] = (tournamentCounts[game] || 0) + 1;
-                    }
-                });
-                
-                // Update games with actual tournament counts
-                games.forEach(game => {
-                    game.activeTournaments = tournamentCounts[game.name] || 0;
-                });
-                
-                displayGames();
-            } catch (error) {
-                console.error('Error loading tournament counts:', error);
-                displayGames(); // Still show games with 0 counts
-            }
-        }
-
-        function displayGames() {
-            const gamesGrid = document.getElementById('gamesGrid');
-            
-            gamesGrid.innerHTML = games.map(game => `
-                <div class="tournament-card game-card" onclick="selectGame('${game.name}')">
-                    <div class="tournament-header">
-                        <div class="tournament-game">
-                            <div class="game-icon" style="background: linear-gradient(135deg, ${game.color}, ${game.color}aa);">
-                                ${game.icon}
-                            </div>
-                            <div class="game-info">
-                                <div class="game-name">${game.name}</div>
-                                <div class="game-category">Mobile Game</div>
-                            </div>
-                        </div>
-                        <div class="tournament-status ${game.activeTournaments > 0 ? 'status-live' : 'status-upcoming'}">
-                            ${game.activeTournaments} Live
-                        </div>
-                    </div>
-                    
-                    <div class="tournament-body">
-                        <h3 class="tournament-title">${game.fullName}</h3>
-                        <p>${game.description}</p>
-                        
-                        <div class="tournament-details">
-                            <div class="tournament-detail">
-                                <span class="detail-icon">👥</span>
-                                <span>${game.players} Players</span>
-                            </div>
-                            <div class="tournament-detail">
-                                <span class="detail-icon">🏆</span>
-                                <span>${game.activeTournaments} Active</span>
-                            </div>
-                        </div>
-                        
-                        ${game.activeTournaments > 0 ? `
-                        <div class="tournament-prize">
-                            <span class="prize-icon">⚡</span>
-                            ${game.activeTournaments} Admin Tournaments Live
-                        </div>
-                        ` : `
-                        <div class="tournament-prize" style="color: var(--text-secondary);">
-                            <span class="prize-icon">⏰</span>
-                            No active tournaments
-                        </div>
-                        `}
-                    </div>
-                    
-                    <div class="tournament-footer">
-                        <div class="tournament-entries">
-                            <span class="entries-icon">🎮</span>
-                            <span>Official Tournaments</span>
-                        </div>
-                        <div class="tournament-actions">
-                            <button class="btn-sm ${game.activeTournaments > 0 ? 'btn-register' : 'btn-details'}" onclick="event.stopPropagation(); selectGame('${game.name}')">
-                                ${game.activeTournaments > 0 ? 'View Tournaments' : 'Coming Soon'}
-                            </button>
-                        </div>
-                    </div>
+    function renderGames(counts) {
+      const grid = document.getElementById("gamesGrid");
+      grid.innerHTML = games
+        .map((g) => {
+          const active = counts[g.id] || 0;
+          return `
+          <div class="game-card" onclick="selectGame('${g.id}')">
+            <div class="tournament-header">
+              <div class="tournament-game">
+                <div class="game-icon" style="background:${g.color};">${g.icon}</div>
+                <div>
+                  <div class="game-name">${g.id}</div>
+                  <div class="game-category">Mobile/PC Game</div>
                 </div>
-            `).join('');
-        }
+              </div>
+              <div class="tournament-status ${
+                active > 0 ? "status-live" : "status-upcoming"
+              }">${active} Live</div>
+            </div>
+            <div class="tournament-body">
+              <p>${g.desc}</p>
+            </div>
+            <div class="tournament-footer">
+              <button class="btn btn-sm ${
+                active > 0 ? "btn-register" : "btn-secondary"
+              }">${active > 0 ? "View Tournaments" : "Coming Soon"}</button>
+            </div>
+          </div>`;
+        })
+        .join("");
+    }
 
-        function selectGame(gameName) {
-            // Redirect to tournaments page with selected game filter
-            window.location.href = `tournament.html?game=${encodeURIComponent(gameName)}`;
-        }
+    function selectGame(game) {
+      window.location.href = `tournament.html?game=${encodeURIComponent(game)}`;
+    }
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Enhanced loading screen
-            setTimeout(() => {
-                const loadingScreen = document.getElementById('loadingScreen');
-                if (loadingScreen) {
-                    loadingScreen.classList.add('hidden');
-                }
-            }, 1500);
+    // startup
+    document.addEventListener("DOMContentLoaded", () => {
+      const loading = document.getElementById("loadingScreen");
+      setTimeout(() => loading && loading.classList.add("hidden"), 1000);
+      loadGames();
 
-            loadGames();
-            
-            // Header scroll effect
-            const header = document.getElementById('mainHeader');
-            if (header) {
-                window.addEventListener('scroll', function() {
-                    if (window.scrollY > 50) {
-                        header.classList.add('scrolled');
-                    } else {
-                        header.classList.remove('scrolled');
-                    }
-                });
-            }
-        });
-
-        // Handle authentication state
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log('User is signed in:', user.email);
-            }
-        });
-    </script>
+      const header = document.getElementById("mainHeader");
+      window.addEventListener("scroll", () =>
+        window.scrollY > 50
+          ? header.classList.add("scrolled")
+          : header.classList.remove("scrolled")
+      );
+    });
+  </script>
 </body>
 </html>

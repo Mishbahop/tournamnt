@@ -640,10 +640,10 @@
             color: white;
             border-radius: 50%;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: bold;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8rem;
+                font-weight: bold;
         }
 
         .payment-icon {
@@ -773,82 +773,6 @@
             box-shadow: none !important;
         }
 
-        /* ===== SUCCESS MODAL ===== */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            padding: 20px;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .modal {
-            background: var(--gradient-card);
-            border: 2px solid var(--primary);
-            border-radius: var(--border-radius-lg);
-            padding: 50px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            box-shadow: var(--glow);
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: var(--gray);
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .modal-close:hover {
-            color: var(--primary);
-        }
-
-        .modal-icon {
-            width: 80px;
-            height: 80px;
-            background: var(--gradient-success);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 30px;
-            font-size: 2.5rem;
-            color: white;
-            animation: pulse 2s infinite;
-        }
-
-        .modal-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: white;
-        }
-
-        .modal-message {
-            color: var(--gray);
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-
         /* ===== LOADING STATE ===== */
         .loading-container {
             display: flex;
@@ -932,10 +856,6 @@
             
             .info-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            .modal {
-                padding: 30px;
             }
         }
     </style>
@@ -1293,30 +1213,7 @@
                 </form>
             </div>
         </template>
-
-        <!-- Success Modal -->
-        <div class="modal-overlay" id="successModal">
-            <div class="modal">
-                <button class="modal-close" id="closeModal">&times;</button>
-                <div class="modal-icon">
-                    <i class="fas fa-check"></i>
-                </div>
-                <h2 class="modal-title">REGISTRATION SUCCESSFUL!</h2>
-                <p class="modal-message" id="successMessage">
-                    You have successfully registered for the tournament. Tournament details and updates will be sent to your email.
-                </p>
-                <div class="form-actions" style="border-top: none; padding-top: 0;">
-                    <a href="games.html" class="btn btn-secondary">
-                        <i class="fas fa-home"></i>
-                        Back to Tournaments
-                    </a>
-                    <a href="dashboard.html" class="btn btn-primary">
-                        <i class="fas fa-trophy"></i>
-                        View My Tournaments
-                    </a>
-                </div>
-            </div>
-        </div>
+    </div>
 
     <script>
         // Firebase Configuration
@@ -1691,14 +1588,6 @@
                     });
                 });
                 
-                // Modal close
-                const closeModalBtn = document.getElementById('closeModal');
-                if (closeModalBtn) {
-                    closeModalBtn.addEventListener('click', () => {
-                        document.getElementById('successModal').classList.remove('active');
-                    });
-                }
-                
                 // Form input changes for confirm section
                 const teamNameInput = document.getElementById('teamName');
                 const playerIGNInput = document.getElementById('playerIGN');
@@ -1997,8 +1886,8 @@
                         this.updatePaymentInfo();
                     }
                     
-                    // Show success modal
-                    this.showSuccessModal();
+                    // Show success notification and redirect
+                    this.showSuccessAndRedirect();
                     
                 } catch (error) {
                     console.error('Registration error:', error);
@@ -2010,14 +1899,15 @@
                 }
             }
 
-            showSuccessModal() {
-                const modal = document.getElementById('successModal');
-                const message = document.getElementById('successMessage');
+            showSuccessAndRedirect() {
+                // Show success notification
+                this.showNotification('Registration successful! Redirecting to your tournaments...', 'success');
                 
-                if (modal && message) {
-                    message.textContent = `Congratulations! You have successfully registered for "${this.tournamentData.title}". Tournament details and match schedule will be sent to your email ${this.currentUser.email}.`;
-                    modal.classList.add('active');
-                }
+                // Wait 2 seconds then redirect
+                setTimeout(() => {
+                    // Redirect to tournament-joined.html with upcoming filter and success flag
+                    window.location.href = 'tournament-joined.html?filter=upcoming&success=true';
+                }, 2000);
             }
 
             showError(message) {

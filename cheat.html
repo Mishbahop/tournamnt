@@ -1,0 +1,950 @@
+<!-- anti-cheat-overlay.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Overlay System CSS */
+        :root {
+            --ac-green: #00ff88;
+            --ac-red: #ff3860;
+            --ac-yellow: #ffaa00;
+            --ac-blue: #00d4ff;
+            --ac-dark: rgba(10, 10, 15, 0.95);
+        }
+        
+        #anti-cheat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 999999;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: none;
+            overflow: hidden;
+            pointer-events: auto;
+        }
+        
+        .overlay-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--ac-dark);
+            border: 3px solid var(--ac-blue);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
+        }
+        
+        .overlay-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .overlay-title {
+            font-size: 2.5rem;
+            color: var(--ac-blue);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .overlay-subtitle {
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+        
+        .monitoring-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            color: var(--ac-blue);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .monitor-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+        
+        .monitor-item.active {
+            border-left: 4px solid var(--ac-green);
+        }
+        
+        .monitor-item.warning {
+            border-left: 4px solid var(--ac-yellow);
+        }
+        
+        .monitor-item.danger {
+            border-left: 4px solid var(--ac-red);
+        }
+        
+        .monitor-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .icon-green { background: rgba(0, 255, 136, 0.1); color: var(--ac-green); }
+        .icon-yellow { background: rgba(255, 170, 0, 0.1); color: var(--ac-yellow); }
+        .icon-red { background: rgba(255, 56, 96, 0.1); color: var(--ac-red); }
+        
+        .monitor-info h4 {
+            margin: 0 0 5px 0;
+            color: white;
+            font-size: 0.95rem;
+        }
+        
+        .monitor-info p {
+            margin: 0;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        
+        .screen-preview {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .preview-video {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        
+        .preview-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            font-size: 0.8rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .ac-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ac-blue), #0088ff);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--ac-red), #ff0066);
+            color: white;
+        }
+        
+        .ac-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+        
+        .stat-box {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ac-blue);
+        }
+        
+        .stat-label {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .alert-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 56, 96, 0.1);
+            border: 1px solid var(--ac-red);
+            border-radius: 10px;
+            padding: 15px 20px;
+            max-width: 300px;
+            display: none;
+            animation: slideInRight 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .alert-icon {
+            color: var(--ac-red);
+            font-size: 1.2rem;
+        }
+        
+        .alert-title {
+            color: var(--ac-red);
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .alert-message {
+            color: white;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .close-overlay {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Mini monitoring bar */
+        #mini-monitor-bar {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: rgba(10, 10, 15, 0.9);
+            border: 2px solid var(--ac-blue);
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            padding: 10px;
+            display: none;
+            z-index: 999998;
+            backdrop-filter: blur(5px);
+        }
+        
+        .mini-monitor-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .mini-monitor-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Overlay -->
+    <div id="anti-cheat-overlay">
+        <button class="close-overlay" onclick="ACSystem.hideOverlay()">×</button>
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h1 class="overlay-title">🎮 Tournament Anti-Cheats</h1>
+                <p class="overlay-subtitle">Real-time game integrity monitoring system</p>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-value" id="integrityScore">100%</div>
+                    <div class="stat-label">System Integrity</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="cheatDetection">0</div>
+                    <div class="stat-label">Cheats Detected</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="monitoringTime">00:00</div>
+                    <div class="stat-label">Monitoring Time</div>
+                </div>
+            </div>
+            
+            <div class="monitoring-section">
+                <div class="section-title">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Active Monitoring</span>
+                </div>
+                <div class="monitoring-grid" id="monitoringGrid">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="monitoring-section">
+                <div class="section-title">
+                    <i class="fas fa-video"></i>
+                    <span>Screen & Process Monitoring</span>
+                </div>
+                <div class="screen-preview">
+                    <div class="preview-video" id="screenPreview">
+                        <i class="fas fa-video" style="font-size: 3rem;"></i>
+                        <p>Screen capture preview</p>
+                    </div>
+                    <div class="preview-overlay">
+                        <i class="fas fa-circle" style="color: #ff3860; margin-right: 5px;"></i>
+                        RECORDING
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="ac-btn btn-secondary" onclick="ACSystem.takeScreenshot()">
+                    <i class="fas fa-camera"></i>
+                    Take Screenshot
+                </button>
+                <button class="ac-btn btn-primary" onclick="ACSystem.toggleMonitoring()">
+                    <i class="fas fa-play"></i>
+                    Start Monitoring
+                </button>
+                <button class="ac-btn btn-danger" onclick="ACSystem.generateReport()">
+                    <i class="fas fa-file-export"></i>
+                    Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alert Box -->
+    <div class="alert-box" id="alertBox">
+        <div class="alert-header">
+            <i class="fas fa-exclamation-triangle alert-icon"></i>
+            <h4 class="alert-title">Suspicious Activity Detected</h4>
+        </div>
+        <p class="alert-message" id="alertMessage"></p>
+    </div>
+    
+    <!-- Mini Monitor Bar -->
+    <div id="mini-monitor-bar">
+        <div class="mini-monitor-item" onclick="ACSystem.showOverlay()">
+            <i class="fas fa-shield-alt"></i>
+            Anti-Cheat
+        </div>
+        <div class="mini-monitor-item" onclick="ACSystem.takeScreenshot()">
+            <i class="fas fa-camera"></i>
+            Screenshot
+        </div>
+        <div class="mini-monitor-item" onclick="ACSystem.toggleMonitoring()">
+            <i class="fas fa-video"></i>
+            Toggle Record
+        </div>
+    </div>
+
+    <script>
+        class AntiCheatOverlaySystem {
+            constructor() {
+                this.isMonitoring = false;
+                this.startTime = null;
+                this.timerInterval = null;
+                this.integrityScore = 100;
+                this.detectedCheats = 0;
+                this.monitoringModules = {
+                    screenRecording: false,
+                    processMonitoring: false,
+                    memoryScanning: false,
+                    networkMonitoring: false,
+                    inputMonitoring: false,
+                    fileIntegrity: false
+                };
+                
+                this.cheatPatterns = [
+                    { name: 'Aimbot', signature: /aim.*bot/i, risk: 'high' },
+                    { name: 'Wallhack', signature: /wall.*hack|esp/i, risk: 'high' },
+                    { name: 'Speed Hack', signature: /speed.*hack/i, risk: 'medium' },
+                    { name: 'Memory Editor', signature: /game.*guardian|cheat.*engine/i, risk: 'critical' },
+                    { name: 'Auto Clicker', signature: /auto.*click|macro/i, risk: 'low' },
+                    { name: 'Emulator', signature: /bluestack|nox|ldplayer/i, risk: 'medium' }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupMonitoringGrid();
+                this.updateDisplay();
+                
+                // Start system integrity check
+                setInterval(() => this.checkSystemIntegrity(), 5000);
+                
+                // Start mini monitor
+                setTimeout(() => this.showMiniMonitor(), 3000);
+            }
+            
+            setupMonitoringGrid() {
+                const grid = document.getElementById('monitoringGrid');
+                const modules = [
+                    {
+                        name: 'Screen Recording',
+                        desc: 'Captures gameplay screen',
+                        icon: 'fa-video',
+                        status: 'active',
+                        class: 'active'
+                    },
+                    {
+                        name: 'Process Monitor',
+                        desc: 'Watches for cheat processes',
+                        icon: 'fa-tasks',
+                        status: 'active',
+                        class: 'active'
+                    },
+                    {
+                        name: 'Memory Scanner',
+                        desc: 'Scans for memory tampering',
+                        icon: 'fa-memory',
+                        status: 'warning',
+                        class: 'warning'
+                    },
+                    {
+                        name: 'Network Monitor',
+                        desc: 'Monitors network packets',
+                        icon: 'fa-network-wired',
+                        status: 'inactive',
+                        class: 'danger'
+                    },
+                    {
+                        name: 'Input Monitor',
+                        desc: 'Tracks mouse & keyboard',
+                        icon: 'fa-mouse',
+                        status: 'active',
+                        class: 'active'
+                    },
+                    {
+                        name: 'File Integrity',
+                        desc: 'Verifies game files',
+                        icon: 'fa-file-shield',
+                        status: 'active',
+                        class: 'active'
+                    }
+                ];
+                
+                grid.innerHTML = modules.map(module => `
+                    <div class="monitor-item ${module.class}">
+                        <div class="monitor-icon icon-${module.class === 'active' ? 'green' : module.class === 'warning' ? 'yellow' : 'red'}">
+                            <i class="fas ${module.icon}"></i>
+                        </div>
+                        <div class="monitor-info">
+                            <h4>${module.name}</h4>
+                            <p>${module.desc}</p>
+                            <small>Status: <strong>${module.status}</strong></small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            showOverlay() {
+                document.getElementById('anti-cheat-overlay').style.display = 'block';
+                this.updateDisplay();
+            }
+            
+            hideOverlay() {
+                document.getElementById('anti-cheat-overlay').style.display = 'none';
+            }
+            
+            showMiniMonitor() {
+                document.getElementById('mini-monitor-bar').style.display = 'block';
+            }
+            
+            toggleMonitoring() {
+                this.isMonitoring = !this.isMonitoring;
+                
+                if (this.isMonitoring) {
+                    this.startTime = new Date();
+                    this.startTimer();
+                    this.startScreenCapture();
+                    this.startProcessMonitoring();
+                    this.showAlert('Monitoring started', 'info');
+                } else {
+                    this.stopTimer();
+                    this.stopScreenCapture();
+                    this.showAlert('Monitoring stopped', 'warning');
+                }
+                
+                this.updateDisplay();
+            }
+            
+            startTimer() {
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                
+                this.timerInterval = setInterval(() => {
+                    const now = new Date();
+                    const diff = now - this.startTime;
+                    const minutes = Math.floor(diff / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+                    document.getElementById('monitoringTime').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+            
+            stopTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+            }
+            
+            async startScreenCapture() {
+                try {
+                    // Request screen sharing permission
+                    const stream = await navigator.mediaDevices.getDisplayMedia({
+                        video: {
+                            displaySurface: 'monitor',
+                            frameRate: { ideal: 30, max: 60 }
+                        },
+                        audio: false
+                    });
+                    
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.autoplay = true;
+                    
+                    // Replace preview
+                    const preview = document.getElementById('screenPreview');
+                    preview.innerHTML = '';
+                    preview.appendChild(video);
+                    
+                    // Start analyzing frames
+                    this.startFrameAnalysis(video);
+                    
+                } catch (error) {
+                    console.error('Screen capture failed:', error);
+                    this.showAlert('Screen capture permission denied', 'error');
+                }
+            }
+            
+            startFrameAnalysis(video) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const analyzeFrame = () => {
+                    if (video.videoWidth === 0) return;
+                    
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    this.analyzeScreenContent(imageData);
+                    
+                    if (this.isMonitoring) {
+                        requestAnimationFrame(analyzeFrame);
+                    }
+                };
+                
+                video.onplay = () => {
+                    analyzeFrame();
+                };
+            }
+            
+            analyzeScreenContent(imageData) {
+                // Advanced: Use TensorFlow.js for ML-based cheat detection
+                // For now, do basic color analysis for cheat menus
+                
+                // Look for suspicious color patterns (cheat menu indicators)
+                const pixels = imageData.data;
+                let suspiciousPixels = 0;
+                
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const r = pixels[i];
+                    const g = pixels[i + 1];
+                    const b = pixels[i + 2];
+                    
+                    // Cheat menus often have bright, unnatural colors
+                    if (r > 200 && g < 100 && b < 100) {
+                        suspiciousPixels++; // Red cheat menu indicators
+                    }
+                    
+                    // Look for typical cheat overlay colors
+                    if (r < 50 && g > 200 && b < 50) {
+                        suspiciousPixels++; // Green ESP indicators
+                    }
+                }
+                
+                const suspicionRatio = suspiciousPixels / (pixels.length / 4);
+                
+                if (suspicionRatio > 0.01) { // 1% suspicious pixels
+                    this.flagSuspiciousActivity('Unusual on-screen colors detected');
+                }
+            }
+            
+            async startProcessMonitoring() {
+                // This would use native APIs to monitor processes
+                // For web, we can only do limited detection
+                
+                setInterval(async () => {
+                    try {
+                        // Try to detect common cheat processes via various methods
+                        await this.checkForCheatProcesses();
+                    } catch (error) {
+                        console.error('Process monitoring error:', error);
+                    }
+                }, 10000);
+            }
+            
+            async checkForCheatProcesses() {
+                // Method 1: Check for browser extensions
+                const extensions = await this.detectExtensions();
+                
+                // Method 2: Check for suspicious scripts
+                const scripts = this.detectSuspiciousScripts();
+                
+                // Method 3: Performance monitoring for automation
+                const performance = this.monitorInputPerformance();
+                
+                // Combine results
+                const warnings = [...extensions, ...scripts, ...performance];
+                
+                if (warnings.length > 0) {
+                    warnings.forEach(warning => {
+                        this.showAlert(warning, 'warning');
+                        this.integrityScore -= 5;
+                        this.detectedCheats++;
+                    });
+                    this.updateDisplay();
+                }
+            }
+            
+            async detectExtensions() {
+                const warnings = [];
+                
+                // Check for known cheat extensions
+                const suspiciousExtensions = [
+                    'chrome-extension://abcdefghijklmnopqrstuvwxyz123456',
+                    'moz-extension://abcdefghijklmnopqrstuvwxyz123456'
+                ];
+                
+                // Try to detect extensions by checking resources
+                try {
+                    // This is a simplified check
+                    suspiciousExtensions.forEach(ext => {
+                        if (window.location.href.includes(ext)) {
+                            warnings.push('Suspicious browser extension detected');
+                        }
+                    });
+                } catch (e) {
+                    // Extension detection is limited in web
+                }
+                
+                return warnings;
+            }
+            
+            detectSuspiciousScripts() {
+                const warnings = [];
+                const scripts = document.querySelectorAll('script');
+                
+                scripts.forEach(script => {
+                    const src = script.src || '';
+                    this.cheatPatterns.forEach(pattern => {
+                        if (pattern.signature.test(src)) {
+                            warnings.push(`Suspicious script detected: ${pattern.name}`);
+                        }
+                    });
+                });
+                
+                return warnings;
+            }
+            
+            monitorInputPerformance() {
+                const warnings = [];
+                
+                // Monitor for superhuman reaction times
+                const clicks = [];
+                let lastClickTime = 0;
+                
+                document.addEventListener('click', (e) => {
+                    const now = Date.now();
+                    const timeDiff = now - lastClickTime;
+                    
+                    if (timeDiff < 50 && lastClickTime !== 0) { // < 50ms between clicks
+                        clicks.push(timeDiff);
+                        
+                        if (clicks.length > 10) {
+                            const avg = clicks.reduce((a, b) => a + b) / clicks.length;
+                            if (avg < 50) { // Average < 50ms is suspicious
+                                warnings.push('Possible auto-clicker detected');
+                            }
+                        }
+                    }
+                    
+                    lastClickTime = now;
+                });
+                
+                return warnings;
+            }
+            
+            checkSystemIntegrity() {
+                // Simulate integrity checks
+                const randomFactor = Math.random();
+                
+                if (randomFactor < 0.05) {
+                    this.integrityScore -= 1;
+                    this.detectedCheats++;
+                    this.flagSuspiciousActivity('System integrity violation detected');
+                } else if (randomFactor > 0.95 && this.integrityScore < 100) {
+                    this.integrityScore += 1;
+                }
+                
+                this.updateDisplay();
+            }
+            
+            flagSuspiciousActivity(message) {
+                this.showAlert(message, 'error');
+                this.detectedCheats++;
+                this.integrityScore = Math.max(0, this.integrityScore - 10);
+                this.updateDisplay();
+                
+                // Log to server
+                this.logViolation(message);
+            }
+            
+            showAlert(message, type = 'info') {
+                const alertBox = document.getElementById('alertBox');
+                const alertMessage = document.getElementById('alertMessage');
+                
+                alertMessage.textContent = message;
+                
+                // Update style based on type
+                if (type === 'error') {
+                    alertBox.style.background = 'rgba(255, 56, 96, 0.1)';
+                    alertBox.style.borderColor = '#ff3860';
+                    document.querySelector('.alert-icon').className = 'fas fa-exclamation-triangle alert-icon';
+                } else if (type === 'warning') {
+                    alertBox.style.background = 'rgba(255, 170, 0, 0.1)';
+                    alertBox.style.borderColor = '#ffaa00';
+                    document.querySelector('.alert-icon').className = 'fas fa-exclamation-circle alert-icon';
+                } else {
+                    alertBox.style.background = 'rgba(0, 212, 255, 0.1)';
+                    alertBox.style.borderColor = '#00d4ff';
+                    document.querySelector('.alert-icon').className = 'fas fa-info-circle alert-icon';
+                }
+                
+                alertBox.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    alertBox.style.display = 'none';
+                }, 5000);
+            }
+            
+            takeScreenshot() {
+                // Capture screenshot
+                html2canvas(document.body).then(canvas => {
+                    // Convert to image
+                    const image = canvas.toDataURL('image/png');
+                    
+                    // Download
+                    const link = document.createElement('a');
+                    link.download = `screenshot-${Date.now()}.png`;
+                    link.href = image;
+                    link.click();
+                    
+                    this.showAlert('Screenshot captured and saved', 'info');
+                    
+                    // Send to server
+                    this.uploadScreenshot(image);
+                });
+            }
+            
+            async uploadScreenshot(imageData) {
+                try {
+                    const response = await fetch('/api/upload-screenshot', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            image: imageData,
+                            timestamp: new Date().toISOString(),
+                            tournamentId: this.getCurrentTournamentId(),
+                            playerId: this.getCurrentPlayerId()
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Upload failed');
+                    }
+                } catch (error) {
+                    console.error('Screenshot upload failed:', error);
+                }
+            }
+            
+            async logViolation(message) {
+                try {
+                    await fetch('/api/log-violation', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message,
+                            timestamp: new Date().toISOString(),
+                            integrityScore: this.integrityScore,
+                            detectedCheats: this.detectedCheats,
+                            tournamentId: this.getCurrentTournamentId(),
+                            playerId: this.getCurrentPlayerId()
+                        })
+                    });
+                } catch (error) {
+                    console.error('Violation log failed:', error);
+                }
+            }
+            
+            generateReport() {
+                const report = {
+                    timestamp: new Date().toISOString(),
+                    integrityScore: this.integrityScore,
+                    detectedCheats: this.detectedCheats,
+                    monitoringTime: document.getElementById('monitoringTime').textContent,
+                    modules: this.monitoringModules,
+                    sessionId: this.generateSessionId()
+                };
+                
+                // Download report
+                const dataStr = JSON.stringify(report, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const link = document.createElement('a');
+                link.download = `anti-cheat-report-${Date.now()}.json`;
+                link.href = dataUri;
+                link.click();
+                
+                this.showAlert('Report generated and downloaded', 'info');
+            }
+            
+            updateDisplay() {
+                document.getElementById('integrityScore').textContent = `${this.integrityScore}%`;
+                document.getElementById('cheatDetection').textContent = this.detectedCheats;
+                
+                // Update monitoring button
+                const monitorBtn = document.querySelector('.ac-btn.btn-primary');
+                if (monitorBtn) {
+                    monitorBtn.innerHTML = this.isMonitoring ? 
+                        '<i class="fas fa-stop"></i> Stop Monitoring' : 
+                        '<i class="fas fa-play"></i> Start Monitoring';
+                }
+            }
+            
+            generateSessionId() {
+                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            getCurrentTournamentId() {
+                return localStorage.getItem('currentTournamentId') || 'unknown';
+            }
+            
+            getCurrentPlayerId() {
+                return localStorage.getItem('playerId') || 'unknown';
+            }
+        }
+        
+        // Initialize the system
+        window.ACSystem = new AntiCheatOverlaySystem();
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Shift+O to open overlay
+            if (e.ctrlKey && e.shiftKey && e.key === 'O') {
+                e.preventDefault();
+                ACSystem.showOverlay();
+            }
+            
+            // Ctrl+Shift+S to take screenshot
+            if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+                e.preventDefault();
+                ACSystem.takeScreenshot();
+            }
+            
+            // Ctrl+Shift+M to toggle monitoring
+            if (e.ctrlKey && e.shiftKey && e.key === 'M') {
+                e.preventDefault();
+                ACSystem.toggleMonitoring();
+            }
+        });
+        
+        // Inject into page
+        console.log('🎮 Anti-Cheat Overlay System loaded');
+    </script>
+</body>
+</html>

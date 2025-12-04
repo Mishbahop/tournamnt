@@ -1063,6 +1063,54 @@
                 try {
                     await this.checkAuth();
                     await this.loadUserData();
+                    
+                    // Check URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    
+                    // Check for success parameter
+                    if (urlParams.get('success') === 'true') {
+                        // Show success message for registration
+                        this.showNotification('🎉 Tournament registration successful! Your tournament has been added to your list.', 'success');
+                        
+                        // Remove the success parameter from URL without reloading
+                        urlParams.delete('success');
+                        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                        window.history.replaceState({}, document.title, newUrl);
+                    }
+                    
+                    // Check for filter parameter in URL
+                    const filterParam = urlParams.get('filter');
+                    if (filterParam && ['all', 'upcoming', 'active', 'completed', 'cancelled'].includes(filterParam)) {
+                        this.currentTab = filterParam;
+                        this.statusFilter = filterParam;
+                        
+                        // Update UI elements
+                        setTimeout(() => {
+                            const tabBtn = document.querySelector(`[data-tab="${filterParam}"]`);
+                            if (tabBtn) {
+                                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                                tabBtn.classList.add('active');
+                            }
+                            
+                            const statusFilter = document.getElementById('statusFilter');
+                            if (statusFilter) {
+                                statusFilter.value = filterParam;
+                            }
+                            
+                            // Update section title
+                            const sectionTitle = document.getElementById('sectionTitle');
+                            if (sectionTitle) {
+                                const tabNames = {
+                                    'all': 'All Tournaments',
+                                    'upcoming': 'Upcoming Tournaments',
+                                    'active': 'Active Tournaments',
+                                    'completed': 'Completed Tournaments'
+                                };
+                                sectionTitle.textContent = tabNames[filterParam] || 'All Tournaments';
+                            }
+                        }, 100);
+                    }
+                    
                     this.setupEventListeners();
                     await this.loadJoinedTournaments();
                     this.renderPage();
@@ -1401,30 +1449,33 @@
             }
 
             showEmptyState() {
-                const container = document.getElementById('tournamentsContainer');
+                const container = document.querySelector('.tournaments-container');
                 const emptyTemplate = document.getElementById('emptyStateTemplate');
-                const emptyMessage = document.getElementById('emptyMessage');
                 
-                container.innerHTML = emptyTemplate.innerHTML;
+                // Create a new element from the template
+                const emptyContent = emptyTemplate.content.cloneNode(true);
+                const emptyMessage = emptyContent.querySelector('#emptyMessage');
                 
-                let message = 'You haven\'t joined any tournaments yet.';
-                if (this.searchQuery) {
-                    message = `No tournaments found for "${this.searchQuery}".`;
-                } else if (this.statusFilter !== 'all') {
-                    message = `No ${this.statusFilter} tournaments found.`;
+                if (emptyMessage) {
+                    let message = 'You haven\'t joined any tournaments yet.';
+                    if (this.searchQuery) {
+                        message = `No tournaments found for "${this.searchQuery}".`;
+                    } else if (this.statusFilter !== 'all') {
+                        message = `No ${this.statusFilter} tournaments found.`;
+                    }
+                    emptyMessage.textContent = message;
                 }
                 
-                const emptyMsgEl = container.querySelector('#emptyMessage');
-                if (emptyMsgEl) {
-                    emptyMsgEl.textContent = message;
-                }
+                // Replace the content
+                container.innerHTML = '';
+                container.appendChild(emptyContent);
                 
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('tournamentsContent').style.display = 'none';
             }
 
             showError(message) {
-                const container = document.getElementById('tournamentsContainer');
+                const container = document.querySelector('.tournaments-container');
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon" style="background: rgba(255, 59, 59, 0.1); border-color: var(--danger); color: var(--danger);">

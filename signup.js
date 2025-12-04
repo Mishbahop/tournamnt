@@ -14,21 +14,12 @@ const firebaseConfig = {
 };
 
 // 🚀 Initialize Firebase
-try {
-  firebase.initializeApp(firebaseConfig);
-  console.log('🎯 Firebase initialized successfully');
-} catch (error) {
-  console.error('❌ Firebase initialization failed:', error);
-}
-
-const auth = firebase.auth();
-const db = firebase.firestore();
+let auth, db;
 
 // =============================================
 // 🎯 DOM ELEMENTS
 // =============================================
 
-// Move DOM queries into DOMContentLoaded to ensure elements exist and provide fallbacks
 let loadingScreen, mainContent, signupForm, verificationNotice;
 let emailInput, passwordInput, confirmPasswordInput;
 let passwordToggle, confirmPasswordToggle;
@@ -36,52 +27,6 @@ let signupBtn, resendVerificationBtn, continueToLoginBtn;
 let agreeTerms, newsletter, signupSpinner;
 let emailHint, passwordStrength, strengthFill, strengthText, confirmHint;
 let notificationToast, toastIcon, toastMessage, toastClose;
-
-document.addEventListener('DOMContentLoaded', () => {
-  // 🖼️ Layout Elements
-  loadingScreen = document.getElementById('loadingScreen');
-  mainContent = document.getElementById('mainContent');
-  signupForm = document.getElementById('signupForm');
-  verificationNotice = document.getElementById('verificationNotice');
-
-  // 📝 Form Inputs
-  emailInput = document.getElementById('signup-email');
-  passwordInput = document.getElementById('signup-password');
-  confirmPasswordInput = document.getElementById('confirm-password');
-
-  // 👁️ Password Toggles
-  passwordToggle = document.getElementById('passwordToggle');
-  confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
-
-  // 🔘 Buttons
-  signupBtn = document.getElementById('signupBtn');
-  resendVerificationBtn = document.getElementById('resendVerification');
-  continueToLoginBtn = document.getElementById('continueToLogin');
-
-  // 🎛️ Form Elements
-  agreeTerms = document.getElementById('agreeTerms');
-  newsletter = document.getElementById('newsletter');
-  signupSpinner = document.getElementById('signupSpinner');
-
-  // 💬 Hints & Feedback
-  emailHint = document.getElementById('emailHint');
-  passwordStrength = document.getElementById('passwordStrength');
-  strengthFill = document.getElementById('strengthFill') || (passwordStrength ? passwordStrength.querySelector('.strength-fill') : null);
-  strengthText = document.getElementById('strengthText');
-  confirmHint = document.getElementById('confirmHint');
-
-  // 🔔 Notifications
-  notificationToast = document.getElementById('notificationToast');
-  toastIcon = document.getElementById('toastIcon');
-  toastMessage = document.getElementById('toastMessage');
-  toastClose = document.getElementById('toastClose');
-
-  // Setup event listeners (existing function)
-  setupEventListeners();
-
-  // Initialize app (existing function)
-  initApp();
-});
 
 // =============================================
 // 🎮 STATE MANAGEMENT
@@ -134,7 +79,10 @@ function hideNotification() {
  */
 function showMainContent() {
   setTimeout(() => {
-    loadingScreen?.classList.add('hidden');
+    if (loadingScreen) {
+      loadingScreen.style.opacity = '0';
+      loadingScreen.style.pointerEvents = 'none';
+    }
     if (mainContent) {
       mainContent.style.opacity = '1';
       mainContent.style.transform = 'translateY(0)';
@@ -147,8 +95,8 @@ function showMainContent() {
  */
 function showVerificationNotice() {
   if (verificationNotice) {
-    verificationNotice.classList.add('show');
     signupForm.style.display = 'none';
+    verificationNotice.style.display = 'block';
     
     // Add entrance animation
     setTimeout(() => {
@@ -162,12 +110,20 @@ function showVerificationNotice() {
  * 🔄 Set button loading state
  */
 function setButtonLoading(button, isLoading) {
+  if (!button) return;
+  
   if (isLoading) {
     button.classList.add('loading');
     button.disabled = true;
+    if (signupSpinner) {
+      signupSpinner.style.display = 'block';
+    }
   } else {
     button.classList.remove('loading');
     button.disabled = false;
+    if (signupSpinner) {
+      signupSpinner.style.display = 'none';
+    }
   }
 }
 
@@ -187,9 +143,10 @@ function isValidEmail(email) {
  * 💪 Check password strength with detailed analysis
  */
 function checkPasswordStrength(password) {
-  let strength = 0;
-  const feedback = [];
+  if (!strengthFill || !strengthText) return { strength: 0, valid: false };
 
+  let strength = 0;
+  
   // Criteria checks
   if (password.length >= 8) strength++;
   if (password.match(/[a-z]/)) strength++;
@@ -203,7 +160,8 @@ function checkPasswordStrength(password) {
 
   if (password.length === 0) {
     strengthText.textContent = 'Password strength';
-    return { strength: 0, valid: false, feedback: [] };
+    state.passwordValid = false;
+    return { strength: 0, valid: false };
   }
 
   // Determine strength level
@@ -231,7 +189,9 @@ function checkPasswordStrength(password) {
  * 🔄 Check if passwords match
  */
 function checkPasswordMatch() {
-  const password = passwordInput.value;
+  if (!confirmPasswordInput || !confirmHint) return false;
+  
+  const password = passwordInput ? passwordInput.value : '';
   const confirmPassword = confirmPasswordInput.value;
 
   if (confirmPassword.length === 0) {
@@ -263,6 +223,8 @@ function checkPasswordMatch() {
  * 📋 Comprehensive form validation
  */
 function validateForm(email, password, confirmPassword) {
+  if (!emailInput || !passwordInput || !confirmPasswordInput) return false;
+  
   // Reset all styles
   emailInput.classList.remove('error', 'success');
   passwordInput.classList.remove('error', 'success');
@@ -303,9 +265,9 @@ function validateForm(email, password, confirmPassword) {
   }
 
   // Check terms agreement
-  if (!agreeTerms.checked) {
+  if (!agreeTerms || !agreeTerms.checked) {
     showNotification('📜 Please agree to the Terms of Service and Privacy Policy', 'error');
-    agreeTerms.focus();
+    if (agreeTerms) agreeTerms.focus();
     return false;
   }
 
@@ -319,19 +281,19 @@ function validateForm(email, password, confirmPassword) {
 /**
  * 👤 Create user profile in Firestore
  */
-async function createUserProfile(user, email) {
+async function createUserProfile(user, email, displayName = null) {
   try {
     const userData = {
       email: email,
-      displayName: email.split('@')[0],
+      displayName: displayName || email.split('@')[0],
       role: 'user',
       walletBalance: 0,
       tournamentsJoined: 0,
       tournamentsWon: 0,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      newsletterSubscribed: newsletter.checked,
-      emailVerified: false,
+      newsletterSubscribed: newsletter ? newsletter.checked : false,
+      emailVerified: user.emailVerified,
       lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
@@ -362,19 +324,6 @@ async function sendEmailVerification(user) {
     return true;
   } catch (error) {
     console.error('❌ Email verification error:', error);
-
-    // Fallback: Try without custom redirect
-    if (error.code === 'auth/unauthorized-continue-uri') {
-      try {
-        console.log('🔄 Trying fallback without custom redirect...');
-        await user.sendEmailVerification();
-        console.log('✅ Fallback email sent successfully');
-        return true;
-      } catch (fallbackError) {
-        throw new Error('Please add "mishbahop.github.io" to authorized domains in Firebase Console');
-      }
-    }
-
     throw new Error(`Failed to send verification email: ${error.message}`);
   }
 }
@@ -409,6 +358,32 @@ async function resendVerificationEmail() {
   }
 }
 
+/**
+ * 🎮 Handle Google Signup
+ */
+async function handleGoogleSignup() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  try {
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+
+    // Create user profile if new user
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if (!userDoc.exists) {
+      await createUserProfile(user, user.email, user.displayName);
+    }
+
+    showNotification('✅ Google sign-in successful!', 'success');
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 1500);
+  } catch (error) {
+    console.error('❌ Google sign-in error:', error);
+    showNotification(`Google sign-in failed: ${error.message}`, 'error');
+  }
+}
+
 // =============================================
 // 🎛️ UI INTERACTION FUNCTIONS
 // =============================================
@@ -417,11 +392,15 @@ async function resendVerificationEmail() {
  * 👁️ Toggle password visibility
  */
 function togglePasswordVisibility(inputElement, toggleButton) {
+  if (!inputElement || !toggleButton) return;
+  
   const type = inputElement.getAttribute('type') === 'password' ? 'text' : 'password';
   inputElement.setAttribute('type', type);
   
   const toggleIcon = toggleButton.querySelector('.toggle-icon');
-  toggleIcon.textContent = type === 'password' ? '👁️' : '🔒';
+  if (toggleIcon) {
+    toggleIcon.textContent = type === 'password' ? '👁️' : '🔒';
+  }
   
   // Add smooth animation
   toggleButton.style.transform = 'scale(0.95)';
@@ -434,6 +413,8 @@ function togglePasswordVisibility(inputElement, toggleButton) {
  * 📧 Handle email input with real-time validation
  */
 function handleEmailInput() {
+  if (!emailInput || !emailHint) return;
+  
   const email = emailInput.value.trim();
   
   if (email && !isValidEmail(email)) {
@@ -464,9 +445,9 @@ async function handleSignup(event) {
   
   if (state.isSubmitting) return;
   
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
-  const confirmPassword = confirmPasswordInput.value.trim();
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passwordInput ? passwordInput.value.trim() : '';
+  const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value.trim() : '';
 
   // Validate form
   if (!validateForm(email, password, confirmPassword)) {
@@ -557,19 +538,31 @@ function initApp() {
  * 🎯 Setup all event listeners
  */
 function setupEventListeners() {
-  // Form submission
+  console.log('🔌 Setting up event listeners...');
+  
+  // Form submission - FIXED: Properly attach the handler
   if (signupForm) {
     signupForm.addEventListener('submit', handleSignup);
+    console.log('✅ Form submit listener attached');
+  }
+
+  // Also attach click event to signup button as backup
+  if (signupBtn) {
+    signupBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSignup(e);
+    });
+    console.log('✅ Button click listener attached');
   }
 
   // Password visibility toggles
-  if (passwordToggle) {
+  if (passwordToggle && passwordInput) {
     passwordToggle.addEventListener('click', () => {
       togglePasswordVisibility(passwordInput, passwordToggle);
     });
   }
 
-  if (confirmPasswordToggle) {
+  if (confirmPasswordToggle && confirmPasswordInput) {
     confirmPasswordToggle.addEventListener('click', () => {
       togglePasswordVisibility(confirmPasswordInput, confirmPasswordToggle);
     });
@@ -608,37 +601,80 @@ function setupEventListeners() {
     });
   }
 
+  // Google Signup
+  const googleSignupBtn = document.getElementById('googleSignupBtn');
+  if (googleSignupBtn) {
+    googleSignupBtn.addEventListener('click', handleGoogleSignup);
+  }
+
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       hideNotification();
     }
   });
-
-  // Enter key to submit form
-  if (confirmPasswordInput) {
-    confirmPasswordInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !state.isSubmitting) {
-        handleSignup(e);
-      }
-    });
-  }
 }
 
 // =============================================
 // 🎉 APPLICATION START
 // =============================================
 
-/**
- * 🏃‍♂️ Start the application when DOM is ready
- */
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🎊 DOM fully loaded - Starting TourneyHub');
   
+  try {
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    console.log('✅ Firebase initialized successfully');
+  } catch (error) {
+    console.error('❌ Firebase initialization failed:', error);
+    showNotification('Failed to initialize app. Please refresh the page.', 'error');
+    return;
+  }
+  
+  // 🖼️ Layout Elements
+  loadingScreen = document.getElementById('loadingScreen');
+  mainContent = document.getElementById('mainContent');
+  signupForm = document.getElementById('signupForm');
+  verificationNotice = document.getElementById('verificationNotice');
+
+  // 📝 Form Inputs
+  emailInput = document.getElementById('signup-email');
+  passwordInput = document.getElementById('signup-password');
+  confirmPasswordInput = document.getElementById('confirm-password');
+
+  // 👁️ Password Toggles
+  passwordToggle = document.getElementById('passwordToggle');
+  confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+
+  // 🔘 Buttons
+  signupBtn = document.getElementById('signupBtn');
+  resendVerificationBtn = document.getElementById('resendVerification');
+  continueToLoginBtn = document.getElementById('continueToLogin');
+
+  // 🎛️ Form Elements
+  agreeTerms = document.getElementById('agreeTerms');
+  newsletter = document.getElementById('newsletter');
+  signupSpinner = document.getElementById('signupSpinner');
+
+  // 💬 Hints & Feedback
+  emailHint = document.getElementById('emailHint');
+  passwordStrength = document.getElementById('passwordStrength');
+  strengthFill = document.getElementById('strengthFill');
+  strengthText = document.getElementById('strengthText');
+  confirmHint = document.getElementById('confirmHint');
+
+  // 🔔 Notifications
+  notificationToast = document.getElementById('notificationToast');
+  toastIcon = document.getElementById('toastIcon');
+  toastMessage = document.getElementById('toastMessage');
+  toastClose = document.getElementById('toastClose');
+
   setupEventListeners();
   initApp();
   
-  // Add some fun console messages
   console.log('🌈 Welcome to TourneyHub! Ready for some tournaments? 🏆');
 });
 
@@ -646,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function() {
  * 🕐 Fallback: Force show content if loading takes too long
  */
 setTimeout(() => {
-  if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+  if (loadingScreen && !loadingScreen.classList.contains('hidden') && loadingScreen.style.opacity !== '0') {
     console.log('⏰ Loading timeout - Showing content');
     showMainContent();
   }

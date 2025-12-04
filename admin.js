@@ -392,7 +392,7 @@ class AdminDashboard {
               </div>
             </div>
             <div class="stat-content">
-              <div class="stat-value">₹${this.formatCurrency(this.stats.totalRevenue)}</div>
+              <div class="stat-value">💎${this.formatCurrency(this.stats.totalRevenue)}</div>
               <div class="stat-label">Net Revenue</div>
             </div>
           </div>
@@ -542,7 +542,7 @@ class AdminDashboard {
                     ${this.escapeHtml(tournament.status || 'draft')}
                   </span>
                 </td>
-                <td>₹${this.formatCurrency(tournament.prizePool || 0)}</td>
+                <td>💎${this.formatCurrency(tournament.prizePool || 0)}</td>
                 <td>${tournament.currentPlayers || 0}/${tournament.maxPlayers || '∞'}</td>
                 <td>${this.formatDate(tournament.createdAt)}</td>
                 <td>
@@ -632,7 +632,7 @@ class AdminDashboard {
                     ${this.escapeHtml(user.role || 'user')}
                   </span>
                 </td>
-                <td>₹${this.formatCurrency(user.balance || 0)}</td>
+                <td>💎${this.formatCurrency(user.balance || 0)}</td>
                 <td>${this.formatDate(user.createdAt)}</td>
                 <td>
                   <span class="status-badge success">
@@ -756,8 +756,8 @@ class AdminDashboard {
                     ${this.escapeHtml(tournament.status || 'draft')}
                   </span>
                 </td>
-                <td>₹${this.formatCurrency(tournament.entryFee || 0)}</td>
-                <td>₹${this.formatCurrency(tournament.prizePool || 0)}</td>
+                <td>💎${this.formatCurrency(tournament.entryFee || 0)}</td>
+                <td>💎${this.formatCurrency(tournament.prizePool || 0)}</td>
                 <td>${tournament.currentPlayers || 0}/${tournament.maxPlayers || '∞'}</td>
                 <td>${this.formatDate(tournament.startDate)}</td>
                 <td>
@@ -856,11 +856,11 @@ class AdminDashboard {
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="tournamentEntryFee">Entry Fee (₹)</label>
+                  <label for="tournamentEntryFee">Entry Fee (💎)</label>
                   <input type="number" id="tournamentEntryFee" value="${tournament?.entryFee || 0}" min="0" required>
                 </div>
                 <div class="form-group">
-                  <label for="tournamentPrizePool">Prize Pool (₹)</label>
+                  <label for="tournamentPrizePool">Prize Pool (💎)</label>
                   <input type="number" id="tournamentPrizePool" value="${tournament?.prizePool || 0}" min="1" required>
                 </div>
               </div>
@@ -1119,7 +1119,7 @@ class AdminDashboard {
                     ${this.escapeHtml(user.role || 'user')}
                   </span>
                 </td>
-                <td>₹${this.formatCurrency(user.balance || 0)}</td>
+                <td>💎${this.formatCurrency(user.balance || 0)}</td>
                 <td>${this.formatDate(user.createdAt)}</td>
                 <td>
                   <div class="action-buttons">
@@ -1254,7 +1254,7 @@ class AdminDashboard {
             ${this.deposits.map(deposit => `
               <tr>
                 <td>${this.escapeHtml(deposit.userId || 'N/A')}</td>
-                <td>₹${this.formatCurrency(deposit.amount || 0)}</td>
+                <td>💎${this.formatCurrency(deposit.amount || 0)}</td>
                 <td>
                   <span class="status-badge ${this.getStatusClass(deposit.status)}">
                     ${this.escapeHtml(deposit.status || 'pending')}
@@ -1378,7 +1378,7 @@ class AdminDashboard {
             ${this.withdrawals.map(withdrawal => `
               <tr>
                 <td>${this.escapeHtml(withdrawal.userId || 'N/A')}</td>
-                <td>₹${this.formatCurrency(withdrawal.amount || 0)}</td>
+                <td>💎${this.formatCurrency(withdrawal.amount || 0)}</td>
                 <td>${this.escapeHtml(withdrawal.destination || 'N/A')}</td>
                 <td>
                   <span class="status-badge ${this.getStatusClass(withdrawal.status)}">

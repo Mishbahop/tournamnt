@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     html += `<div class='tournament-card fade-in' style="animation-delay:${idx * 0.12}s">
                         <h3>${t.name || 'Unnamed Tournament'}</h3>
                         <div>Game: ${t.game || 'N/A'}</div>
-                        <div>Prize: ₹${t.prizePool || 0}</div>
+                        <div>Prize: 💎${t.prizePool || 0}</div>
                         <div>Status: ${t.status || 'upcoming'}</div>
                         <div>Start: ${t.startDate ? new Date(t.startDate.seconds*1000).toLocaleString() : 'TBD'}</div>
                     </div>`;

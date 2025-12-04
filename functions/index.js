@@ -1,109 +1,32 @@
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+/**
+ * Import function triggers from their respective submodules:
+ *
+ * const {onCall} = require("firebase-functions/v2/https");
+ * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
+ *
+ * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ */
 
-admin.initializeApp();
-const db = admin.firestore();
+const {setGlobalOptions} = require("firebase-functions");
+const {onRequest} = require("firebase-functions/https");
+const logger = require("firebase-functions/logger");
 
-// Helper: check admin role (from users collection). Prefer custom claims if available.
-async function isCallerAdmin(uid) {
-  try {
-    // Check custom claims first
-    const user = await admin.auth().getUser(uid);
-    if (user.customClaims && user.customClaims.admin === true) return true;
-  } catch (e) {
-    console.warn('Unable to read custom claims for', uid, e.message);
-  }
+// For cost control, you can set the maximum number of containers that can be
+// running at the same time. This helps mitigate the impact of unexpected
+// traffic spikes by instead downgrading performance. This limit is a
+// per-function limit. You can override the limit for each function using the
+// `maxInstances` option in the function's options, e.g.
+// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
+// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
+// functions should each use functions.runWith({ maxInstances: 10 }) instead.
+// In the v1 API, each function can only serve one request per container, so
+// this will be the maximum concurrent request count.
+setGlobalOptions({ maxInstances: 10 });
 
-  try {
-    const userDoc = await db.collection('users').doc(uid).get();
-    if (userDoc.exists) {
-      const role = userDoc.data().role;
-      return role === 'admin';
-    }
-  } catch (e) {
-    console.warn('Unable to read users doc for', uid, e.message);
-  }
+// Create and deploy your first functions
+// https://firebase.google.com/docs/functions/get-started
 
-  return false;
-}
-
-exports.approveDeposit = functions.https.onCall(async (data, context) => {
-  // data: { depositId }
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Request has no auth context');
-  }
-  const callerUid = context.auth.uid;
-  const depositId = data && data.depositId;
-  if (!depositId) {
-    throw new functions.https.HttpsError('invalid-argument', 'Missing depositId');
-  }
-
-  // Verify caller is admin
-  const allowed = await isCallerAdmin(callerUid);
-  if (!allowed) {
-    throw new functions.https.HttpsError('permission-denied', 'Must be an admin to approve deposits');
-  }
-
-  // Approve deposit in a transaction and update wallet
-  const depositRef = db.collection('deposits').doc(depositId);
-
-  return db.runTransaction(async (tx) => {
-    const depositSnap = await tx.get(depositRef);
-    if (!depositSnap.exists) {
-      throw new functions.https.HttpsError('not-found', 'Deposit not found');
-    }
-
-    const deposit = depositSnap.data();
-    if (deposit.status === 'approved') {
-      return { ok: true, message: 'Deposit already approved' };
-    }
-
-    if (deposit.status !== 'pending') {
-      throw new functions.https.HttpsError('failed-precondition', 'Deposit not in pending state');
-    }
-
-    const userId = deposit.userId;
-    const amount = Number(deposit.amount || 0);
-    if (amount <= 0) {
-      throw new functions.https.HttpsError('invalid-argument', 'Deposit amount invalid');
-    }
-
-    // Update deposit status
-    tx.update(depositRef, {
-      status: 'approved',
-      approvedBy: callerUid,
-      approvedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    // Update wallet summary (create if missing) and add transaction
-    const walletRef = db.collection('wallets').doc(userId);
-    tx.set(walletRef, {
-      balance: admin.firestore.FieldValue.increment(amount),
-      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-
-    const txRef = walletRef.collection('transactions').doc();
-    tx.set(txRef, {
-      userId,
-      amount,
-      type: 'deposit',
-      status: 'approved',
-      depositId,
-      description: 'Deposit approved by admin',
-      date: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    // Write admin log
-    const logRef = db.collection('adminLogs').doc();
-    tx.set(logRef, {
-      action: 'approve_deposit',
-      adminUid: callerUid,
-      depositId,
-      userId,
-      amount,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    return { ok: true };
-  });
-});
+// exports.helloWorld = onRequest((request, response) => {
+//   logger.info("Hello logs!", {structuredData: true});
+//   response.send("Hello from Firebase!");
+// });

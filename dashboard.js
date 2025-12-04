@@ -134,12 +134,12 @@ async function loadWalletData() {
       await walletRef.set({ balance: finalBalance, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     }
 
-    if (walletBalance) walletBalance.textContent = `₹${Math.round(finalBalance).toLocaleString()}`;
-    if (detailedBalance) detailedBalance.textContent = `₹${finalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+    if (walletBalance) walletBalance.textContent = `💎${Math.round(finalBalance).toLocaleString()}`;
+    if (detailedBalance) detailedBalance.textContent = `💎${finalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
   } catch (error) {
     console.error('Error loading wallet data:', error);
-    if (walletBalance) walletBalance.textContent = '₹?';
+    if (walletBalance) walletBalance.textContent = '💎?';
     showNotification('Error loading wallet information', 'error');
   }
 }
@@ -178,7 +178,7 @@ function displayTransactions(transactions) {
                 <div class="transaction-date">${t.date.toLocaleDateString()}</div>
             </div>
             <div class="transaction-amount ${t.type === 'deposit' ? 'amount-positive' : 'amount-negative'}">
-                ${t.type === 'deposit' ? '+' : '-'}₹${t.amount}
+                ${t.type === 'deposit' ? '+' : '-'}💎${t.amount}
             </div>
         </div>`).join('');
     transactionsList.innerHTML = html;
@@ -258,11 +258,11 @@ function displayTournaments(tournaments) {
       <div class="tournament-details">
         <div class="tournament-detail">
           <div class="detail-label">Prize Pool</div>
-          <div class="detail-value prize-value">₹${t.prizePool?.toLocaleString() || 0}</div>
+          <div class="detail-value prize-value">💎${t.prizePool?.toLocaleString() || 0}</div>
         </div>
         <div class="tournament-detail">
           <div class="detail-label">Entry Fee</div>
-          <div class="detail-value">₹${t.entryFee?.toLocaleString() || 0}</div>
+          <div class="detail-value">💎${t.entryFee?.toLocaleString() || 0}</div>
         </div>
         <div class="tournament-detail">
           <div class="detail-label">Starts</div>

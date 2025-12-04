@@ -277,8 +277,8 @@ function createTournamentCard(tournament) {
     const statusClass = `status-${status}`;
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
     const gameIcon = getGameIcon(tournament.game);
-    const prizeAmount = tournament.prizePool ? `₹${numberWithCommas(tournament.prizePool)}` : '₹0';
-    const entryFee = tournament.entryFee ? `₹${numberWithCommas(tournament.entryFee)}` : 'Free';
+    const prizeAmount = tournament.prizePool ? `💎${numberWithCommas(tournament.prizePool)}` : '💎0';
+    const entryFee = tournament.entryFee ? `💎${numberWithCommas(tournament.entryFee)}` : 'Free';
     const currentPlayers = tournament.currentPlayers || 0;
     const maxPlayers = tournament.maxPlayers || 0;
     const progressPercent = maxPlayers ? Math.min(100, (currentPlayers / maxPlayers) * 100) : 0;
@@ -403,7 +403,7 @@ async function joinTournament(tournamentId) {
             if (entryFee > 0) {
                 const wDoc = await tx.get(walletRef);
                 const balance = (wDoc.exists && wDoc.data().balance) || 0;
-                if (balance < entryFee) throw new Error(`Insufficient balance (requires ₹${entryFee})`);
+                if (balance < entryFee) throw new Error(`Insufficient balance (requires 💎${entryFee})`);
                 tx.update(walletRef, {
                     balance: firebase.firestore.FieldValue.increment(-entryFee),
                     transactions: firebase.firestore.FieldValue.arrayUnion({

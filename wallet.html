@@ -28,7 +28,7 @@
     <div class="balance-card">
       <div class="balance-info">
         <div class="balance-label">Available Balance</div>
-        <div class="balance-amount" id="balanceAmount">₹0.00</div>
+        <div class="balance-amount" id="balanceAmount">💎0.00</div>
         <div class="balance-subtitle" id="balanceSubtitle">Total funds available</div>
       </div>
       <div class="balance-graphic">
@@ -93,7 +93,7 @@
       <span class="nav-icon">🎮</span>
       <span class="nav-text">Games</span>
     </a>
-    <a href="index.html" class="nav-item active">
+    <a href="index.html" class="nav-item">
       <span class="nav-icon">🏠</span>
       <span class="nav-text">Home</span>
     </a>
@@ -106,7 +106,7 @@
       <span class="nav-text">Organizer</span>
       <!-- Organizer nav is only shown for admins via JS -->
     </a>
-    <a href="wallet.html" class="nav-item">
+    <a href="wallet.html" class="nav-item  active">
       <span class="nav-icon">💰</span>
       <span class="nav-text">Wallet</span>
     </a>
@@ -217,10 +217,10 @@
             if (!tournamentDetails) return;
             document.getElementById('tourneyTitle').textContent = tournamentDetails.title || 'Untitled Tournament';
             document.getElementById('tourneyGame').textContent = tournamentDetails.game || 'General Game';
-            document.getElementById('entryFeeDisplay').textContent = `₹${formatCurrency(tournamentDetails.entryFee || 0)}`;
-            document.getElementById('prizePoolDisplay').textContent = `₹${formatCurrency(tournamentDetails.prizePool || 0)}`;
+            document.getElementById('entryFeeDisplay').textContent = `💎${formatCurrency(tournamentDetails.entryFee || 0)}`;
+            document.getElementById('prizePoolDisplay').textContent = `💎${formatCurrency(tournamentDetails.prizePool || 0)}`;
             document.getElementById('startDateDisplay').textContent = formatDate(tournamentDetails.startDate);
-            document.getElementById('currentBalanceDisplay').textContent = `₹${formatCurrency(currentUserBalance || 0)}`;
+            document.getElementById('currentBalanceDisplay').textContent = `💎${formatCurrency(currentUserBalance || 0)}`;
             checkBalanceAndToggleRegistration();
         }
 
@@ -233,13 +233,13 @@
                 if (balance < entryFee) {
                     registerBtn.disabled = true;
                     registerBtn.textContent = `Insufficient Balance`;
-                    showRegStatus(`Your balance is too low. Required: ₹${formatCurrency(entryFee)}.`, 'error');
+                    showRegStatus(`Your balance is too low. Required: 💎${formatCurrency(entryFee)}.`, 'error');
                 } else if (tournamentDetails.status !== 'registering' && tournamentDetails.status !== 'upcoming') {
                     registerBtn.disabled = true;
                     registerBtn.textContent = `Registration Closed (${tournamentDetails.status})`;
                 } else {
                     registerBtn.disabled = false;
-                    registerBtn.textContent = `Register and Pay ₹${formatCurrency(entryFee)}`;
+                    registerBtn.textContent = `Register and Pay 💎${formatCurrency(entryFee)}`;
                 }
             }
         }

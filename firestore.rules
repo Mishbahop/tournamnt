@@ -62,10 +62,16 @@ service cloud.firestore {
       // Creation allowed by authenticated user for their own profile (signup flows)
       allow create: if isSignedIn() && authUid() == userId
                     && request.resource.data.email == request.auth.token.email
-                    && request.resource.data.createdAt == request.time
                     && request.resource.data.role == 'user'
-                    && request.resource.data.balance == 0
-                    && request.resource.data.disabled == false;
+                    && request.resource.data.walletBalance == 0
+                    && request.resource.data.tournamentsJoined == 0
+                    && request.resource.data.tournamentsWon == 0
+                    && request.resource.data.newsletterSubscribed is bool
+                    && request.resource.data.emailVerified == false
+                    && request.resource.data.createdAt == request.time
+                    && request.resource.data.updatedAt == request.time
+                    && request.resource.data.lastLoginAt == request.time
+                    && request.resource.data.displayName is string;
 
       // Read: owner, admin, or moderator (moderators can view but not sensitive fields)
       allow get: if isSignedIn() && (
@@ -149,8 +155,8 @@ service cloud.firestore {
       );
       allow list: if isAdmin() || isModerator();
 
-      // Prevent clients from directly creating/updating wallet summaries; only admin/server
-      allow create, update, delete: if isAdmin();
+      allow create: if (isSignedIn() && authUid() == walletUserId && request.resource.data.balance == 0) || isAdmin();
+      allow update, delete: if isAdmin();
 
       // Transactions subcollection
       match /transactions/{txId} {

@@ -155,8 +155,8 @@ function createTournamentCard(id, tournament) {
                 </div>
             </div>
             <div class="tournament-action">
-                <div class="prize-pool">₹${tournament.prizePool}</div>
-                <div class="entry-fee">Entry: ₹${tournament.entryFee}</div>
+                <div class="prize-pool">💎${tournament.prizePool}</div>
+                <div class="entry-fee">Entry: 💎${tournament.entryFee}</div>
                 <button class="join-btn">View Details</button>
             </div>
         </div>

@@ -15,8 +15,8 @@ const gameCategories = {
                 name: "Classic Solo",
                 icon: "👤",
                 description: "Solo Battle Royale matches on Erangel, Miramar, or Sanhok",
-                prizeRange: "₹1,000 - ₹10,000",
-                entryFee: "₹50 - ₹500",
+                prizeRange: "💎1,000 - 💎10,000",
+                entryFee: "💎50 - 💎500",
                 minLevel: 30
             },
             {
@@ -24,8 +24,8 @@ const gameCategories = {
                 name: "Classic Duo",
                 icon: "👥",
                 description: "Team up with a partner in intense 2-player matches",
-                prizeRange: "₹2,000 - ₹20,000",
-                entryFee: "₹100 - ₹1,000",
+                prizeRange: "💎2,000 - 💎20,000",
+                entryFee: "💎100 - 💎1,000",
                 minLevel: 25
             },
             {
@@ -33,8 +33,8 @@ const gameCategories = {
                 name: "Classic Squad",
                 icon: "👥👥",
                 description: "4-player squad battles for ultimate team supremacy",
-                prizeRange: "₹4,000 - ₹40,000",
-                entryFee: "₹200 - ₹2,000",
+                prizeRange: "💎4,000 - 💎40,000",
+                entryFee: "💎200 - 💎2,000",
                 minLevel: 20
             },
             {
@@ -42,8 +42,8 @@ const gameCategories = {
                 name: "TDM",
                 icon: "⚔️",
                 description: "Fast-paced 4v4 Team Deathmatch tournaments",
-                prizeRange: "₹1,000 - ₹5,000",
-                entryFee: "₹50 - ₹250",
+                prizeRange: "💎1,000 - 💎5,000",
+                entryFee: "💎50 - 💎250",
                 minLevel: 15
             }
         ]
@@ -58,8 +58,8 @@ const gameCategories = {
                 name: "BR Solo",
                 icon: "👤",
                 description: "50-player Battle Royale solo matches",
-                prizeRange: "₹500 - ₹5,000",
-                entryFee: "₹25 - ₹250",
+                prizeRange: "💎500 - 💎5,000",
+                entryFee: "💎25 - 💎250",
                 minLevel: 20
             },
             {
@@ -67,8 +67,8 @@ const gameCategories = {
                 name: "BR Duo",
                 icon: "👥",
                 description: "25 teams of 2 battle for victory",
-                prizeRange: "₹1,000 - ₹10,000",
-                entryFee: "₹50 - ₹500",
+                prizeRange: "💎1,000 - 💎10,000",
+                entryFee: "💎50 - 💎500",
                 minLevel: 15
             },
             {
@@ -76,8 +76,8 @@ const gameCategories = {
                 name: "Clash Squad",
                 icon: "⚔️",
                 description: "4v4 round-based elimination matches",
-                prizeRange: "₹800 - ₹8,000",
-                entryFee: "₹40 - ₹400",
+                prizeRange: "💎800 - 💎8,000",
+                entryFee: "💎40 - 💎400",
                 minLevel: 10
             }
         ]
@@ -92,8 +92,8 @@ const gameCategories = {
                 name: "Multiplayer",
                 icon: "🎯",
                 description: "5v5 competitive multiplayer tournaments",
-                prizeRange: "₹1,000 - ₹15,000",
-                entryFee: "₹50 - ₹750",
+                prizeRange: "💎1,000 - 💎15,000",
+                entryFee: "💎50 - 💎750",
                 minLevel: 20
             },
             {
@@ -101,8 +101,8 @@ const gameCategories = {
                 name: "Battle Royale",
                 icon: "🗺️",
                 description: "100-player Battle Royale matches",
-                prizeRange: "₹2,000 - ₹25,000",
-                entryFee: "₹100 - ₹1,250",
+                prizeRange: "💎2,000 - 💎25,000",
+                entryFee: "💎100 - 💎1,250",
                 minLevel: 15
             }
         ]
@@ -117,8 +117,8 @@ const gameCategories = {
                 name: "1v1 Standard",
                 icon: "🎱",
                 description: "Standard rules 1v1 matches",
-                prizeRange: "₹100 - ₹1,000",
-                entryFee: "₹10 - ₹100",
+                prizeRange: "💎100 - 💎1,000",
+                entryFee: "💎10 - 💎100",
                 minLevel: 10
             },
             {
@@ -126,8 +126,8 @@ const gameCategories = {
                 name: "1v1 Quick Fire",
                 icon: "⚡",
                 description: "Quick fire 1v1 matches with time limits",
-                prizeRange: "₹200 - ₹2,000",
-                entryFee: "₹20 - ₹200",
+                prizeRange: "💎200 - 💎2,000",
+                entryFee: "💎20 - 💎200",
                 minLevel: 15
             }
         ]

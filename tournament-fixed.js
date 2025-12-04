@@ -117,24 +117,24 @@ const gameCategories = {
                 name: "Solo",
                 icon: "👤",
                 description: "Battle alone against 99 other players",
-                prizeRange: "₹1,000 - ₹10,000",
-                entryFee: "₹50 - ₹500"
+                prizeRange: "💎1,000 - 💎10,000",
+                entryFee: "💎50 - 💎500"
             },
             {
                 id: "duo",
                 name: "Duo",
                 icon: "👥",
                 description: "Team up with a partner against 49 other teams",
-                prizeRange: "₹2,000 - ₹20,000",
-                entryFee: "₹100 - ₹1,000"
+                prizeRange: "💎2,000 - 💎20,000",
+                entryFee: "💎100 - 💎1,000"
             },
             {
                 id: "squad",
                 name: "Squad",
                 icon: "👥👥",
                 description: "Form a team of 4 against 24 other squads",
-                prizeRange: "₹4,000 - ₹40,000",
-                entryFee: "₹200 - ₹2,000"
+                prizeRange: "💎4,000 - 💎40,000",
+                entryFee: "💎200 - 💎2,000"
             }
         ]
     },
@@ -147,16 +147,16 @@ const gameCategories = {
                 name: "Solo",
                 icon: "👤",
                 description: "Battle alone in intense matches",
-                prizeRange: "₹500 - ₹5,000",
-                entryFee: "₹25 - ₹250"
+                prizeRange: "💎500 - 💎5,000",
+                entryFee: "💎25 - 💎250"
             },
             {
                 id: "duo",
                 name: "Duo",
                 icon: "👥",
                 description: "Team up with a friend",
-                prizeRange: "₹1,000 - ₹10,000",
-                entryFee: "₹50 - ₹500"
+                prizeRange: "💎1,000 - 💎10,000",
+                entryFee: "💎50 - 💎500"
             }
         ]
     },
@@ -169,16 +169,16 @@ const gameCategories = {
                 name: "Multiplayer",
                 icon: "🎯",
                 description: "5v5 team-based matches",
-                prizeRange: "₹1,000 - ₹15,000",
-                entryFee: "₹50 - ₹750"
+                prizeRange: "💎1,000 - 💎15,000",
+                entryFee: "💎50 - 💎750"
             },
             {
                 id: "br",
                 name: "Battle Royale",
                 icon: "🗺️",
                 description: "100 player battle royale",
-                prizeRange: "₹2,000 - ₹25,000",
-                entryFee: "₹100 - ₹1,250"
+                prizeRange: "💎2,000 - 💎25,000",
+                entryFee: "💎100 - 💎1,250"
             }
         ]
     },
@@ -191,16 +191,16 @@ const gameCategories = {
                 name: "1v1 Matches",
                 icon: "🎱",
                 description: "Head-to-head pool matches",
-                prizeRange: "₹100 - ₹1,000",
-                entryFee: "₹10 - ₹100"
+                prizeRange: "💎100 - 💎1,000",
+                entryFee: "💎10 - 💎100"
             },
             {
                 id: "tournament",
                 name: "Tournament",
                 icon: "🏆",
                 description: "8-player knockout tournament",
-                prizeRange: "₹500 - ₹5,000",
-                entryFee: "₹50 - ₹500"
+                prizeRange: "💎500 - 💎5,000",
+                entryFee: "💎50 - 💎500"
             }
         ]
     }

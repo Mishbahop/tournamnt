@@ -200,7 +200,7 @@ async function handleLogin(event) {
     
     // Redirect after a short delay
     setTimeout(() => {
-      const redirectUrl = getRedirectUrl() || 'dashboard.html';
+      const redirectUrl = getRedirectUrl() || 'profile.html';
       window.location.href = redirectUrl;
     }, 1500);
     

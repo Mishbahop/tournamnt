@@ -1401,28 +1401,63 @@
             color: var(--warning);
         }
 
-        /* ===== RESPONSIVE DESIGN ===== */
-        @media (max-width: 1200px) {
-            .hero-title {
-                font-size: 3rem;
-            }
-            
-            .games-grid {
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            }
-            
-            .tournaments-grid {
-                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            }
-        }
-
+        /* ===== MOBILE OPTIMIZATIONS ===== */
         @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
+            /* Increase bottom padding to accommodate bottom nav */
+            .container {
+                padding-bottom: 100px;
             }
             
-            .section-title {
-                font-size: 1.5rem;
+            /* Adjust hero title size for better mobile readability */
+            .hero-title {
+                font-size: 2.2rem;
+                line-height: 1.2;
+            }
+            
+            /* Make game cards slightly larger for better touch targets */
+            .game-card {
+                padding: 20px 15px;
+                min-height: 160px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            /* Increase tournament card padding for better touch areas */
+            .tournament-card {
+                margin-bottom: 15px;
+            }
+            
+            /* Make buttons easier to tap */
+            .view-details-btn, .page-btn, .clear-filters {
+                min-height: 44px; /* Apple's recommended minimum touch target */
+                min-width: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* Adjust filter selects for easier tapping */
+            .filter-select {
+                padding: 16px 20px;
+                font-size: 1rem;
+            }
+            
+            /* Ensure search input is easy to tap */
+            .search-input {
+                padding: 20px 25px;
+                font-size: 1rem;
+            }
+            
+            /* Adjust tournament stats for better mobile layout */
+            .tournament-stats {
+                gap: 15px;
+            }
+            
+            /* Footer adjustments */
+            .footer {
+                padding-bottom: 100px;
+                margin-top: 40px;
             }
             
             .user-menu {
@@ -1448,7 +1483,45 @@
             }
         }
 
+        /* Extra small devices */
         @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+            }
+            
+            /* Make tournament grid single column */
+            .tournaments-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            /* Adjust game grid for smaller screens */
+            .games-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            /* Adjust filter section padding */
+            .filters-section {
+                padding: 20px;
+            }
+            
+            /* Make tournament footer stack vertically */
+            .tournament-footer {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .view-details-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
             .hero-title {
                 font-size: 2rem;
             }
@@ -1469,6 +1542,20 @@
             .footer-links {
                 gap: 20px;
                 flex-direction: column;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .games-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+            
+            .tournaments-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             }
         }
 
@@ -1604,6 +1691,7 @@
                     </select>
                 </div>
                 
+�
                 <div class="filter-group">
                     <label class="filter-label">
                         <i class="fas fa-award"></i>

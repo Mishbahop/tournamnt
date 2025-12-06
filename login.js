@@ -679,141 +679,163 @@ const TourneyHubAuth = (() => {
                     const height = 600;
                     const left = (window.screen.width - width) / 2;
                     const top = (window.screen.height - height) / 2;
-
+                    
+                    // Create a unique login ID for session tracking
+                    const loginId = 'tourneyhub_google_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    
+                    // Store login state in localStorage (for cross-tab/window communication)
+                    localStorage.setItem('tourneyhub_google_login_id', loginId);
+                    localStorage.setItem('tourneyhub_google_login_state', 'pending');
+                    localStorage.setItem('tourneyhub_google_login_timestamp', Date.now().toString());
+                    
+                    // Open a new window with the redirect URL
+                    const redirectUrl = window.location.origin + window.location.pathname + '?google_new_window=true&login_id=' + loginId;
+                    
                     const authWindow = window.open(
-                        '',
+                        redirectUrl,
                         'TourneyHub Google Login',
                         `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,resizable=no,scrollbars=no,status=no`
                     );
 
                     if (!authWindow) {
-                        throw new AuthError('Popup window blocked. Please allow popups.', 'POPUP_BLOCKED');
+                        localStorage.removeItem('tourneyhub_google_login_id');
+                        localStorage.removeItem('tourneyhub_google_login_state');
+                        localStorage.removeItem('tourneyhub_google_login_timestamp');
+                        throw new AuthError('Popup window blocked. Please allow popups for this site.', 'POPUP_BLOCKED');
                     }
 
-                    // Create a simple HTML page for auth
-                    const authPage = `
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <title>Google Login - TourneyHub</title>
-                            <style>
-                                body {
-                                    font-family: system-ui, -apple-system, sans-serif;
-                                    background: linear-gradient(135deg, #0f0c29, #302b63);
-                                    color: white;
-                                    display: flex;
-                                    justify-content: center;
-                                    align-items: center;
-                                    height: 100vh;
-                                    margin: 0;
-                                }
-                                .container {
-                                    text-align: center;
-                                    padding: 40px;
-                                    max-width: 400px;
-                                }
-                                .logo {
-                                    font-size: 2.5rem;
-                                    margin-bottom: 20px;
-                                }
-                                .loader {
-                                    border: 3px solid rgba(255,255,255,0.1);
-                                    border-top: 3px solid #6bcf7f;
-                                    border-radius: 50%;
-                                    width: 40px;
-                                    height: 40px;
-                                    animation: spin 1s linear infinite;
-                                    margin: 20px auto;
-                                }
-                                @keyframes spin {
-                                    0% { transform: rotate(0deg); }
-                                    100% { transform: rotate(360deg); }
-                                }
-                                .status {
-                                    margin-top: 20px;
-                                    color: #a0a0c0;
-                                    font-size: 0.9rem;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="container">
-                                <div class="logo">🏆</div>
-                                <h2>Google Login</h2>
-                                <p>Opening Google authentication...</p>
-                                <div class="loader"></div>
-                                <div class="status" id="status">Initializing...</div>
-                            </div>
-                            <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-                            <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-                            <script>
-                                const firebaseConfig = ${JSON.stringify(_firebaseConfig)};
-                                if (!firebase.apps.length) {
-                                    firebase.initializeApp(firebaseConfig);
-                                }
-                                
-                                const provider = new firebase.auth.GoogleAuthProvider();
-                                provider.addScope('email');
-                                provider.addScope('profile');
-                                
-                                // Show status
-                                document.getElementById('status').textContent = 'Redirecting to Google...';
-                                
-                                // Sign in with redirect
-                                firebase.auth().signInWithRedirect(provider)
-                                    .then(() => {
-                                        document.getElementById('status').textContent = 'Redirecting...';
-                                    })
-                                    .catch(error => {
-                                        document.getElementById('status').textContent = 'Error: ' + error.message;
-                                        setTimeout(() => window.close(), 3000);
-                                    });
-                            </script>
-                        </body>
-                        </html>
-                    `;
-
-                    authWindow.document.write(authPage);
-                    authWindow.document.close();
-
-                    // Poll for window closure and handle result
-                    const checkWindow = setInterval(async () => {
-                        if (authWindow.closed) {
-                            clearInterval(checkWindow);
+                    // Listen for storage events (for cross-window communication)
+                    const storageHandler = (event) => {
+                        if (event.key === 'tourneyhub_google_login_state' && 
+                            event.newValue === 'completed' &&
+                            event.oldValue === 'pending') {
                             
-                            // Check for redirect result
-                            try {
-                                const result = await _auth.getRedirectResult();
-                                if (result.user) {
-                                    const sessionToken = await _createUserSession(result.user, 'google_new_window');
-                                    
-                                    resolve({
-                                        success: true,
-                                        sessionToken,
-                                        user: result.user,
-                                        method: 'new_window'
-                                    });
+                            // Get the login ID from storage
+                            const storedLoginId = localStorage.getItem('tourneyhub_google_login_id');
+                            
+                            if (storedLoginId === loginId) {
+                                // Remove the event listener
+                                window.removeEventListener('storage', storageHandler);
+                                clearInterval(checkWindowInterval);
+                                clearTimeout(timeoutId);
+                                
+                                // Clean up storage
+                                localStorage.removeItem('tourneyhub_google_login_id');
+                                localStorage.removeItem('tourneyhub_google_login_state');
+                                localStorage.removeItem('tourneyhub_google_login_timestamp');
+                                
+                                // Check current user (should be authenticated now)
+                                const user = _auth.currentUser;
+                                if (user) {
+                                    // Create session and resolve
+                                    _createUserSession(user, 'google_new_window')
+                                        .then(sessionToken => {
+                                            resolve({
+                                                success: true,
+                                                sessionToken,
+                                                user: user,
+                                                method: 'new_window'
+                                            });
+                                        })
+                                        .catch(reject);
                                 } else {
-                                    reject(new AuthError('Login cancelled or failed', 'AUTH_CANCELLED'));
+                                    reject(new AuthError('Authentication failed', 'AUTH_FAILED'));
                                 }
-                            } catch (error) {
-                                reject(new AuthError('Login failed: ' + error.message, 'NEW_WINDOW_ERROR', error));
+                            }
+                        }
+                    };
+                    
+                    window.addEventListener('storage', storageHandler);
+
+                    // Also check periodically for window closure
+                    const checkWindowInterval = setInterval(() => {
+                        if (authWindow.closed) {
+                            clearInterval(checkWindowInterval);
+                            clearTimeout(timeoutId);
+                            window.removeEventListener('storage', storageHandler);
+                            
+                            const loginState = localStorage.getItem('tourneyhub_google_login_state');
+                            const storedLoginId = localStorage.getItem('tourneyhub_google_login_id');
+                            
+                            if (loginState !== 'completed' || storedLoginId !== loginId) {
+                                // Clean up
+                                localStorage.removeItem('tourneyhub_google_login_id');
+                                localStorage.removeItem('tourneyhub_google_login_state');
+                                localStorage.removeItem('tourneyhub_google_login_timestamp');
+                                
+                                reject(new AuthError('Login window closed', 'WINDOW_CLOSED'));
                             }
                         }
                     }, 500);
 
-                    // Auto-close check after 2 minutes
-                    setTimeout(() => {
-                        if (!authWindow.closed) {
+                    // Timeout after 2 minutes
+                    const timeoutId = setTimeout(() => {
+                        clearInterval(checkWindowInterval);
+                        window.removeEventListener('storage', storageHandler);
+                        
+                        if (authWindow && !authWindow.closed) {
                             authWindow.close();
-                            reject(new AuthError('Login timeout', 'LOGIN_TIMEOUT'));
                         }
+                        
+                        localStorage.removeItem('tourneyhub_google_login_id');
+                        localStorage.removeItem('tourneyhub_google_login_state');
+                        localStorage.removeItem('tourneyhub_google_login_timestamp');
+                        
+                        reject(new AuthError('Login timeout', 'LOGIN_TIMEOUT'));
                     }, 120000);
 
                 } catch (error) {
                     reject(error);
                 }
             });
+        },
+
+        async handleGoogleNewWindowCallback(loginId) {
+            try {
+                // Check if we're already authenticated
+                if (_auth.currentUser) {
+                    localStorage.setItem('tourneyhub_google_login_state', 'completed');
+                    return { success: true };
+                }
+                
+                // Try to get redirect result
+                const result = await _auth.getRedirectResult();
+                
+                if (result.user) {
+                    // Authentication successful via redirect
+                    localStorage.setItem('tourneyhub_google_login_state', 'completed');
+                    return {
+                        success: true,
+                        user: result.user
+                    };
+                }
+                
+                // If no redirect result, try to authenticate with Google
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('email');
+                provider.addScope('profile');
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                
+                // Try to get current auth state
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (_auth.currentUser) {
+                    localStorage.setItem('tourneyhub_google_login_state', 'completed');
+                    return { success: true };
+                }
+                
+                // If still not authenticated, show a simple auth page
+                return {
+                    success: false,
+                    needsManualAuth: true
+                };
+                
+            } catch (error) {
+                console.error('Google new window callback error:', error);
+                throw new AuthError('Google authentication failed: ' + error.message, 'GOOGLE_CALLBACK_ERROR', error);
+            }
         },
 
         async handleRedirectResult() {
@@ -1996,6 +2018,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error('Failed to initialize authentication system');
         }
 
+        // Check for Google new window callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const isGoogleNewWindow = urlParams.get('google_new_window') === 'true';
+        const loginId = urlParams.get('login_id');
+        
+        if (isGoogleNewWindow && loginId) {
+            // This is the new window opened for Google login
+            _setupGoogleNewWindowPage(loginId);
+            return; // Stop normal initialization
+        }
+
         // Setup event listeners for UI
         TourneyHubEventManager.on('auth-notification', (event) => {
             TourneyHubUIManager.showNotification(
@@ -2203,10 +2236,7 @@ function _setupGoogleButtons() {
     if (googleNewWindowBtn) {
         googleNewWindowBtn.addEventListener('click', async () => {
             try {
-                TourneyHubUIManager.showNotification(
-                    'Opening Google login in new window...',
-                    'info'
-                );
+                TourneyHubUIManager.showLoading('Opening Google login in new window...');
                 
                 const result = await TourneyHubAuth.loginWithGoogleNewWindow();
                 
@@ -2214,6 +2244,8 @@ function _setupGoogleButtons() {
                 
             } catch (error) {
                 TourneyHubEventManager.emit('auth-error', error);
+            } finally {
+                TourneyHubUIManager.hideLoading();
             }
         });
     }
@@ -2353,6 +2385,241 @@ function _setupForgotPassword() {
             } finally {
                 TourneyHubUIManager.hideLoading();
             }
+        }
+    });
+}
+
+function _setupGoogleNewWindowPage(loginId) {
+    // This function runs when we're in the new window opened for Google login
+    
+    // Set up the page for Google authentication
+    document.body.innerHTML = '';
+    document.body.style.cssText = `
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #0f0c29, #302b63);
+        color: white;
+        font-family: system-ui, -apple-system, sans-serif;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    `;
+    
+    const container = document.createElement('div');
+    container.style.cssText = `
+        text-align: center;
+        padding: 40px;
+        max-width: 400px;
+        width: 90%;
+    `;
+    
+    container.innerHTML = `
+        <div style="font-size: 2.5rem; margin-bottom: 20px;">🏆</div>
+        <h2 style="margin: 0 0 10px 0;">TourneyHub Google Login</h2>
+        <p style="color: #a0a0c0; margin-bottom: 30px;">
+            Please complete the Google authentication below
+        </p>
+        <div id="status" style="
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        ">
+            <div class="loader" style="
+                border: 3px solid rgba(255,255,255,0.1);
+                border-top: 3px solid #6bcf7f;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+            "></div>
+            <div>Initializing authentication...</div>
+        </div>
+        <button id="manualAuthBtn" style="
+            display: none;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #6bcf7f, #4ca1af);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        ">
+            Sign in with Google
+        </button>
+        <button id="closeBtn" style="
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            display: none;
+        ">
+            Close Window
+        </button>
+    `;
+    
+    document.body.appendChild(container);
+    
+    const statusEl = container.querySelector('#status');
+    const manualAuthBtn = container.querySelector('#manualAuthBtn');
+    const closeBtn = container.querySelector('#closeBtn');
+    
+    // Add CSS for spinner animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Handle the Google authentication
+    const handleGoogleAuth = async () => {
+        try {
+            // First, try to handle any existing redirect
+            statusEl.innerHTML = `
+                <div class="loader"></div>
+                <div>Checking for existing authentication...</div>
+            `;
+            
+            const result = await TourneyHubAuth.handleGoogleNewWindowCallback(loginId);
+            
+            if (result.success) {
+                // Authentication successful
+                statusEl.innerHTML = `
+                    <div style="font-size: 2rem;">✅</div>
+                    <div style="color: #6bcf7f; font-weight: 600;">Authentication Successful!</div>
+                    <div style="font-size: 0.9rem; color: #a0a0c0;">
+                        You can now close this window
+                    </div>
+                `;
+                closeBtn.style.display = 'block';
+                
+                // Notify the main window that authentication is complete
+                localStorage.setItem('tourneyhub_google_login_state', 'completed');
+                
+                // Auto-close after 2 seconds
+                setTimeout(() => {
+                    window.close();
+                }, 2000);
+                
+                return;
+            }
+            
+            if (result.needsManualAuth) {
+                // Need to manually authenticate
+                statusEl.innerHTML = `
+                    <div style="font-size: 2rem;">🔑</div>
+                    <div>Ready to authenticate with Google</div>
+                    <div style="font-size: 0.9rem; color: #a0a0c0;">
+                        Click the button below to sign in
+                    </div>
+                `;
+                manualAuthBtn.style.display = 'block';
+                return;
+            }
+            
+        } catch (error) {
+            console.error('Google authentication error:', error);
+            
+            statusEl.innerHTML = `
+                <div style="font-size: 2rem;">❌</div>
+                <div style="color: #ff6b6b; font-weight: 600;">Authentication Failed</div>
+                <div style="font-size: 0.9rem; color: #a0a0c0;">
+                    ${error.message || 'An error occurred'}
+                </div>
+                <button id="retryBtn" style="
+                    margin-top: 10px;
+                    padding: 10px 20px;
+                    background: rgba(107, 207, 127, 0.2);
+                    border: 1px solid #6bcf7f;
+                    border-radius: 5px;
+                    color: #6bcf7f;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">
+                    Try Again
+                </button>
+            `;
+            
+            const retryBtn = statusEl.querySelector('#retryBtn');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => {
+                    statusEl.innerHTML = `
+                        <div class="loader"></div>
+                        <div>Retrying authentication...</div>
+                    `;
+                    setTimeout(handleGoogleAuth, 1000);
+                });
+            }
+            
+            closeBtn.style.display = 'block';
+        }
+    };
+    
+    // Manual authentication button handler
+    manualAuthBtn.addEventListener('click', async () => {
+        manualAuthBtn.disabled = true;
+        manualAuthBtn.innerHTML = 'Redirecting to Google...';
+        
+        try {
+            // Use redirect method for authentication
+            await TourneyHubAuth.loginWithGoogle(true);
+        } catch (error) {
+            statusEl.innerHTML = `
+                <div style="font-size: 2rem;">❌</div>
+                <div style="color: #ff6b6b; font-weight: 600;">Failed to redirect</div>
+                <div style="font-size: 0.9rem; color: #a0a0c0;">
+                    ${error.message || 'Please try again'}
+                </div>
+            `;
+            manualAuthBtn.disabled = false;
+            manualAuthBtn.textContent = 'Sign in with Google';
+            closeBtn.style.display = 'block';
+        }
+    });
+    
+    // Close button handler
+    closeBtn.addEventListener('click', () => {
+        window.close();
+    });
+    
+    // Start the authentication process
+    handleGoogleAuth();
+    
+    // Also listen for authentication state changes
+    TourneyHubAuth.onAuthStateChanged((user) => {
+        if (user) {
+            // User is authenticated
+            statusEl.innerHTML = `
+                <div style="font-size: 2rem;">✅</div>
+                <div style="color: #6bcf7f; font-weight: 600;">Authentication Successful!</div>
+                <div style="font-size: 0.9rem; color: #a0a0c0;">
+                    Welcome, ${user.displayName || user.email}!
+                </div>
+            `;
+            closeBtn.style.display = 'block';
+            
+            // Notify the main window
+            localStorage.setItem('tourneyhub_google_login_state', 'completed');
+            
+            // Auto-close after 2 seconds
+            setTimeout(() => {
+                window.close();
+            }, 2000);
         }
     });
 }

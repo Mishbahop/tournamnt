@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Login Callback - TourneyHub</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            max-width: 400px;
+        }
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #6bcf7f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success {
+            color: #6bcf7f;
+            padding: 20px;
+            border: 1px solid rgba(107,207,127,0.3);
+            border-radius: 10px;
+            background: rgba(107,207,127,0.1);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="logo">🏆</div>
+        <h2>Completing Login...</h2>
+        <div class="loader"></div>
+        <div id="message">Please wait...</div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const containerEl = document.getElementById('container');
+            const messageEl = document.getElementById('message');
+            
+            try {
+                // Firebase configuration
+                const firebaseConfig = {
+                    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+                    authDomain: "authapp-386ee.firebaseapp.com",
+                    projectId: "authapp-386ee",
+                    storageBucket: "authapp-386ee.appspot.com",
+                    messagingSenderId: "809698525310",
+                    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+                    measurementId: "G-EJZTSBSGQT"
+                };
+                
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
+                const auth = firebase.auth();
+                
+                messageEl.textContent = 'Processing authentication...';
+                
+                // Get the redirect result
+                const result = await auth.getRedirectResult();
+                
+                if (result.user) {
+                    messageEl.textContent = 'Login successful!';
+                    
+                    // Notify parent window
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            window.opener.postMessage({
+                                type: 'google-login-result',
+                                success: true,
+                                result: {
+                                    user: {
+                                        uid: result.user.uid,
+                                        email: result.user.email,
+                                        displayName: result.user.displayName,
+                                        photoURL: result.user.photoURL
+                                    }
+                                }
+                            }, window.location.origin);
+                        } catch (e) {
+                            console.error('Failed to send message to parent:', e);
+                        }
+                    }
+                    
+                    containerEl.innerHTML = `
+                        <div class="logo">✅</div>
+                        <h2>Login Successful!</h2>
+                        <div class="success">
+                            You have been successfully logged in with Google.
+                        </div>
+                        <p>You can close this window now.</p>
+                    `;
+                    
+                    // Auto-close after 2 seconds
+                    setTimeout(() => {
+                        window.close();
+                    }, 2000);
+                    
+                } else {
+                    throw new Error('No user found in redirect result');
+                }
+                
+            } catch (error) {
+                console.error('Callback error:', error);
+                
+                containerEl.innerHTML = `
+                    <div class="logo">❌</div>
+                    <h2>Login Failed</h2>
+                    <div class="error">
+                        ${error.message || 'Authentication failed'}
+                    </div>
+                    <p>Please try again.</p>
+                `;
+                
+                // Notify parent window of error
+                if (window.opener && !window.opener.closed) {
+                    try {
+                        window.opener.postMessage({
+                            type: 'google-login-result',
+                            success: false,
+                            error: error.message
+                        }, window.location.origin);
+                    } catch (e) {
+                        console.error('Failed to send message to parent:', e);
+                    }
+                }
+                
+                // Auto-close after 5 seconds
+                setTimeout(() => {
+                    window.close();
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -20,28 +20,29 @@ const TourneyHubAuth = (() => {
         networkQuality: 'good'
     };
 
+    // Firebase configuration as private constant
+    const _firebaseConfig = {
+        apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
+        authDomain: "authapp-386ee.firebaseapp.com",
+        projectId: "authapp-386ee",
+        storageBucket: "authapp-386ee.appspot.com",
+        messagingSenderId: "809698525310",
+        appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
+        measurementId: "G-EJZTSBSGQT"
+    };
+
     // Private methods
     const _initializeFirebase = () => {
         return new Promise((resolve, reject) => {
             try {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyA7QsyV2yb4f_acY9ETQnTSna7YHxwOJw4",
-                    authDomain: "authapp-386ee.firebaseapp.com",
-                    projectId: "authapp-386ee",
-                    storageBucket: "authapp-386ee.appspot.com",
-                    messagingSenderId: "809698525310",
-                    appId: "1:809698525310:web:5cb7de80bde9ed1f26982f",
-                    measurementId: "G-EJZTSBSGQT"
-                };
-
                 if (!firebase.apps.length) {
                     // Performance monitoring
                     _performanceMetrics.authStartTime = performance.now();
                     
                     // Initialize with enhanced settings
-                    const app = firebase.initializeApp(firebaseConfig, {
+                    const app = firebase.initializeApp(_firebaseConfig, {
                         automaticDataCollectionEnabled: true,
-                        measurementId: firebaseConfig.measurementId
+                        measurementId: _firebaseConfig.measurementId
                     });
                     
                     // Enable offline persistence
@@ -746,7 +747,7 @@ const TourneyHubAuth = (() => {
                             <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
                             <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
                             <script>
-                                const firebaseConfig = ${JSON.stringify(firebaseConfig)};
+                                const firebaseConfig = ${JSON.stringify(_firebaseConfig)};
                                 if (!firebase.apps.length) {
                                     firebase.initializeApp(firebaseConfig);
                                 }
@@ -1269,14 +1270,15 @@ const TourneyHubUIManager = (() => {
             overflow: hidden;
         `;
 
-        // Add gradient border
-        toast.style.borderImage = config.type === 'success' ? 
-            'linear-gradient(45deg, #4CAF50, #8BC34A) 1' :
-            config.type === 'error' ?
-            'linear-gradient(45deg, #F44336, #FF5252) 1' :
-            config.type === 'warning' ?
-            'linear-gradient(45deg, #FFC107, #FF9800) 1' :
-            'linear-gradient(45deg, #2196F3, #03A9F4) 1';
+        // Add gradient border using a map
+        const gradientMap = {
+            success: 'linear-gradient(45deg, #4CAF50, #8BC34A) 1',
+            error: 'linear-gradient(45deg, #F44336, #FF5252) 1',
+            warning: 'linear-gradient(45deg, #FFC107, #FF9800) 1',
+            info: 'linear-gradient(45deg, #2196F3, #03A9F4) 1'
+        };
+        
+        toast.style.borderImage = gradientMap[config.type] || gradientMap.info;
 
         const iconMap = {
             success: '✅',
@@ -2452,17 +2454,8 @@ style.textContent = `
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3) !important;
     }
     
-    .advanced-toast::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: ${config.type === 'success' ? 'linear-gradient(90deg, #4CAF50, #8BC34A)' :
-                     config.type === 'error' ? 'linear-gradient(90deg, #F44336, #FF5252)' :
-                     config.type === 'warning' ? 'linear-gradient(90deg, #FFC107, #FF9800)' :
-                     'linear-gradient(90deg, #2196F3, #03A9F4)'};
+    .toast-progress {
+        transition: width 0.3s ease;
     }
 `;
 document.head.appendChild(style);

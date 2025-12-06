@@ -1,4 +1,4 @@
-// ==================== TOURNEYHUB AUTHENTICATION SYSTEM ====================
+// ==================== SIMPLIFIED TOURNEYHUB AUTHENTICATION ====================
 const TourneyHubAuth = (() => {
     // Private variables
     let _auth = null;
@@ -17,238 +17,34 @@ const TourneyHubAuth = (() => {
         measurementId: "G-EJZTSBSGQT"
     };
 
-    // Enhanced Browser Detector
+    // Simple browser detection
     const _browserDetector = {
-        // Main detection method
-        detect: () => {
+        isInAppBrowser: () => {
             const ua = navigator.userAgent.toLowerCase();
-            const platform = navigator.platform.toLowerCase();
-            
-            // Check for specific apps
-            const isFacebook = ua.includes('fban') || ua.includes('fbav') || ua.includes('fb_iab');
-            const isInstagram = ua.includes('instagram');
-            const isTwitter = ua.includes('twitter');
-            const isWhatsApp = ua.includes('whatsapp');
-            const isSnapchat = ua.includes('snapchat');
-            const isTikTok = ua.includes('tiktok');
-            const isDiscord = ua.includes('discord');
-            const isTelegram = ua.includes('telegram');
-            const isLine = ua.includes('line');
-            
-            // Check for WebView (in-app browsers)
-            const isWebView = ua.includes('wv') || 
-                             (ua.includes('android') && ua.includes('version/'));
-            
-            // Check for regular browsers
-            const isChrome = /chrome/.test(ua) && !/edge|edg|opera|opr/.test(ua);
-            const isFirefox = /firefox/.test(ua);
-            const isSafari = /safari/.test(ua) && !/chrome/.test(ua);
-            const isEdge = /edge|edg/.test(ua);
-            const isOpera = /opera|opr/.test(ua);
-            const isIE = /trident|msie/.test(ua);
-            
-            // Platform detection
-            const isAndroid = /android/.test(ua);
-            const isIOS = /iphone|ipad|ipod/.test(ua);
-            const isMobile = isAndroid || isIOS || /mobile/.test(ua);
-            
-            return {
-                // Browser type
-                isChrome,
-                isFirefox,
-                isSafari,
-                isEdge,
-                isOpera,
-                isIE,
-                
-                // Platform
-                isAndroid,
-                isIOS,
-                isMobile,
-                
-                // In-app browsers
-                isFacebookApp: isFacebook,
-                isInstagramApp: isInstagram,
-                isTwitterApp: isTwitter,
-                isWhatsAppApp: isWhatsApp,
-                isSnapchatApp: isSnapchat,
-                isTikTokApp: isTikTok,
-                isDiscordApp: isDiscord,
-                isTelegramApp: isTelegram,
-                isLineApp: isLine,
-                isWebView: isWebView,
-                
-                // Combined checks
-                isInAppBrowser: isFacebook || isInstagram || isTwitter || 
-                              isWhatsApp || isSnapchat || isTikTok || 
-                              isDiscord || isTelegram || isLine || isWebView,
-                
-                // User agent string for debugging
-                userAgent: navigator.userAgent,
-                
-                // Get browser name for display
-                browserName: (() => {
-                    if (isFacebook) return 'Facebook Browser';
-                    if (isInstagram) return 'Instagram Browser';
-                    if (isTwitter) return 'Twitter Browser';
-                    if (isWhatsApp) return 'WhatsApp Browser';
-                    if (isSnapchat) return 'Snapchat Browser';
-                    if (isTikTok) return 'TikTok Browser';
-                    if (isDiscord) return 'Discord Browser';
-                    if (isTelegram) return 'Telegram Browser';
-                    if (isLine) return 'Line Browser';
-                    if (isChrome) return 'Chrome';
-                    if (isFirefox) return 'Firefox';
-                    if (isSafari) return 'Safari';
-                    if (isEdge) return 'Edge';
-                    if (isOpera) return 'Opera';
-                    if (isIE) return 'Internet Explorer';
-                    if (isWebView) return 'WebView';
-                    return 'Unknown Browser';
-                })(),
-                
-                // Get app name if in-app
-                appName: (() => {
-                    if (isFacebook) return 'Facebook';
-                    if (isInstagram) return 'Instagram';
-                    if (isTwitter) return 'Twitter';
-                    if (isWhatsApp) return 'WhatsApp';
-                    if (isSnapchat) return 'Snapchat';
-                    if (isTikTok) return 'TikTok';
-                    if (isDiscord) return 'Discord';
-                    if (isTelegram) return 'Telegram';
-                    if (isLine) return 'Line';
-                    return null;
-                })()
-            };
+            return /fbav|instagram|twitter|snapchat|whatsapp|slack|discord|telegram|line|kakao/.test(ua) ||
+                   ua.includes('wv') || // WebView
+                   ua.includes('fb_iab'); // Facebook in-app browser
         },
         
-        // Check if we should redirect to Chrome
-        shouldRedirectToChrome: () => {
-            const detection = _browserDetector.detect();
-            
-            // Don't redirect if already in Chrome
-            if (detection.isChrome) return false;
-            
-            // Always redirect from in-app browsers
-            if (detection.isInAppBrowser) return true;
-            
-            // For mobile, suggest Chrome for better compatibility
-            if (detection.isMobile && !detection.isChrome) return true;
-            
-            return false;
-        },
-        
-        // Get redirect instructions based on browser
-        getRedirectInstructions: () => {
-            const detection = _browserDetector.detect();
-            
-            if (detection.isInAppBrowser) {
-                return {
-                    type: 'in-app',
-                    title: `Open in Chrome`,
-                    message: `You're using ${detection.appName || detection.browserName}. For Google login, please open this page in Chrome browser.`,
-                    steps: [
-                        'Tap the menu button (⋯)',
-                        'Select "Open in Chrome" or "Open in Browser"',
-                        'If not available, copy the link and paste in Chrome'
-                    ],
-                    buttonText: 'Open in Chrome',
-                    showCopyLink: true
-                };
-            }
-            
-            if (detection.isMobile && !detection.isChrome) {
-                return {
-                    type: 'mobile-non-chrome',
-                    title: `Switch to Chrome`,
-                    message: `For best Google login experience, please use Chrome browser.`,
-                    steps: detection.isAndroid ? [
-                        'Tap "Open in Chrome" below',
-                        'If Chrome is not installed, install from Play Store',
-                        'Return to this page in Chrome'
-                    ] : [
-                        'Tap "Open in Chrome" below',
-                        'If Chrome is not installed, install from App Store',
-                        'Return to this page in Chrome'
-                    ],
-                    buttonText: 'Open in Chrome',
-                    showCopyLink: false
-                };
-            }
-            
-            if (!detection.isMobile && !detection.isChrome) {
-                return {
-                    type: 'desktop-non-chrome',
-                    title: `Use Chrome for Google Login`,
-                    message: `You're using ${detection.browserName}. Google login works best in Chrome.`,
-                    steps: [
-                        'Click "Install Chrome" to download',
-                        'Install Chrome browser',
-                        'Open this site in Chrome'
-                    ],
-                    buttonText: 'Install Chrome',
-                    showCopyLink: false
-                };
-            }
-            
-            return null;
-        },
-        
-        // Try to open in Chrome
-        openInChrome: () => {
-            const detection = _browserDetector.detect();
-            const currentUrl = window.location.href;
-            
-            if (detection.isAndroid) {
-                // Android - try multiple methods
-                
-                // Method 1: Try to open directly with Chrome intent
-                try {
-                    window.location.href = `intent://${currentUrl.replace(/^https?:\/\//, '')}#Intent;package=com.android.chrome;scheme=https;end`;
-                    
-                    // Fallback after 2 seconds
-                    setTimeout(() => {
-                        // Method 2: Open Chrome Play Store page
-                        window.location.href = 'https://play.google.com/store/apps/details?id=com.android.chrome';
-                    }, 2000);
-                } catch (e) {
-                    // Method 3: Open in new tab
-                    window.open(currentUrl, '_blank');
-                }
-            } else if (detection.isIOS) {
-                // iOS - try to open in Chrome
-                try {
-                    // Try googlechrome:// URL scheme
-                    const chromeUrl = `googlechrome://${currentUrl}`;
-                    window.location.href = chromeUrl;
-                    
-                    // Fallback after 2 seconds
-                    setTimeout(() => {
-                        // Open Chrome App Store page
-                        window.location.href = 'https://apps.apple.com/app/chrome/id535886823';
-                    }, 2000);
-                } catch (e) {
-                    // Open in new tab
-                    window.open(currentUrl, '_blank');
-                }
-            } else {
-                // Desktop - open Chrome download page
-                window.open('https://www.google.com/chrome/', '_blank');
-            }
-            
-            return true;
+        getBrowserName: () => {
+            const ua = navigator.userAgent;
+            if (/chrome/.test(ua.toLowerCase()) && !/edge/.test(ua.toLowerCase())) return 'Chrome';
+            if (/firefox/.test(ua.toLowerCase())) return 'Firefox';
+            if (/safari/.test(ua.toLowerCase()) && !/chrome/.test(ua.toLowerCase())) return 'Safari';
+            if (/edge/.test(ua.toLowerCase())) return 'Edge';
+            if (/opera|opr/.test(ua.toLowerCase())) return 'Opera';
+            if (/trident/.test(ua.toLowerCase())) return 'Internet Explorer';
+            return 'Browser';
         }
     };
 
-    // Custom Error Classes
+    // Custom Error Class
     class AuthError extends Error {
         constructor(message, code, originalError = null) {
             super(message);
             this.name = 'AuthError';
             this.code = code;
             this.originalError = originalError;
-            this.timestamp = Date.now();
         }
     }
 
@@ -281,13 +77,12 @@ const TourneyHubAuth = (() => {
         });
     };
 
-    const _showNotification = (message, type = 'info', options = {}) => {
+    const _showNotification = (message, type = 'info') => {
         const notification = {
             id: Date.now() + Math.random(),
             message,
             type,
-            timestamp: Date.now(),
-            ...options
+            timestamp: Date.now()
         };
 
         const event = new CustomEvent('auth-notification', {
@@ -314,21 +109,16 @@ const TourneyHubAuth = (() => {
                 userMessage = 'Network error. Check your connection.';
                 break;
             case 'auth/popup-blocked':
-                userMessage = 'Popup blocked. Please allow popups or use email login.';
-                break;
-            case 'auth/operation-not-allowed':
-                userMessage = 'Google sign-in is not enabled. Contact support.';
+                userMessage = 'Popup blocked. Please use email login.';
                 break;
             default:
-                if (error.message) {
-                    userMessage = error.message;
-                }
+                userMessage = error.message || 'Authentication failed';
         }
 
-        return { userMessage };
+        return userMessage;
     };
 
-    const _createUserSession = async (user, loginMethod) => {
+    const _createUserSession = (user, loginMethod) => {
         try {
             _currentUser = user;
             
@@ -351,6 +141,36 @@ const TourneyHubAuth = (() => {
             console.error('Session creation failed:', error);
             throw new AuthError('Session creation failed', 'SESSION_ERROR', error);
         }
+    };
+
+    // SIMPLE SOLUTION: Open in browser directly
+    const _openInBrowser = () => {
+        const currentUrl = window.location.href;
+        
+        // Try to open in a new tab/window
+        const newWindow = window.open(currentUrl, '_blank');
+        
+        if (!newWindow) {
+            // If popup blocked, show instructions
+            return {
+                success: false,
+                message: 'Popup blocked. Please allow popups or copy the link below and open in Chrome/Safari browser.',
+                url: currentUrl
+            };
+        }
+        
+        return { success: true };
+    };
+
+    // SIMPLE SOLUTION 2: Show link to copy
+    const _showLinkToCopy = () => {
+        const currentUrl = window.location.href;
+        
+        return {
+            url: currentUrl,
+            message: 'Please copy this link and open in Chrome/Safari browser:',
+            copyable: true
+        };
     };
 
     // Public API
@@ -386,7 +206,7 @@ const TourneyHubAuth = (() => {
 
                 const userCredential = await _auth.signInWithEmailAndPassword(email, password);
                 
-                const userSession = await _createUserSession(userCredential.user, 'email');
+                const userSession = _createUserSession(userCredential.user, 'email');
                 
                 _showNotification('Login successful!', 'success');
                 
@@ -395,27 +215,31 @@ const TourneyHubAuth = (() => {
                     user: userSession
                 };
             } catch (error) {
-                const handled = _handleAuthError(error);
-                throw new AuthError(handled.userMessage, error.code || 'EMAIL_LOGIN_ERROR', error);
+                const userMessage = _handleAuthError(error);
+                throw new AuthError(userMessage, error.code || 'EMAIL_LOGIN_ERROR', error);
             }
         },
 
         async loginWithGoogle() {
             try {
-                // Check if we should redirect to Chrome first
-                if (_browserDetector.shouldRedirectToChrome()) {
+                // Check if we're in an in-app browser
+                if (_browserDetector.isInAppBrowser()) {
                     return {
                         success: false,
-                        requiresChrome: true,
-                        browserInfo: _browserDetector.detect(),
-                        instructions: _browserDetector.getRedirectInstructions()
+                        requiresBrowser: true,
+                        browserInfo: {
+                            isInApp: true,
+                            name: _browserDetector.getBrowserName()
+                        },
+                        message: 'Google login requires Chrome or Safari browser.',
+                        linkInfo: _showLinkToCopy()
                     };
                 }
 
                 // Try popup method
                 try {
                     const result = await _auth.signInWithPopup(_googleAuthProvider);
-                    const userSession = await _createUserSession(result.user, 'google');
+                    const userSession = _createUserSession(result.user, 'google');
                     
                     _showNotification('Google login successful!', 'success');
                     
@@ -437,8 +261,8 @@ const TourneyHubAuth = (() => {
                     throw popupError;
                 }
             } catch (error) {
-                const handled = _handleAuthError(error);
-                throw new AuthError(handled.userMessage, error.code || 'GOOGLE_LOGIN_ERROR', error);
+                const userMessage = _handleAuthError(error);
+                throw new AuthError(userMessage, error.code || 'GOOGLE_LOGIN_ERROR', error);
             }
         },
 
@@ -446,7 +270,7 @@ const TourneyHubAuth = (() => {
             try {
                 const result = await _auth.getRedirectResult();
                 if (result.user) {
-                    const userSession = await _createUserSession(result.user, 'google_redirect');
+                    const userSession = _createUserSession(result.user, 'google_redirect');
                     return {
                         success: true,
                         user: userSession
@@ -458,24 +282,27 @@ const TourneyHubAuth = (() => {
                     return { success: false, message: 'No redirect result' };
                 }
                 
-                const handled = _handleAuthError(error);
-                throw new AuthError(handled.userMessage, error.code || 'REDIRECT_ERROR', error);
+                const userMessage = _handleAuthError(error);
+                throw new AuthError(userMessage, error.code || 'REDIRECT_ERROR', error);
             }
         },
 
-        // Browser utilities
-        openInChrome: () => {
-            return _browserDetector.openInChrome();
+        // SIMPLE: Just open in browser
+        openInBrowser: () => {
+            return _openInBrowser();
         },
 
-        checkBrowserCompatibility: () => {
-            const detection = _browserDetector.detect();
-            const instructions = _browserDetector.getRedirectInstructions();
-            
+        // SIMPLE: Get link to copy
+        getLinkForBrowser: () => {
+            return _showLinkToCopy();
+        },
+
+        // Check browser
+        checkBrowser: () => {
             return {
-                ...detection,
-                requiresChrome: _browserDetector.shouldRedirectToChrome(),
-                instructions
+                isInApp: _browserDetector.isInAppBrowser(),
+                browserName: _browserDetector.getBrowserName(),
+                userAgent: navigator.userAgent
             };
         },
 
@@ -490,7 +317,7 @@ const TourneyHubAuth = (() => {
     };
 })();
 
-// ==================== UI MANAGER ====================
+// ==================== SIMPLE UI MANAGER ====================
 const TourneyHubUIManager = (() => {
     let _isLoading = false;
 
@@ -509,18 +336,8 @@ const TourneyHubUIManager = (() => {
             info: 'ℹ️'
         };
 
-        const colorMap = {
-            success: '#4CAF50',
-            error: '#F44336',
-            warning: '#FF9800',
-            info: '#2196F3',
-            chrome: '#4285F4'
-        };
-
         toastIcon.textContent = iconMap[type] || 'ℹ️';
         toastMessage.textContent = message;
-        toast.style.backgroundColor = colorMap[type] || '#2196F3';
-
         toast.classList.add('show');
 
         const duration = options.duration || 5000;
@@ -544,9 +361,9 @@ const TourneyHubUIManager = (() => {
         }
     };
 
-    const showChromeRedirectModal = (instructions) => {
+    const showBrowserModal = (browserInfo, linkInfo) => {
         const modalOverlay = document.createElement('div');
-        modalOverlay.className = 'chrome-modal-overlay';
+        modalOverlay.className = 'browser-modal-overlay';
         modalOverlay.style.cssText = `
             position: fixed;
             top: 0;
@@ -561,33 +378,11 @@ const TourneyHubUIManager = (() => {
             backdrop-filter: blur(10px);
         `;
 
-        const stepsHTML = instructions.steps.map((step, index) => `
-            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                <div style="
-                    width: 24px;
-                    height: 24px;
-                    background: linear-gradient(45deg, #4285F4, #34A853);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    font-weight: bold;
-                    flex-shrink: 0;
-                ">
-                    ${index + 1}
-                </div>
-                <div style="color: #a0a0c0; flex: 1;">
-                    ${step}
-                </div>
-            </div>
-        `).join('');
-
         modalOverlay.innerHTML = `
             <div style="
                 background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
                 border-radius: 20px;
-                padding: 40px;
+                padding: 30px;
                 max-width: 500px;
                 width: 90%;
                 border: 1px solid rgba(255, 255, 255, 0.1);
@@ -595,8 +390,8 @@ const TourneyHubUIManager = (() => {
                 text-align: center;
             ">
                 <div style="font-size: 4rem; margin-bottom: 20px;">🌐</div>
-                <h2 style="margin: 0 0 15px 0; font-size: 1.8rem; color: white;">
-                    ${instructions.title}
+                <h2 style="margin: 0 0 15px 0; font-size: 1.5rem; color: white;">
+                    Open in Browser
                 </h2>
                 
                 <div style="
@@ -607,63 +402,58 @@ const TourneyHubUIManager = (() => {
                     margin-bottom: 20px;
                 ">
                     <div style="color: #ff6b6b; font-weight: 600; margin-bottom: 5px;">
-                        Detected: ${instructions.browserInfo?.browserName || 'Unknown Browser'}
+                        Detected: ${browserInfo.name}
                     </div>
                     <div style="color: #a0a0c0; font-size: 0.9rem;">
-                        ${instructions.message}
+                        Google login requires Chrome or Safari browser.
                     </div>
                 </div>
                 
                 <div style="margin-bottom: 25px; text-align: left;">
-                    ${stepsHTML}
-                </div>
-                
-                ${instructions.showCopyLink ? `
-                <div style="
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 10px;
-                    padding: 15px;
-                    margin-bottom: 20px;
-                    text-align: left;
-                ">
-                    <div style="color: #a0a0c0; margin-bottom: 8px; font-size: 0.9rem;">
-                        Or copy this link and paste in Chrome:
+                    <div style="color: #a0a0c0; margin-bottom: 10px;">
+                        <strong>Simple Solution:</strong>
                     </div>
                     <div style="
                         background: rgba(0, 0, 0, 0.3);
                         border-radius: 8px;
-                        padding: 10px;
-                        margin-bottom: 10px;
+                        padding: 15px;
+                        margin-bottom: 15px;
                         overflow: hidden;
                     ">
+                        <div style="color: #a0a0c0; margin-bottom: 8px; font-size: 0.9rem;">
+                            Copy this link and open in Chrome/Safari:
+                        </div>
                         <code style="
                             color: #6bcf7f;
                             font-size: 0.85rem;
                             word-break: break-all;
                             display: block;
-                        " id="copyable-link">${window.location.href}</code>
+                            background: rgba(0, 0, 0, 0.5);
+                            padding: 10px;
+                            border-radius: 5px;
+                            margin-bottom: 10px;
+                        " id="copyable-link">${linkInfo.url}</code>
+                        <button id="copyLinkBtn" style="
+                            width: 100%;
+                            padding: 12px;
+                            background: linear-gradient(45deg, #4285F4, #34A853);
+                            border: none;
+                            border-radius: 8px;
+                            color: white;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 1rem;
+                        ">
+                            📋 Copy Link
+                        </button>
                     </div>
-                    <button id="copyLinkBtn" style="
-                        width: 100%;
-                        padding: 12px;
-                        background: rgba(107, 207, 127, 0.1);
-                        border: 1px solid rgba(107, 207, 127, 0.2);
-                        border-radius: 8px;
-                        color: #6bcf7f;
-                        cursor: pointer;
-                        font-size: 0.9rem;
-                    ">
-                        📋 Copy Link
-                    </button>
                 </div>
-                ` : ''}
                 
                 <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
-                    <button id="chromeRedirectBtn" style="
+                    <button id="openBrowserBtn" style="
                         flex: 1;
                         padding: 15px 20px;
-                        background: linear-gradient(45deg, #4285F4, #34A853);
+                        background: linear-gradient(45deg, #6bcf7f, #4ca1af);
                         border: none;
                         border-radius: 10px;
                         color: white;
@@ -671,9 +461,9 @@ const TourneyHubUIManager = (() => {
                         cursor: pointer;
                         font-size: 1rem;
                     ">
-                        ${instructions.buttonText}
+                        Try to Open in Browser
                     </button>
-                    <button id="chromeCancelBtn" style="
+                    <button id="cancelBtn" style="
                         padding: 15px 20px;
                         background: rgba(255, 255, 255, 0.07);
                         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -688,8 +478,10 @@ const TourneyHubUIManager = (() => {
                 
                 <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                     <p style="color: #a0a0c0; font-size: 0.85rem; line-height: 1.5;">
-                        <span style="color: #4285F4; font-weight: 600;">Why Chrome?</span><br>
-                        Google requires secure browsers for authentication. Chrome provides the best security and compatibility with Google services.
+                        <span style="color: #6bcf7f; font-weight: 600;">Tip:</span><br>
+                        1. Copy the link above<br>
+                        2. Open Chrome or Safari browser<br>
+                        3. Paste the link and login with Google
                     </p>
                 </div>
             </div>
@@ -697,36 +489,50 @@ const TourneyHubUIManager = (() => {
 
         document.body.appendChild(modalOverlay);
 
-        const redirectBtn = modalOverlay.querySelector('#chromeRedirectBtn');
-        const cancelBtn = modalOverlay.querySelector('#chromeCancelBtn');
         const copyLinkBtn = modalOverlay.querySelector('#copyLinkBtn');
+        const openBrowserBtn = modalOverlay.querySelector('#openBrowserBtn');
+        const cancelBtn = modalOverlay.querySelector('#cancelBtn');
 
-        redirectBtn.addEventListener('click', () => {
-            TourneyHubAuth.openInChrome();
-            showNotification('Opening in Chrome...', 'info');
+        copyLinkBtn.addEventListener('click', () => {
+            const linkText = modalOverlay.querySelector('#copyable-link').textContent;
+            navigator.clipboard.writeText(linkText).then(() => {
+                copyLinkBtn.textContent = '✓ Copied!';
+                copyLinkBtn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+                
+                setTimeout(() => {
+                    copyLinkBtn.textContent = '📋 Copy Link';
+                    copyLinkBtn.style.background = 'linear-gradient(45deg, #4285F4, #34A853)';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = linkText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyLinkBtn.textContent = '✓ Copied!';
+                copyLinkBtn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+                
+                setTimeout(() => {
+                    copyLinkBtn.textContent = '📋 Copy Link';
+                    copyLinkBtn.style.background = 'linear-gradient(45deg, #4285F4, #34A853)';
+                }, 2000);
+            });
+        });
+
+        openBrowserBtn.addEventListener('click', () => {
+            const result = TourneyHubAuth.openInBrowser();
+            if (!result.success) {
+                showNotification(result.message, 'warning');
+            } else {
+                showNotification('Opening in browser...', 'info');
+            }
             setTimeout(() => {
                 document.body.removeChild(modalOverlay);
             }, 1000);
         });
-
-        if (copyLinkBtn) {
-            copyLinkBtn.addEventListener('click', () => {
-                const linkText = modalOverlay.querySelector('#copyable-link').textContent;
-                navigator.clipboard.writeText(linkText).then(() => {
-                    copyLinkBtn.textContent = '✓ Copied!';
-                    copyLinkBtn.style.background = 'rgba(76, 175, 80, 0.1)';
-                    copyLinkBtn.style.borderColor = 'rgba(76, 175, 80, 0.2)';
-                    copyLinkBtn.style.color = '#4CAF50';
-                    
-                    setTimeout(() => {
-                        copyLinkBtn.textContent = '📋 Copy Link';
-                        copyLinkBtn.style.background = 'rgba(107, 207, 127, 0.1)';
-                        copyLinkBtn.style.borderColor = 'rgba(107, 207, 127, 0.2)';
-                        copyLinkBtn.style.color = '#6bcf7f';
-                    }, 2000);
-                });
-            });
-        }
 
         cancelBtn.addEventListener('click', () => {
             document.body.removeChild(modalOverlay);
@@ -772,13 +578,13 @@ const TourneyHubUIManager = (() => {
     return {
         showNotification,
         hideNotification,
-        showChromeRedirectModal,
+        showBrowserModal,
         showLoading,
         hideLoading
     };
 })();
 
-// ==================== EVENT MANAGER ====================
+// ==================== SIMPLE EVENT MANAGER ====================
 const TourneyHubEventManager = (() => {
     const _events = new Map();
 
@@ -788,16 +594,6 @@ const TourneyHubEventManager = (() => {
                 _events.set(event, []);
             }
             _events.get(event).push(callback);
-            
-            return () => {
-                const callbacks = _events.get(event);
-                if (callbacks) {
-                    const index = callbacks.findIndex(cb => cb === callback);
-                    if (index > -1) {
-                        callbacks.splice(index, 1);
-                    }
-                }
-            };
         },
 
         emit(event, data = null) {
@@ -818,14 +614,9 @@ const TourneyHubEventManager = (() => {
 // ==================== MAIN INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Add CSS for animations
+        // Add minimal CSS
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            
             .notification-toast {
                 position: fixed;
                 top: 20px;
@@ -839,8 +630,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 gap: 10px;
                 z-index: 10001;
                 transform: translateX(150%);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: transform 0.3s ease;
                 box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                background: #2196F3;
             }
             
             .notification-toast.show {
@@ -864,7 +656,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 font-size: 1.5rem;
                 cursor: pointer;
                 opacity: 0.7;
-                transition: opacity 0.2s;
                 padding: 0;
                 margin-left: 10px;
             }
@@ -877,7 +668,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 transition: opacity 0.5s ease;
             }
             
-            .chrome-modal-overlay {
+            .browser-modal-overlay {
                 animation: fadeIn 0.3s ease;
             }
             
@@ -942,7 +733,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Setup DOM elements
         setupLoginForm();
         setupGoogleButton();
-        setupForgotPassword();
 
         // Hide loading screen
         setTimeout(() => {
@@ -955,21 +745,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, 1000);
 
-        // Log browser info
-        const browserInfo = TourneyHubAuth.checkBrowserCompatibility();
-        console.log('Browser Info:', browserInfo);
-        
-        // Show browser warning if needed
-        if (browserInfo.requiresChrome && browserInfo.instructions) {
-            console.log('Browser requires Chrome redirect');
-        }
-
-        console.log('✅ TourneyHub Authentication System Initialized');
+        console.log('✅ TourneyHub Login System Ready');
 
     } catch (error) {
         console.error('Initialization error:', error);
         TourneyHubUIManager.showNotification(
-            'Failed to initialize application. Please refresh.',
+            'Failed to initialize. Please refresh.',
             'error'
         );
         
@@ -1066,16 +847,17 @@ function setupGoogleButton() {
     
     if (googleBtn) {
         googleBtn.addEventListener('click', async () => {
-            // Check browser compatibility first
-            const compatibility = TourneyHubAuth.checkBrowserCompatibility();
+            // Check browser first
+            const browserCheck = TourneyHubAuth.checkBrowser();
             
-            if (compatibility.requiresChrome) {
-                // Show Chrome redirect modal with instructions
-                TourneyHubUIManager.showChromeRedirectModal(compatibility.instructions);
+            if (browserCheck.isInApp) {
+                // In-app browser - show modal with link to copy
+                const linkInfo = TourneyHubAuth.getLinkForBrowser();
+                TourneyHubUIManager.showBrowserModal(browserCheck, linkInfo);
                 return;
             }
             
-            // Browser is Chrome, proceed with Google login
+            // Regular browser - try Google login
             TourneyHubUIManager.showLoading('Opening Google login...');
             googleBtn.disabled = true;
             
@@ -1098,42 +880,6 @@ function setupGoogleButton() {
     }
 }
 
-function setupForgotPassword() {
-    const forgotLink = document.getElementById('forgotPassword');
-    
-    if (!forgotLink) return;
-
-    forgotLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        const emailInput = document.getElementById('login-email');
-        const email = emailInput?.value.trim() || '';
-        
-        if (!email) {
-            TourneyHubUIManager.showNotification(
-                'Please enter your email in the email field first',
-                'warning'
-            );
-            return;
-        }
-        
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            TourneyHubUIManager.showNotification(
-                'Please enter a valid email address',
-                'error'
-            );
-            return;
-        }
-        
-        TourneyHubUIManager.showNotification(
-            'Password reset feature coming soon!',
-            'info'
-        );
-    });
-}
-
 // ==================== GLOBAL EXPORTS ====================
 window.TourneyHubAuth = TourneyHubAuth;
 window.TourneyHubUIManager = TourneyHubUIManager;
-window.TourneyHubEventManager = TourneyHubEventManager;

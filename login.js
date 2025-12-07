@@ -1,10 +1,23 @@
-// ==================== SIMPLIFIED TOURNEYHUB AUTHENTICATION ====================
+// ==================== ADVANCED TOURNEYHUB AUTHENTICATION SYSTEM ====================
 const TourneyHubAuth = (() => {
     // Private variables
     let _auth = null;
     let _db = null;
     let _googleAuthProvider = null;
     let _currentUser = null;
+    let _authStateListener = null;
+    let _isInitialized = false;
+    let _redirectAttempted = false;
+
+    // Session storage keys
+    const STORAGE_KEYS = {
+        USER: 'tourneyhub_user',
+        REMEMBER_ME: 'tourneyhub_remember_me',
+        REMEMBER_EMAIL: 'tourneyhub_remember_email',
+        SESSION_TOKEN: 'tourneyhub_session_token',
+        LAST_LOGIN_METHOD: 'tourneyhub_last_login_method',
+        REDIRECT_URL: 'tourneyhub_redirect_url'
+    };
 
     // Firebase configuration
     const _firebaseConfig = {
@@ -17,13 +30,13 @@ const TourneyHubAuth = (() => {
         measurementId: "G-EJZTSBSGQT"
     };
 
-    // Simple browser detection
+    // Browser detection
     const _browserDetector = {
         isInAppBrowser: () => {
             const ua = navigator.userAgent.toLowerCase();
             return /fbav|instagram|twitter|snapchat|whatsapp|slack|discord|telegram|line|kakao/.test(ua) ||
-                   ua.includes('wv') || // WebView
-                   ua.includes('fb_iab'); // Facebook in-app browser
+                   ua.includes('wv') ||
+                   ua.includes('fb_iab');
         },
         
         getBrowserName: () => {
@@ -34,7 +47,11 @@ const TourneyHubAuth = (() => {
             if (/edge/.test(ua.toLowerCase())) return 'Edge';
             if (/opera|opr/.test(ua.toLowerCase())) return 'Opera';
             if (/trident/.test(ua.toLowerCase())) return 'Internet Explorer';
-            return 'Browser';
+            return 'Unknown Browser';
+        },
+        
+        isMobile: () => {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         }
     };
 
@@ -45,116 +62,202 @@ const TourneyHubAuth = (() => {
             this.name = 'AuthError';
             this.code = code;
             this.originalError = originalError;
+            this.timestamp = Date.now();
         }
     }
 
-    // Private methods
-    const _initializeFirebase = () => {
-        return new Promise((resolve, reject) => {
+    // Session Manager
+    const _sessionManager = {
+        createSession: (user, loginMethod) => {
             try {
-                if (!firebase.apps.length) {
-                    const app = firebase.initializeApp(_firebaseConfig);
-                    
-                    _auth = firebase.auth();
-                    _db = firebase.firestore();
-                    _googleAuthProvider = new firebase.auth.GoogleAuthProvider();
-                    
-                    _googleAuthProvider.addScope('email');
-                    _googleAuthProvider.addScope('profile');
-                    _googleAuthProvider.setCustomParameters({
-                        prompt: 'select_account'
-                    });
-                    
-                    resolve(app);
-                } else {
-                    _auth = firebase.auth();
-                    _db = firebase.firestore();
-                    resolve(firebase.app());
-                }
+                const sessionData = {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    loginMethod: loginMethod,
+                    lastLogin: Date.now(),
+                    sessionToken: _generateSessionToken(),
+                    expiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+                };
+                
+                // Store session data
+                localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(sessionData));
+                localStorage.setItem(STORAGE_KEYS.LAST_LOGIN_METHOD, loginMethod);
+                localStorage.setItem(STORAGE_KEYS.SESSION_TOKEN, sessionData.sessionToken);
+                
+                // Store in sessionStorage for immediate access
+                sessionStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(sessionData));
+                
+                _currentUser = sessionData;
+                return sessionData;
             } catch (error) {
-                reject(new AuthError('Firebase initialization failed', 'INIT_ERROR', error));
+                console.error('Session creation failed:', error);
+                throw new AuthError('Session creation failed', 'SESSION_ERROR', error);
             }
-        });
+        },
+        
+        restoreSession: () => {
+            try {
+                const sessionData = localStorage.getItem(STORAGE_KEYS.USER);
+                if (!sessionData) return null;
+                
+                const user = JSON.parse(sessionData);
+                
+                // Check if session is expired
+                if (user.expiresAt && user.expiresAt < Date.now()) {
+                    _sessionManager.clearSession();
+                    return null;
+                }
+                
+                // Verify session token
+                const storedToken = localStorage.getItem(STORAGE_KEYS.SESSION_TOKEN);
+                if (!storedToken || storedToken !== user.sessionToken) {
+                    _sessionManager.clearSession();
+                    return null;
+                }
+                
+                _currentUser = user;
+                return user;
+            } catch (error) {
+                console.error('Session restoration failed:', error);
+                _sessionManager.clearSession();
+                return null;
+            }
+        },
+        
+        clearSession: () => {
+            localStorage.removeItem(STORAGE_KEYS.USER);
+            localStorage.removeItem(STORAGE_KEYS.SESSION_TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.LAST_LOGIN_METHOD);
+            sessionStorage.removeItem(STORAGE_KEYS.USER);
+            _currentUser = null;
+        },
+        
+        refreshSession: () => {
+            const user = _sessionManager.restoreSession();
+            if (user) {
+                // Extend session
+                user.expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000);
+                localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+                _currentUser = user;
+            }
+            return user;
+        }
+    };
+
+    // Helper functions
+    const _generateSessionToken = () => {
+        return 'token_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     };
 
     const _showNotification = (message, type = 'info') => {
-        const notification = {
-            id: Date.now() + Math.random(),
-            message,
-            type,
-            timestamp: Date.now()
-        };
-
         const event = new CustomEvent('auth-notification', {
-            detail: notification,
+            detail: { message, type, timestamp: Date.now() },
             bubbles: true
         });
         document.dispatchEvent(event);
     };
 
     const _handleAuthError = (error) => {
-        let userMessage = 'Authentication failed';
+        const errorMap = {
+            'auth/user-not-found': 'No account found with this email',
+            'auth/wrong-password': 'Incorrect password',
+            'auth/too-many-requests': 'Too many failed attempts. Try again later.',
+            'auth/network-request-failed': 'Network error. Check your connection.',
+            'auth/popup-blocked': 'Popup blocked. Please use email login.',
+            'auth/popup-closed-by-user': 'Login popup was closed',
+            'auth/cancelled-popup-request': 'Login cancelled',
+            'auth/account-exists-with-different-credential': 'Account exists with different credentials'
+        };
         
-        switch (error.code) {
-            case 'auth/user-not-found':
-                userMessage = 'No account found with this email';
-                break;
-            case 'auth/wrong-password':
-                userMessage = 'Incorrect password';
-                break;
-            case 'auth/too-many-requests':
-                userMessage = 'Too many failed attempts. Try again later.';
-                break;
-            case 'auth/network-request-failed':
-                userMessage = 'Network error. Check your connection.';
-                break;
-            case 'auth/popup-blocked':
-                userMessage = 'Popup blocked. Please use email login.';
-                break;
-            default:
-                userMessage = error.message || 'Authentication failed';
-        }
-
-        return userMessage;
+        return errorMap[error.code] || error.message || 'Authentication failed';
     };
 
-    const _createUserSession = (user, loginMethod) => {
+    const _getRedirectUrl = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect') || localStorage.getItem(STORAGE_KEYS.REDIRECT_URL);
+        return redirect || 'index.html';
+    };
+
+    const _saveRedirectUrl = (url) => {
+        localStorage.setItem(STORAGE_KEYS.REDIRECT_URL, url);
+    };
+
+    const _initializeFirebase = async () => {
         try {
-            _currentUser = user;
-            
-            localStorage.setItem('tourneyhub_user', JSON.stringify({
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                loginMethod,
-                lastLogin: Date.now()
-            }));
-            
-            return {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL
-            };
+            if (!firebase.apps.length) {
+                const app = firebase.initializeApp(_firebaseConfig);
+                _auth = firebase.auth();
+                _db = firebase.firestore();
+                _googleAuthProvider = new firebase.auth.GoogleAuthProvider();
+                
+                _googleAuthProvider.addScope('email');
+                _googleAuthProvider.addScope('profile');
+                _googleAuthProvider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                
+                return app;
+            } else {
+                _auth = firebase.auth();
+                _db = firebase.firestore();
+                return firebase.app();
+            }
         } catch (error) {
-            console.error('Session creation failed:', error);
-            throw new AuthError('Session creation failed', 'SESSION_ERROR', error);
+            throw new AuthError('Firebase initialization failed', 'INIT_ERROR', error);
         }
     };
 
-    // SIMPLE SOLUTION: Open in browser directly
+    const _setupAuthStateListener = () => {
+        if (_authStateListener) return;
+        
+        _authStateListener = _auth.onAuthStateChanged(async (firebaseUser) => {
+            if (firebaseUser) {
+                // User is signed in with Firebase
+                const loginMethod = localStorage.getItem(STORAGE_KEYS.LAST_LOGIN_METHOD) || 'firebase';
+                const userSession = _sessionManager.createSession(firebaseUser, loginMethod);
+                
+                // Check if we need to redirect after successful login
+                if (!_redirectAttempted) {
+                    _redirectAttempted = true;
+                    setTimeout(() => {
+                        _performRedirect(userSession);
+                    }, 500);
+                }
+            } else {
+                // User is signed out
+                _currentUser = null;
+            }
+        });
+    };
+
+    const _performRedirect = (userData) => {
+        const redirectUrl = _getRedirectUrl();
+        
+        // Clear redirect URL
+        localStorage.removeItem(STORAGE_KEYS.REDIRECT_URL);
+        
+        // Store user in global context for immediate access
+        window.tourneyHubUser = userData;
+        
+        // Show success message
+        _showNotification(`Welcome back, ${userData.displayName || userData.email}!`, 'success');
+        
+        // Redirect after short delay
+        setTimeout(() => {
+            window.location.href = redirectUrl;
+        }, 1000);
+    };
+
     const _openInBrowser = () => {
         const currentUrl = window.location.href;
-        
-        // Try to open in a new tab/window
         const newWindow = window.open(currentUrl, '_blank');
         
         if (!newWindow) {
-            // If popup blocked, show instructions
             return {
                 success: false,
-                message: 'Popup blocked. Please allow popups or copy the link below and open in Chrome/Safari browser.',
+                message: 'Popup blocked. Please allow popups or copy the link below.',
                 url: currentUrl
             };
         }
@@ -162,24 +265,30 @@ const TourneyHubAuth = (() => {
         return { success: true };
     };
 
-    // SIMPLE SOLUTION 2: Show link to copy
-    const _showLinkToCopy = () => {
-        const currentUrl = window.location.href;
-        
-        return {
-            url: currentUrl,
-            message: 'Please copy this link and open in Chrome/Safari browser:',
-            copyable: true
-        };
-    };
-
     // Public API
     return {
         // Initialization
         async init() {
             try {
+                if (_isInitialized) return { success: true, user: _currentUser };
+                
                 await _initializeFirebase();
-                return { success: true };
+                _setupAuthStateListener();
+                
+                // Check for existing session
+                const restoredUser = _sessionManager.restoreSession();
+                
+                // Check for redirect result
+                if (!restoredUser && !_redirectAttempted) {
+                    await this.handleRedirectResult();
+                }
+                
+                _isInitialized = true;
+                return { 
+                    success: true, 
+                    user: restoredUser,
+                    isAuthenticated: !!restoredUser
+                };
             } catch (error) {
                 console.error('TourneyHub Auth initialization failed:', error);
                 return { success: false, error };
@@ -198,6 +307,16 @@ const TourneyHubAuth = (() => {
                     throw new AuthError('Invalid email format', 'email');
                 }
 
+                // Save remember me preference
+                if (rememberMe) {
+                    localStorage.setItem(STORAGE_KEYS.REMEMBER_EMAIL, email);
+                    localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
+                } else {
+                    localStorage.removeItem(STORAGE_KEYS.REMEMBER_EMAIL);
+                    localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'false');
+                }
+
+                // Set persistence
                 const persistence = rememberMe ? 
                     firebase.auth.Auth.Persistence.LOCAL : 
                     firebase.auth.Auth.Persistence.SESSION;
@@ -205,14 +324,12 @@ const TourneyHubAuth = (() => {
                 await _auth.setPersistence(persistence);
 
                 const userCredential = await _auth.signInWithEmailAndPassword(email, password);
-                
-                const userSession = _createUserSession(userCredential.user, 'email');
-                
-                _showNotification('Login successful!', 'success');
+                _sessionManager.createSession(userCredential.user, 'email');
                 
                 return {
                     success: true,
-                    user: userSession
+                    user: _currentUser,
+                    rememberMe: rememberMe
                 };
             } catch (error) {
                 const userMessage = _handleAuthError(error);
@@ -229,29 +346,28 @@ const TourneyHubAuth = (() => {
                         requiresBrowser: true,
                         browserInfo: {
                             isInApp: true,
-                            name: _browserDetector.getBrowserName()
+                            name: _browserDetector.getBrowserName(),
+                            isMobile: _browserDetector.isMobile()
                         },
                         message: 'Google login requires Chrome or Safari browser.',
-                        linkInfo: _showLinkToCopy()
+                        solution: 'copy_link'
                     };
                 }
 
-                // Try popup method
+                let result;
+                
+                // Try popup method first
                 try {
-                    const result = await _auth.signInWithPopup(_googleAuthProvider);
-                    const userSession = _createUserSession(result.user, 'google');
-                    
-                    _showNotification('Google login successful!', 'success');
-                    
-                    return {
-                        success: true,
-                        user: userSession,
-                        method: 'popup'
-                    };
+                    result = await _auth.signInWithPopup(_googleAuthProvider);
                 } catch (popupError) {
                     // If popup fails, try redirect
-                    if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
+                    if (popupError.code === 'auth/popup-blocked' || 
+                        popupError.code === 'auth/popup-closed-by-user') {
+                        
+                        // Save current URL for redirect back
+                        _saveRedirectUrl(window.location.href);
                         await _auth.signInWithRedirect(_googleAuthProvider);
+                        
                         return {
                             success: true,
                             method: 'redirect',
@@ -260,6 +376,15 @@ const TourneyHubAuth = (() => {
                     }
                     throw popupError;
                 }
+
+                // Handle successful popup login
+                _sessionManager.createSession(result.user, 'google');
+                
+                return {
+                    success: true,
+                    user: _currentUser,
+                    method: 'popup'
+                };
             } catch (error) {
                 const userMessage = _handleAuthError(error);
                 throw new AuthError(userMessage, error.code || 'GOOGLE_LOGIN_ERROR', error);
@@ -268,12 +393,16 @@ const TourneyHubAuth = (() => {
 
         async handleRedirectResult() {
             try {
+                if (_redirectAttempted) return { success: false, message: 'Redirect already processed' };
+                
                 const result = await _auth.getRedirectResult();
                 if (result.user) {
-                    const userSession = _createUserSession(result.user, 'google_redirect');
+                    _sessionManager.createSession(result.user, 'google_redirect');
+                    _redirectAttempted = true;
                     return {
                         success: true,
-                        user: userSession
+                        user: _currentUser,
+                        method: 'redirect'
                     };
                 }
                 return { success: false, message: 'No redirect result' };
@@ -287,39 +416,74 @@ const TourneyHubAuth = (() => {
             }
         },
 
-        // SIMPLE: Just open in browser
-        openInBrowser: () => {
-            return _openInBrowser();
+        // Session Management
+        getCurrentUser() {
+            return _currentUser || _sessionManager.restoreSession();
         },
 
-        // SIMPLE: Get link to copy
+        isAuthenticated() {
+            return !!this.getCurrentUser();
+        },
+
+        async logout() {
+            try {
+                if (_auth) {
+                    await _auth.signOut();
+                }
+                _sessionManager.clearSession();
+                window.tourneyHubUser = null;
+                return { success: true };
+            } catch (error) {
+                console.error('Logout failed:', error);
+                // Still clear local session even if Firebase logout fails
+                _sessionManager.clearSession();
+                return { success: false, error };
+            }
+        },
+
+        // Remember Me functionality
+        getRememberMeData() {
+            return {
+                email: localStorage.getItem(STORAGE_KEYS.REMEMBER_EMAIL) || '',
+                rememberMe: localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true'
+            };
+        },
+
+        // Browser utilities
+        openInBrowser: _openInBrowser,
+        
         getLinkForBrowser: () => {
-            return _showLinkToCopy();
+            return {
+                url: window.location.href,
+                message: 'Copy this link and open in Chrome/Safari:',
+                timestamp: Date.now()
+            };
         },
 
-        // Check browser
         checkBrowser: () => {
             return {
                 isInApp: _browserDetector.isInAppBrowser(),
                 browserName: _browserDetector.getBrowserName(),
+                isMobile: _browserDetector.isMobile(),
                 userAgent: navigator.userAgent
             };
         },
 
         // Getters
-        getCurrentUser() {
-            return _currentUser;
-        },
-
         getAuthInstance() {
             return _auth;
+        },
+        
+        getFirestoreInstance() {
+            return _db;
         }
     };
 })();
 
-// ==================== SIMPLE UI MANAGER ====================
+// ==================== ADVANCED UI MANAGER ====================
 const TourneyHubUIManager = (() => {
     let _isLoading = false;
+    let _activeModal = null;
 
     const showNotification = (message, type = 'info', options = {}) => {
         const toast = document.getElementById('notificationToast');
@@ -329,24 +493,29 @@ const TourneyHubUIManager = (() => {
 
         if (!toast || !toastIcon || !toastMessage) return;
 
-        const iconMap = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        };
+        // Set icon and color
+        const settings = {
+            success: { icon: '✅', color: '#4CAF50' },
+            error: { icon: '❌', color: '#F44336' },
+            warning: { icon: '⚠️', color: '#FF9800' },
+            info: { icon: 'ℹ️', color: '#2196F3' }
+        }[type] || { icon: 'ℹ️', color: '#2196F3' };
 
-        toastIcon.textContent = iconMap[type] || 'ℹ️';
+        toastIcon.textContent = settings.icon;
         toastMessage.textContent = message;
+        toast.style.backgroundColor = settings.color;
         toast.classList.add('show');
 
+        // Auto-hide
         const duration = options.duration || 5000;
-        setTimeout(() => {
+        const hideTimer = setTimeout(() => {
             hideNotification();
         }, duration);
 
+        // Close button
         if (toastClose) {
             const closeHandler = () => {
+                clearTimeout(hideTimer);
                 hideNotification();
                 toastClose.removeEventListener('click', closeHandler);
             };
@@ -362,7 +531,13 @@ const TourneyHubUIManager = (() => {
     };
 
     const showBrowserModal = (browserInfo, linkInfo) => {
+        if (_activeModal) return;
+        
+        const modalId = 'browser-modal-' + Date.now();
+        _activeModal = modalId;
+
         const modalOverlay = document.createElement('div');
+        modalOverlay.id = modalId;
         modalOverlay.className = 'browser-modal-overlay';
         modalOverlay.style.cssText = `
             position: fixed;
@@ -376,10 +551,11 @@ const TourneyHubUIManager = (() => {
             justify-content: center;
             align-items: center;
             backdrop-filter: blur(10px);
+            animation: modalFadeIn 0.3s ease;
         `;
 
         modalOverlay.innerHTML = `
-            <div style="
+            <div class="browser-modal" style="
                 background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
                 border-radius: 20px;
                 padding: 30px;
@@ -388,6 +564,7 @@ const TourneyHubUIManager = (() => {
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
                 text-align: center;
+                animation: modalSlideIn 0.3s ease;
             ">
                 <div style="font-size: 4rem; margin-bottom: 20px;">🌐</div>
                 <h2 style="margin: 0 0 15px 0; font-size: 1.5rem; color: white;">
@@ -402,7 +579,7 @@ const TourneyHubUIManager = (() => {
                     margin-bottom: 20px;
                 ">
                     <div style="color: #ff6b6b; font-weight: 600; margin-bottom: 5px;">
-                        Detected: ${browserInfo.name}
+                        Detected: ${browserInfo.name} ${browserInfo.isMobile ? '(Mobile)' : ''}
                     </div>
                     <div style="color: #a0a0c0; font-size: 0.9rem;">
                         Google login requires Chrome or Safari browser.
@@ -411,7 +588,7 @@ const TourneyHubUIManager = (() => {
                 
                 <div style="margin-bottom: 25px; text-align: left;">
                     <div style="color: #a0a0c0; margin-bottom: 10px;">
-                        <strong>Simple Solution:</strong>
+                        <strong>Solution:</strong>
                     </div>
                     <div style="
                         background: rgba(0, 0, 0, 0.3);
@@ -423,17 +600,32 @@ const TourneyHubUIManager = (() => {
                         <div style="color: #a0a0c0; margin-bottom: 8px; font-size: 0.9rem;">
                             Copy this link and open in Chrome/Safari:
                         </div>
-                        <code style="
-                            color: #6bcf7f;
-                            font-size: 0.85rem;
-                            word-break: break-all;
-                            display: block;
-                            background: rgba(0, 0, 0, 0.5);
-                            padding: 10px;
-                            border-radius: 5px;
-                            margin-bottom: 10px;
-                        " id="copyable-link">${linkInfo.url}</code>
-                        <button id="copyLinkBtn" style="
+                        <div style="position: relative;">
+                            <code style="
+                                color: #6bcf7f;
+                                font-size: 0.85rem;
+                                word-break: break-all;
+                                display: block;
+                                background: rgba(0, 0, 0, 0.5);
+                                padding: 10px 40px 10px 10px;
+                                border-radius: 5px;
+                                margin-bottom: 10px;
+                                border: 1px solid rgba(255, 255, 255, 0.1);
+                            " id="copyable-link-${modalId}">${linkInfo.url}</code>
+                            <button id="quickCopyBtn-${modalId}" style="
+                                position: absolute;
+                                right: 10px;
+                                top: 10px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: none;
+                                border-radius: 4px;
+                                color: white;
+                                padding: 4px 8px;
+                                cursor: pointer;
+                                font-size: 0.8rem;
+                            ">Copy</button>
+                        </div>
+                        <button id="copyLinkBtn-${modalId}" style="
                             width: 100%;
                             padding: 12px;
                             background: linear-gradient(45deg, #4285F4, #34A853);
@@ -443,14 +635,15 @@ const TourneyHubUIManager = (() => {
                             cursor: pointer;
                             font-weight: 600;
                             font-size: 1rem;
+                            margin-top: 10px;
                         ">
-                            📋 Copy Link
+                            📋 Copy Link & Instructions
                         </button>
                     </div>
                 </div>
                 
                 <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
-                    <button id="openBrowserBtn" style="
+                    <button id="openBrowserBtn-${modalId}" style="
                         flex: 1;
                         padding: 15px 20px;
                         background: linear-gradient(45deg, #6bcf7f, #4ca1af);
@@ -463,7 +656,7 @@ const TourneyHubUIManager = (() => {
                     ">
                         Try to Open in Browser
                     </button>
-                    <button id="cancelBtn" style="
+                    <button id="cancelBtn-${modalId}" style="
                         padding: 15px 20px;
                         background: rgba(255, 255, 255, 0.07);
                         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -478,10 +671,11 @@ const TourneyHubUIManager = (() => {
                 
                 <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                     <p style="color: #a0a0c0; font-size: 0.85rem; line-height: 1.5;">
-                        <span style="color: #6bcf7f; font-weight: 600;">Tip:</span><br>
+                        <span style="color: #6bcf7f; font-weight: 600;">Instructions:</span><br>
                         1. Copy the link above<br>
                         2. Open Chrome or Safari browser<br>
-                        3. Paste the link and login with Google
+                        3. Paste the link in address bar<br>
+                        4. Login with Google
                     </p>
                 </div>
             </div>
@@ -489,78 +683,99 @@ const TourneyHubUIManager = (() => {
 
         document.body.appendChild(modalOverlay);
 
-        const copyLinkBtn = modalOverlay.querySelector('#copyLinkBtn');
-        const openBrowserBtn = modalOverlay.querySelector('#openBrowserBtn');
-        const cancelBtn = modalOverlay.querySelector('#cancelBtn');
-
-        copyLinkBtn.addEventListener('click', () => {
-            const linkText = modalOverlay.querySelector('#copyable-link').textContent;
-            navigator.clipboard.writeText(linkText).then(() => {
-                copyLinkBtn.textContent = '✓ Copied!';
-                copyLinkBtn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
-                
-                setTimeout(() => {
-                    copyLinkBtn.textContent = '📋 Copy Link';
-                    copyLinkBtn.style.background = 'linear-gradient(45deg, #4285F4, #34A853)';
-                }, 2000);
+        // Copy functionality
+        const copyToClipboard = (text) => {
+            const fullText = `${text}\n\nInstructions:\n1. Open Chrome or Safari browser\n2. Paste this link in address bar\n3. Login with Google\n\nIf login doesn't work, try:\n- Clear browser cache\n- Enable third-party cookies\n- Use incognito mode`;
+            
+            navigator.clipboard.writeText(fullText).then(() => {
+                showNotification('Link and instructions copied!', 'success');
             }).catch(() => {
-                // Fallback for older browsers
+                // Fallback
                 const textArea = document.createElement('textarea');
-                textArea.value = linkText;
+                textArea.value = fullText;
                 document.body.appendChild(textArea);
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                
-                copyLinkBtn.textContent = '✓ Copied!';
-                copyLinkBtn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
-                
-                setTimeout(() => {
-                    copyLinkBtn.textContent = '📋 Copy Link';
-                    copyLinkBtn.style.background = 'linear-gradient(45deg, #4285F4, #34A853)';
-                }, 2000);
+                showNotification('Link copied!', 'success');
             });
+        };
+
+        // Event listeners
+        modalOverlay.querySelector(`#quickCopyBtn-${modalId}`).addEventListener('click', () => {
+            const linkText = modalOverlay.querySelector(`#copyable-link-${modalId}`).textContent;
+            copyToClipboard(linkText);
         });
 
-        openBrowserBtn.addEventListener('click', () => {
+        modalOverlay.querySelector(`#copyLinkBtn-${modalId}`).addEventListener('click', () => {
+            const linkText = modalOverlay.querySelector(`#copyable-link-${modalId}`).textContent;
+            copyToClipboard(linkText);
+        });
+
+        modalOverlay.querySelector(`#openBrowserBtn-${modalId}`).addEventListener('click', () => {
             const result = TourneyHubAuth.openInBrowser();
             if (!result.success) {
                 showNotification(result.message, 'warning');
             } else {
                 showNotification('Opening in browser...', 'info');
+                setTimeout(() => hideModal(), 1000);
             }
-            setTimeout(() => {
-                document.body.removeChild(modalOverlay);
-            }, 1000);
         });
 
-        cancelBtn.addEventListener('click', () => {
-            document.body.removeChild(modalOverlay);
+        modalOverlay.querySelector(`#cancelBtn-${modalId}`).addEventListener('click', () => {
+            hideModal();
             const emailInput = document.getElementById('login-email');
-            if (emailInput) {
-                emailInput.focus();
-            }
+            if (emailInput) emailInput.focus();
         });
 
         modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
-                document.body.removeChild(modalOverlay);
-            }
+            if (e.target === modalOverlay) hideModal();
         });
+
+        const hideModal = () => {
+            if (_activeModal === modalId) {
+                document.body.removeChild(modalOverlay);
+                _activeModal = null;
+            }
+        };
+
+        // Add CSS animations
+        if (!document.querySelector('#modal-animations')) {
+            const style = document.createElement('style');
+            style.id = 'modal-animations';
+            style.textContent = `
+                @keyframes modalFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes modalSlideIn {
+                    from { transform: translateY(-20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
     };
 
-    const showLoading = (message = 'Loading...') => {
+    const showLoading = (message = 'Loading...', options = {}) => {
         if (_isLoading) return;
         _isLoading = true;
         
         const loadingScreen = document.getElementById('loadingScreen');
         if (loadingScreen) {
             const subtitle = loadingScreen.querySelector('.loading-subtitle');
-            if (subtitle) {
-                subtitle.textContent = message;
-            }
+            if (subtitle) subtitle.textContent = message;
+            
             loadingScreen.style.display = 'flex';
-            loadingScreen.style.opacity = '1';
+            setTimeout(() => {
+                loadingScreen.style.opacity = '1';
+            }, 10);
+        }
+        
+        // Disable form inputs
+        if (options.disableForm) {
+            const form = document.getElementById('loginForm');
+            if (form) form.style.pointerEvents = 'none';
         }
     };
 
@@ -573,6 +788,25 @@ const TourneyHubUIManager = (() => {
                 loadingScreen.style.display = 'none';
             }, 300);
         }
+        
+        // Re-enable form inputs
+        const form = document.getElementById('loginForm');
+        if (form) form.style.pointerEvents = 'auto';
+    };
+
+    const updateButtonState = (buttonId, isLoading) => {
+        const button = document.getElementById(buttonId);
+        if (!button) return;
+        
+        if (isLoading) {
+            button.disabled = true;
+            const spinner = button.querySelector('.btn-spinner');
+            if (spinner) spinner.style.display = 'block';
+        } else {
+            button.disabled = false;
+            const spinner = button.querySelector('.btn-spinner');
+            if (spinner) spinner.style.display = 'none';
+        }
     };
 
     return {
@@ -580,26 +814,31 @@ const TourneyHubUIManager = (() => {
         hideNotification,
         showBrowserModal,
         showLoading,
-        hideLoading
+        hideLoading,
+        updateButtonState
     };
 })();
 
-// ==================== SIMPLE EVENT MANAGER ====================
+// ==================== EVENT MANAGER ====================
 const TourneyHubEventManager = (() => {
     const _events = new Map();
+    const _oneTimeEvents = new Map();
 
     return {
         on(event, callback) {
-            if (!_events.has(event)) {
-                _events.set(event, []);
-            }
+            if (!_events.has(event)) _events.set(event, []);
             _events.get(event).push(callback);
         },
 
+        once(event, callback) {
+            if (!_oneTimeEvents.has(event)) _oneTimeEvents.set(event, []);
+            _oneTimeEvents.get(event).push(callback);
+        },
+
         emit(event, data = null) {
+            // Regular event listeners
             if (_events.has(event)) {
-                const callbacks = _events.get(event);
-                callbacks.forEach(callback => {
+                _events.get(event).forEach(callback => {
                     try {
                         callback(data);
                     } catch (error) {
@@ -607,6 +846,99 @@ const TourneyHubEventManager = (() => {
                     }
                 });
             }
+            
+            // One-time event listeners
+            if (_oneTimeEvents.has(event)) {
+                _oneTimeEvents.get(event).forEach(callback => {
+                    try {
+                        callback(data);
+                    } catch (error) {
+                        console.error(`Error in one-time event handler for "${event}":`, error);
+                    }
+                });
+                _oneTimeEvents.delete(event);
+            }
+        },
+
+        off(event, callback) {
+            if (_events.has(event)) {
+                const callbacks = _events.get(event);
+                const index = callbacks.indexOf(callback);
+                if (index > -1) callbacks.splice(index, 1);
+            }
+        }
+    };
+})();
+
+// ==================== PERSISTENT SESSION MANAGER ====================
+const TourneyHubSessionManager = (() => {
+    const checkExistingSession = async () => {
+        const user = TourneyHubAuth.getCurrentUser();
+        
+        if (user) {
+            // Check session validity
+            if (user.expiresAt && user.expiresAt > Date.now()) {
+                // Session is valid, refresh it
+                TourneyHubAuth.sessionManager.refreshSession();
+                
+                // Check if we should auto-redirect
+                const urlParams = new URLSearchParams(window.location.search);
+                const autoLogin = urlParams.get('autoLogin');
+                
+                if (autoLogin !== 'false') {
+                    // Auto-redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 100);
+                    return true;
+                }
+            } else {
+                // Session expired, clear it
+                await TourneyHubAuth.logout();
+            }
+        }
+        
+        return false;
+    };
+
+    const handleRememberMe = () => {
+        const rememberData = TourneyHubAuth.getRememberMeData();
+        const emailInput = document.getElementById('login-email');
+        const rememberCheckbox = document.getElementById('rememberMe');
+        
+        if (emailInput && rememberData.email) {
+            emailInput.value = rememberData.email;
+        }
+        
+        if (rememberCheckbox) {
+            rememberCheckbox.checked = rememberData.rememberMe;
+        }
+        
+        return rememberData;
+    };
+
+    const saveRedirectDestination = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect');
+        
+        if (redirect) {
+            localStorage.setItem('tourneyhub_redirect_url', redirect);
+        }
+    };
+
+    return {
+        checkExistingSession,
+        handleRememberMe,
+        saveRedirectDestination,
+        
+        initialize: async () => {
+            saveRedirectDestination();
+            
+            const hasSession = await checkExistingSession();
+            if (hasSession) return true;
+            
+            handleRememberMe();
+            return false;
         }
     };
 })();
@@ -614,7 +946,7 @@ const TourneyHubEventManager = (() => {
 // ==================== MAIN INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Add minimal CSS
+        // Add enhanced CSS styles
         const style = document.createElement('style');
         style.textContent = `
             .notification-toast {
@@ -630,9 +962,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 gap: 10px;
                 z-index: 10001;
                 transform: translateX(150%);
-                transition: transform 0.3s ease;
+                transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
                 box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-                background: #2196F3;
+                min-width: 300px;
+                max-width: 400px;
             }
             
             .notification-toast.show {
@@ -643,10 +976,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                flex: 1;
             }
             
             .toast-icon {
                 font-size: 1.2rem;
+            }
+            
+            .toast-message {
+                flex: 1;
+                font-size: 0.95rem;
             }
             
             .toast-close {
@@ -658,6 +997,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 opacity: 0.7;
                 padding: 0;
                 margin-left: 10px;
+                line-height: 1;
             }
             
             .toast-close:hover {
@@ -668,218 +1008,359 @@ document.addEventListener('DOMContentLoaded', async () => {
                 transition: opacity 0.5s ease;
             }
             
-            .browser-modal-overlay {
-                animation: fadeIn 0.3s ease;
+            .btn-spinner {
+                display: none;
+                width: 16px;
+                height: 16px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 50%;
+                border-top-color: white;
+                animation: spin 1s ease-in-out infinite;
+                margin-left: 10px;
             }
             
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+            
+            .form-input:disabled,
+            .btn:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+            
+            .checkbox-container {
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .checkmark {
+                width: 18px;
+                height: 18px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 4px;
+                display: inline-block;
+                position: relative;
+                transition: all 0.2s ease;
+            }
+            
+            .checkbox-container input:checked + .checkmark {
+                background: #4285F4;
+                border-color: #4285F4;
+            }
+            
+            .checkbox-container input:checked + .checkmark::after {
+                content: '✓';
+                position: absolute;
+                color: white;
+                font-size: 12px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
             }
         `;
         document.head.appendChild(style);
+
+        // Show initial loading
+        TourneyHubUIManager.showLoading('Initializing...');
+
+        // Initialize session manager
+        const hasActiveSession = await TourneyHubSessionManager.initialize();
+        if (hasActiveSession) {
+            return; // Already redirected
+        }
 
         // Initialize authentication
         const initResult = await TourneyHubAuth.init();
         
         if (!initResult.success) {
-            throw new Error('Failed to initialize authentication');
+            throw new Error('Failed to initialize authentication system');
         }
 
-        // Setup event listeners
-        TourneyHubEventManager.on('auth-notification', (event) => {
-            TourneyHubUIManager.showNotification(
-                event.detail.message,
-                event.detail.type
-            );
-        });
-
-        TourneyHubEventManager.on('auth-success', (data) => {
-            TourneyHubUIManager.showNotification(
-                'Login successful! Redirecting...',
-                'success'
-            );
-            
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
-        });
-
-        TourneyHubEventManager.on('auth-error', (error) => {
-            TourneyHubUIManager.showNotification(
-                error.message || 'Authentication failed',
-                'error'
-            );
-        });
-
-        // Check for redirect result
-        try {
-            const redirectResult = await TourneyHubAuth.handleRedirectResult();
-            if (redirectResult.success) {
-                TourneyHubEventManager.emit('auth-success', redirectResult);
-                return;
-            }
-        } catch (error) {
-            // Ignore redirect errors
-        }
-
-        // Check existing session
-        const user = TourneyHubAuth.getCurrentUser();
-        if (user) {
-            window.location.href = 'index.html';
-            return;
-        }
+        // Setup event system
+        setupEventListeners();
 
         // Setup DOM elements
         setupLoginForm();
         setupGoogleButton();
+        setupForgotPassword();
+        setupPasswordToggle();
 
-        // Hide loading screen
+        // Check for redirect result
+        await checkRedirectResult();
+
+        // Hide loading screen with delay
         setTimeout(() => {
-            const loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 500);
+            TourneyHubUIManager.hideLoading();
+            
+            // Auto-focus email input
+            const emailInput = document.getElementById('login-email');
+            if (emailInput && !emailInput.value) {
+                setTimeout(() => emailInput.focus(), 100);
             }
-        }, 1000);
-
-        console.log('✅ TourneyHub Login System Ready');
+            
+            console.log('✅ TourneyHub Advanced Login System Ready');
+        }, 800);
 
     } catch (error) {
         console.error('Initialization error:', error);
         TourneyHubUIManager.showNotification(
-            'Failed to initialize. Please refresh.',
-            'error'
+            'System initialization failed. Please refresh the page.',
+            'error',
+            { duration: 10000 }
         );
-        
-        const loadingScreen = document.getElementById('loadingScreen');
-        if (loadingScreen) {
-            loadingScreen.style.display = 'none';
-        }
+        TourneyHubUIManager.hideLoading();
     }
 });
+
+// ==================== EVENT LISTENERS SETUP ====================
+function setupEventListeners() {
+    // Auth notifications
+    TourneyHubEventManager.on('auth-notification', (event) => {
+        TourneyHubUIManager.showNotification(
+            event.detail.message,
+            event.detail.type
+        );
+    });
+
+    // Auth success
+    TourneyHubEventManager.on('auth-success', (data) => {
+        const user = data.user || TourneyHubAuth.getCurrentUser();
+        const message = user ? `Welcome back, ${user.displayName || user.email}!` : 'Login successful!';
+        
+        TourneyHubUIManager.showNotification(message, 'success');
+        
+        // Store user in global context for immediate access
+        window.tourneyHubUser = user;
+        
+        // Get redirect URL
+        const redirectUrl = localStorage.getItem('tourneyhub_redirect_url') || 'index.html';
+        
+        // Clear redirect URL
+        localStorage.removeItem('tourneyhub_redirect_url');
+        
+        // Redirect with delay
+        setTimeout(() => {
+            window.location.href = redirectUrl;
+        }, 1500);
+    });
+
+    // Auth error
+    TourneyHubEventManager.on('auth-error', (error) => {
+        TourneyHubUIManager.showNotification(
+            error.message || 'Authentication failed',
+            'error'
+        );
+        TourneyHubUIManager.hideLoading();
+    });
+}
 
 // ==================== DOM SETUP FUNCTIONS ====================
 function setupLoginForm() {
     const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('login-email');
     const passwordInput = document.getElementById('login-password');
-    const passwordToggle = document.getElementById('passwordToggle');
-    const rememberMe = document.getElementById('rememberMe');
+    const loginBtn = document.getElementById('loginBtn');
+    const rememberCheckbox = document.getElementById('rememberMe');
 
     if (!loginForm) return;
 
-    // Load remembered email
-    const savedEmail = localStorage.getItem('tourneyhub_remember_email');
-    const savedRemember = localStorage.getItem('tourneyhub_remember_me') === 'true';
-    
-    if (savedEmail && emailInput) {
-        emailInput.value = savedEmail;
-    }
-    if (rememberMe) {
-        rememberMe.checked = savedRemember;
-    }
-
-    // Password toggle
-    if (passwordToggle && passwordInput) {
-        passwordToggle.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            const icon = passwordToggle.querySelector('.toggle-icon');
-            if (icon) {
-                icon.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
-            }
-        });
-    }
+    // Load remember me data
+    const rememberData = TourneyHubSessionManager.handleRememberMe();
 
     // Form submission
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const email = emailInput ? emailInput.value.trim() : '';
-        const password = passwordInput ? passwordInput.value : '';
-        const remember = rememberMe ? rememberMe.checked : false;
+        const email = emailInput?.value.trim() || '';
+        const password = passwordInput?.value || '';
+        const rememberMe = rememberCheckbox?.checked || false;
 
+        // Validation
         if (!email || !password) {
-            TourneyHubUIManager.showNotification(
-                'Please fill in all fields',
-                'error'
-            );
+            TourneyHubUIManager.showNotification('Please fill in all fields', 'error');
             return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            TourneyHubUIManager.showNotification(
-                'Please enter a valid email address',
-                'error'
-            );
+            TourneyHubUIManager.showNotification('Please enter a valid email address', 'error');
+            emailInput.focus();
             return;
         }
 
-        // Save remember me
-        if (remember) {
-            localStorage.setItem('tourneyhub_remember_email', email);
-            localStorage.setItem('tourneyhub_remember_me', 'true');
-        } else {
-            localStorage.removeItem('tourneyhub_remember_email');
-            localStorage.removeItem('tourneyhub_remember_me');
-        }
+        // Show loading
+        TourneyHubUIManager.showLoading('Signing in...', { disableForm: true });
+        TourneyHubUIManager.updateButtonState('loginBtn', true);
 
-        TourneyHubUIManager.showLoading('Authenticating...');
-        
         try {
-            const result = await TourneyHubAuth.loginWithEmail(email, password, remember);
+            const result = await TourneyHubAuth.loginWithEmail(email, password, rememberMe);
+            
+            // Save remember me preference
+            if (rememberMe) {
+                localStorage.setItem('tourneyhub_remember_email', email);
+                localStorage.setItem('tourneyhub_remember_me', 'true');
+            } else {
+                localStorage.removeItem('tourneyhub_remember_email');
+                localStorage.setItem('tourneyhub_remember_me', 'false');
+            }
+            
             TourneyHubEventManager.emit('auth-success', result);
         } catch (error) {
             TourneyHubEventManager.emit('auth-error', error);
         } finally {
             TourneyHubUIManager.hideLoading();
+            TourneyHubUIManager.updateButtonState('loginBtn', false);
         }
     });
-}
 
-function setupGoogleButton() {
-    const googleBtn = document.getElementById('googleSignInNewWindow');
-    
-    if (googleBtn) {
-        googleBtn.addEventListener('click', async () => {
-            // Check browser first
-            const browserCheck = TourneyHubAuth.checkBrowser();
-            
-            if (browserCheck.isInApp) {
-                // In-app browser - show modal with link to copy
-                const linkInfo = TourneyHubAuth.getLinkForBrowser();
-                TourneyHubUIManager.showBrowserModal(browserCheck, linkInfo);
-                return;
+    // Enter key navigation
+    if (emailInput) {
+        emailInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && passwordInput) {
+                e.preventDefault();
+                passwordInput.focus();
             }
-            
-            // Regular browser - try Google login
-            TourneyHubUIManager.showLoading('Opening Google login...');
-            googleBtn.disabled = true;
-            
-            try {
-                const result = await TourneyHubAuth.loginWithGoogle();
-                
-                if (result.method === 'redirect') {
-                    // Redirect initiated
-                    return;
-                }
-                
-                TourneyHubEventManager.emit('auth-success', result);
-            } catch (error) {
-                TourneyHubEventManager.emit('auth-error', error);
-            } finally {
-                TourneyHubUIManager.hideLoading();
-                googleBtn.disabled = false;
+        });
+    }
+
+    if (passwordInput) {
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                loginForm.dispatchEvent(new Event('submit'));
             }
         });
     }
 }
 
-// ==================== GLOBAL EXPORTS ====================
+function setupGoogleButton() {
+    const googleBtn = document.getElementById('googleSignInNewWindow');
+    
+    if (!googleBtn) return;
+
+    googleBtn.addEventListener('click', async () => {
+        // Check browser first
+        const browserCheck = TourneyHubAuth.checkBrowser();
+        
+        if (browserCheck.isInApp) {
+            // In-app browser - show modal
+            const linkInfo = TourneyHubAuth.getLinkForBrowser();
+            TourneyHubUIManager.showBrowserModal(browserCheck, linkInfo);
+            return;
+        }
+        
+        // Regular browser - try Google login
+        TourneyHubUIManager.showLoading('Connecting to Google...', { disableForm: true });
+        googleBtn.disabled = true;
+        
+        try {
+            const result = await TourneyHubAuth.loginWithGoogle();
+            
+            if (result.method === 'redirect') {
+                // Redirect initiated
+                TourneyHubUIManager.showNotification('Redirecting to Google...', 'info');
+                return;
+            }
+            
+            // Save remember me for Google login
+            localStorage.setItem('tourneyhub_remember_me', 'true');
+            
+            TourneyHubEventManager.emit('auth-success', result);
+        } catch (error) {
+            TourneyHubEventManager.emit('auth-error', error);
+        } finally {
+            TourneyHubUIManager.hideLoading();
+            googleBtn.disabled = false;
+        }
+    });
+}
+
+function setupForgotPassword() {
+    const forgotLink = document.getElementById('forgotPassword');
+    
+    if (!forgotLink) return;
+
+    forgotLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        const emailInput = document.getElementById('login-email');
+        const email = emailInput?.value || '';
+        
+        if (email) {
+            localStorage.setItem('tourneyhub_reset_email', email);
+        }
+        
+        // Redirect to password reset page
+        window.location.href = 'reset-password.html';
+    });
+}
+
+function setupPasswordToggle() {
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordInput = document.getElementById('login-password');
+    
+    if (!passwordToggle || !passwordInput) return;
+
+    passwordToggle.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        const icon = passwordToggle.querySelector('.toggle-icon');
+        if (icon) {
+            icon.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
+        }
+        
+        // Update input icon
+        const inputIcon = document.querySelector('.input-icon[data-for="password"]');
+        if (inputIcon) {
+            inputIcon.textContent = type === 'password' ? '••••' : '';
+        }
+    });
+}
+
+async function checkRedirectResult() {
+    try {
+        const result = await TourneyHubAuth.handleRedirectResult();
+        if (result.success) {
+            TourneyHubEventManager.emit('auth-success', result);
+        }
+    } catch (error) {
+        // Ignore redirect errors
+        if (error.code !== 'auth/no-redirect-result') {
+            console.error('Redirect result error:', error);
+        }
+    }
+}
+
+// ==================== GLOBAL EXPORTS & UTILITIES ====================
 window.TourneyHubAuth = TourneyHubAuth;
 window.TourneyHubUIManager = TourneyHubUIManager;
+window.TourneyHubEventManager = TourneyHubEventManager;
+window.TourneyHubSessionManager = TourneyHubSessionManager;
+
+// Auto-check session on page visibility change
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        TourneyHubSessionManager.checkExistingSession();
+    }
+});
+
+// Handle browser back/forward
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        TourneyHubSessionManager.initialize();
+    }
+});
+
+// ==================== HELPER FUNCTIONS ====================
+function formatEmailForDisplay(email) {
+    if (!email) return '';
+    const [username, domain] = email.split('@');
+    if (username.length > 10) {
+        return `${username.substring(0, 7)}...@${domain}`;
+    }
+    return email;
+}

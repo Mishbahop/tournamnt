@@ -441,6 +441,11 @@ const TourneyHubAuth = (() => {
             }
         },
 
+        // Session refresh
+        refreshSession() {
+            return _sessionManager.refreshSession();
+        },
+
         // Remember Me functionality
         getRememberMeData() {
             return {
@@ -879,7 +884,7 @@ const TourneyHubSessionManager = (() => {
             // Check session validity
             if (user.expiresAt && user.expiresAt > Date.now()) {
                 // Session is valid, refresh it
-                TourneyHubAuth.sessionManager.refreshSession();
+                TourneyHubAuth.refreshSession();
                 
                 // Check if we should auto-redirect
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1060,6 +1065,65 @@ document.addEventListener('DOMContentLoaded', async () => {
                 left: 50%;
                 transform: translate(-50%, -50%);
             }
+
+            .refresh-container {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 9999;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+
+            .refresh-container:hover {
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+
+            .btn-refresh {
+                background: linear-gradient(45deg, #6bcf7f, #4ca1af);
+                border: none;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+            }
+
+            .btn-refresh:hover {
+                transform: scale(1.1);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            }
+
+            .btn-refresh.loading .refresh-icon {
+                animation: spin 1s linear infinite;
+            }
+
+            .refresh-tooltip {
+                position: absolute;
+                bottom: 60px;
+                right: 0;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 5px 10px;
+                border-radius: 5px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                pointer-events: none;
+            }
+
+            .btn-refresh:hover .refresh-tooltip {
+                opacity: 1;
+            }
         `;
         document.head.appendChild(style);
 
@@ -1090,6 +1154,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Check for redirect result
         await checkRedirectResult();
+
+        // Setup refresh button
+        setupRefreshButton();
 
         // Hide loading screen with delay
         setTimeout(() => {
@@ -1335,6 +1402,105 @@ async function checkRedirectResult() {
     }
 }
 
+// ==================== REFRESH BUTTON FUNCTIONALITY ====================
+function setupRefreshButton() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    const refreshContainer = document.getElementById('refreshContainer');
+    
+    if (!refreshBtn || !refreshContainer) return;
+    
+    // Refresh button click handler
+    refreshBtn.addEventListener('click', async () => {
+        // Show loading state
+        refreshBtn.classList.add('loading');
+        
+        // Perform refresh actions
+        await performSessionRefresh();
+        
+        // Remove loading state after a delay
+        setTimeout(() => {
+            refreshBtn.classList.remove('loading');
+        }, 1000);
+    });
+    
+    // Auto-hide/show based on scroll and activity
+    let hideTimeout;
+    
+    const showRefreshButton = () => {
+        refreshContainer.style.opacity = '1';
+        refreshContainer.style.visibility = 'visible';
+        
+        // Auto-hide after 5 seconds of inactivity
+        clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => {
+            if (!document.querySelector('.btn-refresh:hover')) {
+                refreshContainer.style.opacity = '0';
+                refreshContainer.style.visibility = 'hidden';
+            }
+        }, 5000);
+    };
+    
+    // Show button on mouse move
+    document.addEventListener('mousemove', () => {
+        showRefreshButton();
+    });
+    
+    // Show button on touch
+    document.addEventListener('touchstart', () => {
+        showRefreshButton();
+    });
+    
+    // Initially show button
+    setTimeout(() => {
+        showRefreshButton();
+    }, 2000);
+}
+
+async function performSessionRefresh() {
+    try {
+        // Show loading notification
+        TourneyHubUIManager.showNotification('Refreshing session...', 'info');
+        
+        // Refresh current session
+        const currentUser = TourneyHubAuth.getCurrentUser();
+        
+        if (currentUser) {
+            // Refresh Firebase session
+            const auth = TourneyHubAuth.getAuthInstance();
+            if (auth && auth.currentUser) {
+                // Refresh ID token
+                await auth.currentUser.getIdToken(true);
+                
+                // Update local session
+                TourneyHubAuth.refreshSession();
+                
+                TourneyHubUIManager.showNotification('Session refreshed successfully!', 'success');
+            }
+        } else {
+            // If no session, clear any stored data and reload
+            localStorage.removeItem('tourneyhub_temp_data');
+            sessionStorage.clear();
+            
+            // Soft reload without full page refresh
+            TourneyHubUIManager.showNotification('Clearing local data...', 'info');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+        
+        // Check for updated user data
+        const updatedUser = TourneyHubAuth.getCurrentUser();
+        if (updatedUser) {
+            console.log('Session refreshed for:', updatedUser.email);
+        }
+        
+    } catch (error) {
+        console.error('Refresh failed:', error);
+        TourneyHubUIManager.showNotification('Refresh failed. Please try again.', 'error');
+    }
+}
+
 // ==================== GLOBAL EXPORTS & UTILITIES ====================
 window.TourneyHubAuth = TourneyHubAuth;
 window.TourneyHubUIManager = TourneyHubUIManager;
@@ -1363,121 +1529,4 @@ function formatEmailForDisplay(email) {
         return `${username.substring(0, 7)}...@${domain}`;
     }
     return email;
-}
-
-function setupRefreshButton() {
-  const refreshBtn = document.getElementById('refreshBtn');
-  const refreshContainer = document.getElementById('refreshContainer');
-  
-  if (!refreshBtn) return;
-  
-  // Create refresh button if it doesn't exist in DOM
-  if (!refreshContainer) {
-    const refreshContainer = document.createElement('div');
-    refreshContainer.className = 'refresh-container';
-    refreshContainer.id = 'refreshContainer';
-    refreshContainer.innerHTML = `
-      <button type="button" class="btn-refresh" id="refreshBtn" title="Refresh Session">
-        <span class="refresh-icon">🔄</span>
-        <span class="refresh-tooltip">Refresh Session</span>
-      </button>
-    `;
-    document.body.appendChild(refreshContainer);
-  }
-  
-  // Refresh button click handler
-  refreshBtn.addEventListener('click', async () => {
-    // Show loading state
-    refreshBtn.classList.add('loading');
-    
-    // Perform refresh actions
-    await performSessionRefresh();
-    
-    // Remove loading state after a delay
-    setTimeout(() => {
-      refreshBtn.classList.remove('loading');
-    }, 1000);
-  });
-  
-  // Auto-hide/show based on scroll and activity
-  let hideTimeout;
-  
-  const showRefreshButton = () => {
-    refreshContainer.style.opacity = '1';
-    refreshContainer.style.visibility = 'visible';
-    
-    // Auto-hide after 5 seconds of inactivity
-    clearTimeout(hideTimeout);
-    hideTimeout = setTimeout(() => {
-      if (!document.querySelector('.btn-refresh:hover')) {
-        refreshContainer.style.opacity = '0';
-        refreshContainer.style.visibility = 'hidden';
-      }
-    }, 5000);
-  };
-  
-  const hideRefreshButton = () => {
-    refreshContainer.style.opacity = '0';
-    refreshContainer.style.visibility = 'hidden';
-  };
-  
-  // Show button on mouse move
-  document.addEventListener('mousemove', () => {
-    showRefreshButton();
-  });
-  
-  // Show button on touch
-  document.addEventListener('touchstart', () => {
-    showRefreshButton();
-  });
-  
-  // Initially show button
-  setTimeout(() => {
-    showRefreshButton();
-  }, 2000);
-}
-
-async function performSessionRefresh() {
-  try {
-    // Show loading notification
-    TourneyHubUIManager.showNotification('Refreshing session...', 'info');
-    
-    // Refresh current session
-    const currentUser = TourneyHubAuth.getCurrentUser();
-    
-    if (currentUser) {
-      // Refresh Firebase session
-      const auth = TourneyHubAuth.getAuthInstance();
-      if (auth && auth.currentUser) {
-        // Refresh ID token
-        await auth.currentUser.getIdToken(true);
-        
-        // Update local session
-        TourneyHubAuth.sessionManager.refreshSession();
-        
-        TourneyHubUIManager.showNotification('Session refreshed successfully!', 'success');
-      }
-    } else {
-      // If no session, clear any stored data and reload
-      localStorage.removeItem('tourneyhub_temp_data');
-      sessionStorage.clear();
-      
-      // Soft reload without full page refresh
-      TourneyHubUIManager.showNotification('Clearing local data...', 'info');
-      
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    }
-    
-    // Check for updated user data
-    const updatedUser = TourneyHubAuth.getCurrentUser();
-    if (updatedUser) {
-      console.log('Session refreshed for:', updatedUser.email);
-    }
-    
-  } catch (error) {
-    console.error('Refresh failed:', error);
-    TourneyHubUIManager.showNotification('Refresh failed. Please try again.', 'error');
-  }
 }

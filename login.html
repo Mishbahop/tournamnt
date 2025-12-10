@@ -20,132 +20,13 @@
   </div>
 
   <!-- Refresh Button -->
-<div class="refresh-container" id="refreshContainer">
-  <button type="button" class="btn-refresh" id="refreshBtn" title="Refresh Session">
-    <span class="refresh-icon">🔄</span>
-    <span class="refresh-tooltip">Refresh Session</span>
-  </button>
-</div>
-<script>// Add refresh button functionality
-setupRefreshButton();
+  <div class="refresh-container" id="refreshContainer">
+    <button type="button" class="btn-refresh" id="refreshBtn" title="Refresh Session">
+      <span class="refresh-icon">🔄</span>
+      <span class="refresh-tooltip">Refresh Session</span>
+    </button>
+  </div>
 
-function setupRefreshButton() {
-  const refreshBtn = document.getElementById('refreshBtn');
-  const refreshContainer = document.getElementById('refreshContainer');
-  
-  if (!refreshBtn) return;
-  
-  // Create refresh button if it doesn't exist in DOM
-  if (!refreshContainer) {
-    const refreshContainer = document.createElement('div');
-    refreshContainer.className = 'refresh-container';
-    refreshContainer.id = 'refreshContainer';
-    refreshContainer.innerHTML = `
-      <button type="button" class="btn-refresh" id="refreshBtn" title="Refresh Session">
-        <span class="refresh-icon">🔄</span>
-        <span class="refresh-tooltip">Refresh Session</span>
-      </button>
-    `;
-    document.body.appendChild(refreshContainer);
-  }
-  
-  // Refresh button click handler
-  refreshBtn.addEventListener('click', async () => {
-    // Show loading state
-    refreshBtn.classList.add('loading');
-    
-    // Perform refresh actions
-    await performSessionRefresh();
-    
-    // Remove loading state after a delay
-    setTimeout(() => {
-      refreshBtn.classList.remove('loading');
-    }, 1000);
-  });
-  
-  // Auto-hide/show based on scroll and activity
-  let hideTimeout;
-  
-  const showRefreshButton = () => {
-    refreshContainer.style.opacity = '1';
-    refreshContainer.style.visibility = 'visible';
-    
-    // Auto-hide after 5 seconds of inactivity
-    clearTimeout(hideTimeout);
-    hideTimeout = setTimeout(() => {
-      if (!document.querySelector('.btn-refresh:hover')) {
-        refreshContainer.style.opacity = '0';
-        refreshContainer.style.visibility = 'hidden';
-      }
-    }, 5000);
-  };
-  
-  const hideRefreshButton = () => {
-    refreshContainer.style.opacity = '0';
-    refreshContainer.style.visibility = 'hidden';
-  };
-  
-  // Show button on mouse move
-  document.addEventListener('mousemove', () => {
-    showRefreshButton();
-  });
-  
-  // Show button on touch
-  document.addEventListener('touchstart', () => {
-    showRefreshButton();
-  });
-  
-  // Initially show button
-  setTimeout(() => {
-    showRefreshButton();
-  }, 2000);
-}
-
-async function performSessionRefresh() {
-  try {
-    // Show loading notification
-    TourneyHubUIManager.showNotification('Refreshing session...', 'info');
-    
-    // Refresh current session
-    const currentUser = TourneyHubAuth.getCurrentUser();
-    
-    if (currentUser) {
-      // Refresh Firebase session
-      const auth = TourneyHubAuth.getAuthInstance();
-      if (auth && auth.currentUser) {
-        // Refresh ID token
-        await auth.currentUser.getIdToken(true);
-        
-        // Update local session
-        TourneyHubAuth.sessionManager.refreshSession();
-        
-        TourneyHubUIManager.showNotification('Session refreshed successfully!', 'success');
-      }
-    } else {
-      // If no session, clear any stored data and reload
-      localStorage.removeItem('tourneyhub_temp_data');
-      sessionStorage.clear();
-      
-      // Soft reload without full page refresh
-      TourneyHubUIManager.showNotification('Clearing local data...', 'info');
-      
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    }
-    
-    // Check for updated user data
-    const updatedUser = TourneyHubAuth.getCurrentUser();
-    if (updatedUser) {
-      console.log('Session refreshed for:', updatedUser.email);
-    }
-    
-  } catch (error) {
-    console.error('Refresh failed:', error);
-    TourneyHubUIManager.showNotification('Refresh failed. Please try again.', 'error');
-  }
-}
-</script>
   <!-- Background Elements -->
   <div class="background-animation">
     <div class="floating-shape shape-1"></div>

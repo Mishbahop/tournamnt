@@ -30,6 +30,12 @@
         --neon-pink: #ff2d95;
         --neon-green: #00ff9d;
         --neon-orange: #ff7b00;
+        --neon-red: #ff2d55;
+        --neon-yellow: #ffcc00;
+        --neon-primary: #6c63ff;
+        --neon-secondary: #ff6b6b;
+        --neon-accent: #4ecdc4;
+        --gradient-neon: linear-gradient(135deg, var(--neon-primary), var(--neon-purple));
         
         /* Background Colors */
         --bg-dark: #0a0a14;
@@ -76,6 +82,7 @@
         overflow-x: hidden;
         position: relative;
         line-height: 1.6;
+        padding-bottom: calc(100px + env(safe-area-inset-bottom));
     }
     
     /* Cyberpunk Scanlines Effect */
@@ -165,67 +172,92 @@
         animation: fadeIn 0.5s ease 0.3s forwards;
     }
     
-    /* Header */
+    /* Ultra Modern Header (from index.css) */
     .dashboard-header {
-        background: rgba(20, 20, 40, 0.8);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(0, 243, 255, 0.2);
-        padding: 15px 0;
-        margin-bottom: 30px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        border-radius: 15px;
-        margin: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(15, 15, 26, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      padding: 12px 0;
+      transition: all 0.3s ease;
     }
-    
+
+    .dashboard-header.scrolled {
+      background: rgba(15, 15, 26, 0.98);
+      padding: 8px 0;
+    }
+
     .header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    
+
     .logo {
-        display: flex;
-        align-items: center;
-        gap: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-primary);
     }
-    
+
     .logo-icon {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--glow-blue);
+      font-size: 1.8rem;
     }
-    
+
     .logo-text {
-        font-size: 24px;
-        font-weight: 900;
-        background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    
+
+    /* Header Navigation - Desktop */
+    .header-nav {
+      display: none;
+      gap: 8px;
+    }
+
+    .nav-link {
+      color: var(--text-primary);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(108, 99, 255, 0.1);
+      color: var(--neon-primary);
+    }
+
+    .auth-buttons {
+      display: none;
+      gap: 12px;
+    }
+
     .user-info {
-        display: flex;
-        align-items: center;
-        gap: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
-    
+
     .user-avatar {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        border: 2px solid var(--neon-blue);
-        overflow: hidden;
-        position: relative;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+      position: relative;
         box-shadow: var(--glow-blue);
     }
     
@@ -492,6 +524,8 @@
         margin-bottom: 20px;
         transition: all var(--transition-smooth);
         backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
     }
     
     .match-card:hover {
@@ -605,42 +639,248 @@
         display: flex;
     }
     
-    /* Bottom Navigation */
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: rgba(20, 20, 40, 0.95);
-        backdrop-filter: blur(20px);
-        border-top: 1px solid rgba(0, 243, 255, 0.2);
-        display: flex;
-        justify-content: space-around;
-        padding: 15px 0;
-        z-index: 100;
-        display: none;
-    }
-    
-    .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-        color: var(--text-secondary);
-        text-decoration: none;
-        transition: all var(--transition-smooth);
-        padding: 10px;
-        border-radius: 10px;
-    }
-    
-    .nav-item.active {
-        color: var(--neon-blue);
-        background: rgba(0, 243, 255, 0.1);
-    }
-    
-    .nav-item i {
-        font-size: 20px;
-    }
+        /* ULTRA GAMERX BOTTOM NAV (matching index.html) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(30px) saturate(200%);
+            border: 2px solid rgba(108, 99, 255, 0.3);
+            border-radius: 25px;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 8px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            z-index: 1000;
+            box-shadow: 
+                0 0 40px rgba(108, 99, 255, 0.3),
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, 
+                rgba(20, 20, 40, 0.95) 0%,
+                rgba(15, 15, 30, 0.98) 50%,
+                rgba(10, 10, 25, 0.95) 100%);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        }
+
+        .bottom-nav::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                var(--neon-primary), 
+                var(--neon-secondary), 
+                var(--neon-accent), 
+                var(--neon-purple));
+            border-radius: 27px;
+            z-index: -2;
+            opacity: 0.3;
+            filter: blur(10px);
+            animation: navGlow 4s linear infinite;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 10px;
+            border-radius: 18px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            color: var(--text-secondary);
+            min-width: 60px;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            background: transparent;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-neon);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-item.active::before {
+            left: 0;
+        }
+
+        .nav-item.active {
+            transform: translateY(-4px);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .nav-icon {
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .nav-text {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+
+        .nav-item.active .nav-text {
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .nav-item.active:active {
+            transform: translateY(-8px) scale(0.95);
+        }
+
+        /* Quick skeleton shimmer for initial load */
+        .loading-skeleton .stat-card,
+        .loading-skeleton .action-btn,
+        .loading-skeleton .tab-content .match-card,
+        .loading-skeleton .transactions-list .transaction-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-skeleton .stat-card *,
+        .loading-skeleton .action-btn *,
+        .loading-skeleton .tab-content .match-card *,
+        .loading-skeleton .transactions-list .transaction-item * {
+            opacity: 0 !important;
+        }
+
+        .loading-skeleton .stat-card::after,
+        .loading-skeleton .action-btn::after,
+        .loading-skeleton .tab-content .match-card::after,
+        .loading-skeleton .transactions-list .transaction-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+            animation: shimmer 1.2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Mobile tightening */
+        @media (max-width: 600px) {
+            .dashboard-container {
+                padding: 12px;
+            }
+            .stats-grid {
+                margin: 20px 12px;
+                gap: 12px;
+            }
+            .stat-card {
+                padding: 18px;
+            }
+            .quick-actions {
+                margin: 20px 12px;
+            }
+            .actions-grid {
+                gap: 12px;
+            }
+            .tabs-container {
+                margin: 24px 12px;
+                padding: 4px;
+            }
+            .tab {
+                padding: 14px;
+                gap: 8px;
+            }
+            .bottom-nav {
+                width: 94%;
+                bottom: 12px;
+            }
+        }
+
+        /* Particle effects for active nav */
+        .nav-item.active .nav-icon::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, 
+                rgba(108, 99, 255, 0.4) 0%, 
+                rgba(255, 107, 107, 0.3) 30%, 
+                transparent 70%);
+            transform: translate(-50%, -50%) scale(1.5);
+            animation: particlePulse 2s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes navGlow {
+            0%, 100% {
+                opacity: 0.3;
+                filter: blur(10px) hue-rotate(0deg);
+            }
+            50% {
+                opacity: 0.5;
+                filter: blur(12px) hue-rotate(180deg);
+            }
+        }
+
+        @keyframes particlePulse {
+            0%, 100% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(1.5);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translate(-50%, -50%) scale(2);
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .bottom-nav {
+                width: 92%;
+                padding: 10px 6px;
+                bottom: 10px;
+            }
+            
+            .nav-item {
+                padding: 10px 12px;
+                min-width: 55px;
+            }
+            
+            .nav-icon {
+                font-size: 1.3rem;
+            }
+            
+            .nav-text {
+                font-size: 0.6rem;
+            }
+        }
+
+        /* Tablet and Desktop - Hide bottom nav */
+        @media (min-width: 768px) {
+            .bottom-nav {
+                display: none;
+            }
+        }
     
     /* FAB */
     .fab {
@@ -801,6 +1041,143 @@
     ::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(180deg, var(--neon-purple), var(--neon-pink));
     }
+    
+    /* Match Result Badges */
+    .result-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-left: 10px;
+    }
+    
+    .victory-badge {
+        background: rgba(0, 255, 157, 0.2);
+        color: var(--neon-green);
+        border: 1px solid rgba(0, 255, 157, 0.3);
+    }
+    
+    .defeat-badge {
+        background: rgba(255, 45, 85, 0.2);
+        color: var(--neon-red);
+        border: 1px solid rgba(255, 45, 85, 0.3);
+    }
+    
+    .draw-badge {
+        background: rgba(255, 204, 0, 0.2);
+        color: var(--neon-yellow);
+        border: 1px solid rgba(255, 204, 0, 0.3);
+    }
+    
+    /* Score Display */
+    .score-display {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 10px 0;
+        text-shadow: 0 0 10px currentColor;
+    }
+    
+    .winning-score {
+        color: var(--neon-green);
+    }
+    
+    .losing-score {
+        color: var(--neon-pink);
+    }
+    
+    .draw-score {
+        color: var(--neon-yellow);
+    }
+    
+    /* Fix for small screens */
+    @media (max-width: 320px) {
+        html {
+            font-size: 14px;
+        }
+        
+        .dashboard-container {
+            padding: 5px;
+        }
+        
+        .stat-card {
+            padding: 15px;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+        }
+        
+        .team-logo {
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+        }
+        
+        .vs {
+            font-size: 18px;
+            padding: 0 10px;
+        }
+        
+        .score-display {
+            font-size: 24px;
+        }
+    }
+    
+    /* Fix for landscape mode on mobile */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .loading-screen {
+            position: absolute;
+        }
+        
+        .dashboard-header {
+            position: relative;
+            margin: 10px;
+        }
+        
+        .bottom-nav {
+            padding: 10px 0;
+        }
+        
+        .fab {
+            bottom: 70px;
+        }
+    }
+    
+    /* Print styles */
+    @media print {
+        .loading-screen,
+        .bottom-nav,
+        .fab,
+        .notification-toast {
+            display: none !important;
+        }
+        
+        body {
+            background: white !important;
+            color: black !important;
+        }
+        
+        .dashboard-header,
+        .stat-card,
+        .tournament-card,
+        .match-card,
+        .wallet-card,
+        .profile-card {
+            border: 1px solid #ddd !important;
+            box-shadow: none !important;
+            background: white !important;
+            color: black !important;
+        }
+        
+        .neon-text,
+        .cyber-border::after,
+        body::before {
+            display: none !important;
+        }
+    }
     </style>
 </head>
 <body>
@@ -922,10 +1299,7 @@
                     <i class="fas fa-trophy"></i>
                     Tournaments
                 </button>
-                <button class="tab" data-tab="matches">
-                    <i class="fas fa-crosshairs"></i>
-                    Matches
-                </button>
+                <!-- Matches tab removed -->
                 <button class="tab" data-tab="wallet">
                     <i class="fas fa-wallet"></i>
                     Wallet
@@ -949,12 +1323,7 @@
                 </div>
             </div>
             
-            <div class="tab-content" id="matches-content">
-                <h2 style="margin-bottom: 20px; color: var(--neon-purple);">Recent Matches</h2>
-                <div id="matchesList">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
-            </div>
+            <!-- Matches tab content removed -->
             
             <div class="tab-content" id="wallet-content">
                 <div class="wallet-card">
@@ -1012,23 +1381,31 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation (Mobile) -->
+    <!-- Bottom Navigation (Mobile) - styled like index.html -->
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active" data-tab="tournaments">
-            <i class="fas fa-trophy"></i>
-            <span>Tourneys</span>
+        <a href="tournament-joined.html" class="nav-item">
+            <span class="nav-icon">⚔️</span>
+            <span class="nav-text">Tourneys</span>
         </a>
-        <a href="#" class="nav-item" data-tab="matches">
-            <i class="fas fa-crosshairs"></i>
-            <span>Matches</span>
+        <a href="games.html" class="nav-item">
+            <span class="nav-icon">🎮</span>
+            <span class="nav-text">Games</span>
         </a>
-        <a href="#" class="nav-item" data-tab="wallet">
-            <i class="fas fa-wallet"></i>
-            <span>Wallet</span>
+        <a href="index.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
         </a>
-        <a href="#" class="nav-item" data-tab="profile">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
+        <a href="wallet.html" class="nav-item">
+            <span class="nav-icon">💰</span>
+            <span class="nav-text">Wallet</span>
+        </a>
+        <a href="dashboard.html" class="nav-item active">
+            <span class="nav-icon">👑</span>
+            <span class="nav-text">Pro</span>
+        </a>
+        <a href="admin.html" class="nav-item" id="organizerNav" style="display:none;">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Organizer</span>
         </a>
     </nav>
 
@@ -1052,26 +1429,27 @@
     <!-- Advanced JavaScript -->
     <script>
     // ============================================
-    // ADVANCED GAMING DASHBOARD JS
-    // Features: Real-time updates, Firebase integration
-    // Performance optimized, Error handling
+    // ADVANCED GAMING DASHBOARD - COMPLETE FIXED VERSION
+    // All Functions Working + Enhanced Match Display
     // ============================================
     
-    class GamingDashboard {
+    class AdvancedGamingDashboard {
         constructor() {
             this.state = {
                 user: null,
+                userData: {},
                 stats: {
-                    tournamentsWon: 8,
-                    matchesPlayed: 42,
-                    winRate: 67,
-                    walletBalance: 1240
+                    tournamentsWon: 0,
+                    matchesPlayed: 0,
+                    winRate: 0,
+                    walletBalance: 0
                 },
                 activeTab: 'tournaments',
                 tournaments: [],
                 matches: [],
                 transactions: [],
-                isLoading: true
+                isLoading: true,
+                isOnline: navigator.onLine
             };
             
             this.firebaseConfig = {
@@ -1088,6 +1466,8 @@
         
         async init() {
             try {
+                console.log("Initializing dashboard...");
+                
                 // Initialize Firebase
                 if (!firebase.apps.length) {
                     firebase.initializeApp(this.firebaseConfig);
@@ -1097,18 +1477,23 @@
                 this.db = firebase.firestore();
                 
                 // Enable offline persistence
-                await this.db.enablePersistence().catch(err => {
+                try {
+                    await this.db.enablePersistence();
+                    console.log("Offline persistence enabled");
+                } catch (err) {
                     console.warn("Offline persistence failed:", err);
-                });
+                }
                 
                 // Check auth state
                 this.auth.onAuthStateChanged(async (user) => {
                     if (user) {
+                        console.log("User authenticated:", user.uid);
                         this.state.user = user;
                         await this.loadUserData();
+                        await this.loadAllData();
                     } else {
-                        // Demo mode - use mock data
-                        this.loadMockData();
+                        console.log("No user, redirecting to login");
+                        window.location.href = 'login.html';
                     }
                     
                     this.initUI();
@@ -1118,6 +1503,7 @@
                 
             } catch (error) {
                 console.error("Initialization error:", error);
+                this.showNotification("Initialization Error", "Loading mock data...", "warning");
                 this.loadMockData();
                 this.initUI();
                 this.setupEventListeners();
@@ -1127,58 +1513,121 @@
         
         async loadUserData() {
             try {
-                if (!this.state.user) return;
+                if (!this.state.user || !this.db) {
+                    console.log("No user or db available");
+                    return;
+                }
                 
                 const userDoc = await this.db.collection('users').doc(this.state.user.uid).get();
                 
                 if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    this.state.stats = userData.stats || this.state.stats;
+                    this.state.userData = userDoc.data();
+                    console.log("User data loaded:", this.state.userData);
+                    this.updateUserInfo();
+                } else {
+                    console.log("Creating new user...");
+                    await this.createNewUser();
                 }
-                
-                // Load tournaments from Firebase
-                await this.loadTournamentsFromFirebase();
-                
-                // Load matches
-                await this.loadMatches();
-                
-                // Load transactions
-                await this.loadTransactions();
                 
             } catch (error) {
                 console.error("Error loading user data:", error);
-                this.loadMockData();
+                this.showNotification("User Data Error", "Could not load user data", "error");
             }
         }
         
-        async loadTournamentsFromFirebase() {
+        async createNewUser() {
             try {
-                console.log("Loading tournaments from Firebase...");
+                if (!this.state.user || !this.db) {
+                    console.log("Cannot create user: No user or db");
+                    return;
+                }
+                
+                const newUserData = {
+                    uid: this.state.user.uid,
+                    email: this.state.user.email,
+                    displayName: this.state.user.displayName || this.state.user.email.split('@')[0],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    stats: {
+                        tournamentsJoined: 0,
+                        tournamentsWon: 0,
+                        matchesPlayed: 0,
+                        matchesWon: 0,
+                        winRate: 0,
+                        walletBalance: 0
+                    },
+                    profile: {
+                        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.state.user.uid}`,
+                        level: 1,
+                        xp: 0,
+                        rank: 999
+                    }
+                };
+                
+                await this.db.collection('users').doc(this.state.user.uid).set(newUserData);
+                this.state.userData = newUserData;
+                
+                await this.db.collection('wallets').doc(this.state.user.uid).set({
+                    balance: 1000, // Starting balance
+                    currency: 'INR',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                console.log("New user created:", newUserData);
+                this.updateUserInfo();
+                
+                this.showNotification("Welcome!", "Your account has been created!", "success");
+                
+            } catch (error) {
+                console.error("Error creating user:", error);
+                this.showNotification("Account Creation Failed", "Please try again", "error");
+            }
+        }
+        
+        async loadAllData() {
+            try {
+                console.log("Loading all data...");
+                await Promise.all([
+                    this.loadTournaments(),
+                    this.loadMatches(),
+                    this.loadTransactions(),
+                    this.loadWalletBalance()
+                ]);
+                
+                this.calculateStats();
+                console.log("All data loaded successfully");
+                
+            } catch (error) {
+                console.error("Error loading all data:", error);
+                this.showNotification("Data Loading Error", "Some data may not be available", "warning");
+            }
+        }
+        
+        async loadTournaments() {
+            try {
+                console.log("Loading tournaments...");
                 
                 if (!this.db) {
-                    console.log("Firebase not available, using mock data");
+                    console.log("No Firestore available, loading mock tournaments");
                     this.loadMockTournaments();
                     return;
                 }
                 
-                // Try to get tournaments from Firebase Firestore
-                const tournamentsRef = this.db.collection('tournaments');
-                const snapshot = await tournamentsRef
-                    .where('status', 'in', ['live', 'upcoming'])
+                const tournamentsSnapshot = await this.db.collection('tournaments')
+                    .where('status', 'in', ['live', 'upcoming', 'registering'])
                     .orderBy('startDate', 'asc')
                     .limit(10)
                     .get();
                 
-                if (snapshot.empty) {
-                    console.log("No tournaments found in Firebase, creating sample data...");
-                    await this.createSampleTournaments();
+                this.state.tournaments = [];
+                
+                if (tournamentsSnapshot.empty) {
+                    console.log("No tournaments found in database");
+                    this.loadMockTournaments();
                     return;
                 }
                 
-                console.log(`Found ${snapshot.size} tournaments from Firebase`);
-                
-                this.state.tournaments = [];
-                snapshot.forEach(doc => {
+                tournamentsSnapshot.forEach(doc => {
                     const data = doc.data();
                     this.state.tournaments.push({
                         id: doc.id,
@@ -1190,178 +1639,499 @@
                         currentPlayers: data.currentPlayers || 0,
                         maxPlayers: data.maxPlayers || 0,
                         startDate: data.startDate ? data.startDate.toDate() : new Date(),
+                        endDate: data.endDate ? data.endDate.toDate() : null,
                         description: data.description || '',
                         organizer: data.organizer || 'TourneyHub',
+                        platform: data.platform || 'PC',
+                        format: data.format || '5v5',
                         rules: data.rules || '',
-                        platform: data.platform || 'PC'
+                        registrationDeadline: data.registrationDeadline ? data.registrationDeadline.toDate() : null
                     });
                 });
                 
+                console.log(`Loaded ${this.state.tournaments.length} tournaments`);
                 this.renderTournaments();
-                this.showNotification("Tournaments Loaded", `Loaded ${this.state.tournaments.length} tournaments from Firebase`, "success");
                 
             } catch (error) {
-                console.error("Error loading tournaments from Firebase:", error);
-                this.showNotification("Firebase Error", "Using mock tournament data", "warning");
-                this.loadMockTournaments();
-            }
-        }
-        
-        async createSampleTournaments() {
-            try {
-                if (!this.db) return;
-                
-                const sampleTournaments = [
-                    {
-                        title: "Valorant Pro Series",
-                        game: "Valorant",
-                        status: "live",
-                        prize: 5000,
-                        entryFee: 150,
-                        currentPlayers: 12,
-                        maxPlayers: 16,
-                        startDate: firebase.firestore.Timestamp.fromDate(new Date(Date.now() - 3600000)),
-                        description: "Join the ultimate Valorant competition! Show your skills and win big!",
-                        organizer: "TourneyHub",
-                        rules: "5v5, Single Elimination, Best of 3",
-                        platform: "PC",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    },
-                    {
-                        title: "CS:GO Championship",
-                        game: "CS:GO",
-                        status: "upcoming",
-                        prize: 10000,
-                        entryFee: 200,
-                        currentPlayers: 8,
-                        maxPlayers: 16,
-                        startDate: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 7200000)),
-                        description: "Compete in the CS:GO championship for a massive prize pool!",
-                        organizer: "TourneyHub",
-                        rules: "5v5, Swiss Format, Best of 3",
-                        platform: "PC",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    },
-                    {
-                        title: "Fortnite Weekly",
-                        game: "Fortnite",
-                        status: "upcoming",
-                        prize: 2500,
-                        entryFee: 100,
-                        currentPlayers: 50,
-                        maxPlayers: 100,
-                        startDate: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 86400000)),
-                        description: "Weekly Fortnite tournament open to all players!",
-                        organizer: "TourneyHub",
-                        rules: "Solo, Battle Royale, 3 Matches",
-                        platform: "Cross-Platform",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    },
-                    {
-                        title: "Dota 2 Masters",
-                        game: "Dota 2",
-                        status: "live",
-                        prize: 15000,
-                        entryFee: 300,
-                        currentPlayers: 10,
-                        maxPlayers: 16,
-                        startDate: firebase.firestore.Timestamp.fromDate(new Date(Date.now() - 1800000)),
-                        description: "Professional Dota 2 tournament with massive prize pool",
-                        organizer: "TourneyHub",
-                        rules: "5v5, Captain's Mode, Best of 3",
-                        platform: "PC",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    },
-                    {
-                        title: "Apex Legends Showdown",
-                        game: "Apex Legends",
-                        status: "upcoming",
-                        prize: 7500,
-                        entryFee: 120,
-                        currentPlayers: 30,
-                        maxPlayers: 60,
-                        startDate: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 172800000)),
-                        description: "Team up and dominate in Apex Legends!",
-                        organizer: "TourneyHub",
-                        rules: "3v3, Battle Royale, 5 Matches",
-                        platform: "Cross-Platform",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    }
-                ];
-                
-                // Add sample tournaments to Firestore
-                const batch = this.db.batch();
-                sampleTournaments.forEach(tournament => {
-                    const docRef = this.db.collection('tournaments').doc();
-                    batch.set(docRef, tournament);
-                });
-                
-                await batch.commit();
-                console.log("Sample tournaments created successfully");
-                
-                // Reload tournaments
-                await this.loadTournamentsFromFirebase();
-                
-            } catch (error) {
-                console.error("Error creating sample tournaments:", error);
+                console.error("Error loading tournaments:", error);
                 this.loadMockTournaments();
             }
         }
         
         async loadMatches() {
             try {
-                if (!this.db) {
-                    this.state.matches = this.getMockMatches();
+                console.log("Loading matches using tournament-joined pattern...");
+                
+                if (!this.db || !this.state.user) {
+                    console.log("No Firestore or user");
+                    this.state.matches = [];
                     this.renderMatches();
                     return;
                 }
                 
-                // Try to get matches from Firebase
-                const matchesRef = this.db.collection('matches');
-                const snapshot = await matchesRef
-                    .where('userId', '==', this.state.user?.uid || 'demo')
-                    .orderBy('date', 'desc')
-                    .limit(5)
+                // Use exact same pattern as tournament-joined.html - first load registrations
+                const registrationsSnapshot = await this.db.collection('registrations')
+                    .where('userId', '==', this.state.user.uid)
+                    .orderBy('registeredAt', 'desc')
                     .get();
-                
-                if (!snapshot.empty) {
+
+                if (registrationsSnapshot.empty) {
+                    console.log("No registrations found");
                     this.state.matches = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        this.state.matches.push({
-                            id: doc.id,
-                            ...data
-                        });
-                    });
-                } else {
-                    this.state.matches = this.getMockMatches();
+                    this.renderMatches();
+                    return;
                 }
+
+                // Get all registrations with tournament details
+                const registrations = registrationsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log(`Found ${registrations.length} joined tournaments`);
+
+                // Load matches for each tournament (like tournament-joined loads tournament details)
+                const allMatches = [];
                 
+                for (const registration of registrations) {
+                    try {
+                        // Get tournament details
+                        const tournamentDoc = await this.db.collection('tournaments')
+                            .doc(registration.tournamentId)
+                            .get();
+                        
+                        if (!tournamentDoc.exists) {
+                            console.log(`Tournament ${registration.tournamentId} not found`);
+                            continue;
+                        }
+
+                        const tournamentData = tournamentDoc.data();
+                        
+                        // Get all matches for this tournament
+                        const matchesSnapshot = await this.db.collection('matches')
+                            .where('tournamentId', '==', registration.tournamentId)
+                            .get();
+
+                        console.log(`Found ${matchesSnapshot.docs.length} matches for tournament ${tournamentData.title}`);
+
+                        // Convert matches to match objects
+                        matchesSnapshot.docs.forEach(matchDoc => {
+                            const matchData = matchDoc.data();
+                            
+                            const team1Score = parseInt(matchData.team1Score) || 0;
+                            const team2Score = parseInt(matchData.team2Score) || 0;
+                            
+                            let winner = null;
+                            let result = null;
+                            
+                            if (matchData.status === 'completed') {
+                                if (team1Score > team2Score) {
+                                    winner = matchData.team1Name;
+                                } else if (team2Score > team1Score) {
+                                    winner = matchData.team2Name;
+                                } else {
+                                    winner = 'Draw';
+                                }
+                                result = `${team1Score}-${team2Score}`;
+                            }
+                            
+                            allMatches.push({
+                                id: matchDoc.id,
+                                tournamentId: registration.tournamentId,
+                                tournamentName: tournamentData.title || 'Tournament',
+                                matchName: matchData.matchName || 'Match',
+                                team1: {
+                                    name: matchData.team1Name || 'Team 1',
+                                    score: team1Score
+                                },
+                                team2: {
+                                    name: matchData.team2Name || 'Team 2',
+                                    score: team2Score
+                                },
+                                status: matchData.status || 'scheduled',
+                                scheduledTime: matchData.scheduledTime ? matchData.scheduledTime.toDate() : new Date(),
+                                startTime: matchData.startTime ? matchData.startTime.toDate() : null,
+                                endTime: matchData.endTime ? matchData.endTime.toDate() : null,
+                                duration: matchData.duration || '45 min',
+                                format: matchData.format || 'BO3',
+                                round: matchData.round || 'Group Stage',
+                                stage: matchData.stage || 'Main Event',
+                                result: result,
+                                winner: winner,
+                                userTeam: 'team1',
+                                streamUrl: matchData.streamUrl || '',
+                                map: matchData.map || 'Default',
+                                server: matchData.server || 'Auto'
+                            });
+                        });
+                    } catch (error) {
+                        console.error(`Error loading matches for tournament ${registration.tournamentId}:`, error);
+                    }
+                }
+
+                // Set all matches and sort
+                this.state.matches = allMatches;
+                
+                // Sort by scheduled time (most recent first)
+                this.state.matches.sort((a, b) => {
+                    const timeA = a.scheduledTime?.getTime?.() || new Date(a.scheduledTime).getTime();
+                    const timeB = b.scheduledTime?.getTime?.() || new Date(b.scheduledTime).getTime();
+                    return timeB - timeA;
+                });
+                
+                console.log(`Total matches loaded: ${this.state.matches.length}`);
                 this.renderMatches();
                 
             } catch (error) {
                 console.error("Error loading matches:", error);
-                this.state.matches = this.getMockMatches();
+                this.state.matches = [];
                 this.renderMatches();
             }
         }
         
+        async generateMatchesFromRegistrations(registrationsSnapshot, userTeams) {
+            try {
+                console.log("Generating matches from tournament registrations...");
+                
+                const registrations = [];
+                const tournamentIds = [];
+                
+                registrationsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    registrations.push({
+                        id: doc.id,
+                        ...data
+                    });
+                    if (data.tournamentId) {
+                        tournamentIds.push(data.tournamentId);
+                    }
+                });
+                
+                // Get tournament details for each registration
+                const tournamentPromises = tournamentIds.map(async (tournamentId) => {
+                    try {
+                        const tournamentDoc = await this.db.collection('tournaments').doc(tournamentId).get();
+                        if (tournamentDoc.exists) {
+                            return {
+                                id: tournamentDoc.id,
+                                ...tournamentDoc.data()
+                            };
+                        }
+                        return null;
+                    } catch (error) {
+                        console.warn('Error loading tournament:', tournamentId, error);
+                        return null;
+                    }
+                });
+                
+                const tournaments = (await Promise.all(tournamentPromises)).filter(t => t !== null);
+                
+                // Generate matches for each registration
+                registrations.forEach(registration => {
+                    const tournament = tournaments.find(t => t.id === registration.tournamentId);
+                    if (!tournament) return;
+                    
+                    const userTeamData = userTeams[registration.tournamentId];
+                    const matches = this.generateMatchesForRegistration(registration, tournament, userTeamData);
+                    this.state.matches.push(...matches);
+                });
+                
+                console.log(`Generated ${this.state.matches.length} matches from registrations`);
+                
+                // Show notification about generated matches
+                if (this.state.matches.length > 0) {
+                    this.showNotification("Matches Generated", `आपके ${this.state.matches.length} matches मिल गए हैं!`, "success");
+                }
+                
+            } catch (error) {
+                console.error('Error generating matches from registrations:', error);
+            }
+        }
+        
+        generateMatchesForRegistration(registration, tournament, userTeamData) {
+            const matches = [];
+            const now = new Date();
+            
+            try {
+                // Determine tournament status and generate appropriate matches
+                const tournamentStatus = tournament.status || 'upcoming';
+                const startDate = tournament.startDate?.toDate ? tournament.startDate.toDate() : new Date(tournament.startDate || now);
+                const endDate = tournament.endDate?.toDate ? tournament.endDate.toDate() : new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                
+                // Generate different matches based on tournament status
+                if (tournamentStatus === 'upcoming' || tournamentStatus === 'registering') {
+                    // Generate upcoming matches
+                    matches.push({
+                        id: `generated-${registration.id}-1`,
+                        tournamentId: tournament.id,
+                        tournamentName: tournament.title || 'Tournament',
+                        matchName: 'Group Stage Match',
+                        team1: {
+                            name: userTeamData?.teamName || 'Your Team',
+                            score: 0
+                        },
+                        team2: {
+                            name: this.generateRandomOpponent(),
+                            score: 0
+                        },
+                        status: 'scheduled',
+                        scheduledTime: new Date(startDate.getTime() + Math.random() * 24 * 60 * 60 * 1000),
+                        startTime: null,
+                        endTime: null,
+                        duration: '45 min',
+                        format: tournament.format || 'BO1',
+                        round: 'Group Stage',
+                        stage: 'Main Event',
+                        result: null,
+                        winner: null,
+                        userTeam: 'team1',
+                        streamUrl: '',
+                        map: 'Default',
+                        server: 'Auto'
+                    });
+                    
+                } else if (tournamentStatus === 'active' || tournamentStatus === 'live') {
+                    // Generate active/live matches
+                    const userScore = Math.floor(Math.random() * 10) + 5;
+                    const opponentScore = Math.floor(Math.random() * 10) + 3;
+                    
+                    matches.push({
+                        id: `generated-${registration.id}-live`,
+                        tournamentId: tournament.id,
+                        tournamentName: tournament.title || 'Tournament',
+                        matchName: 'Quarter Finals',
+                        team1: {
+                            name: userTeamData?.teamName || 'Your Team',
+                            score: userScore
+                        },
+                        team2: {
+                            name: this.generateRandomOpponent(),
+                            score: opponentScore
+                        },
+                        status: 'live',
+                        scheduledTime: new Date(now.getTime() - 30 * 60 * 1000), // Started 30 minutes ago
+                        startTime: new Date(now.getTime() - 30 * 60 * 1000),
+                        endTime: null,
+                        duration: '60 min',
+                        format: tournament.format || 'BO3',
+                        round: 'Quarter Finals',
+                        stage: 'Playoffs',
+                        result: `${userScore}-${opponentScore}`,
+                        winner: userScore > opponentScore ? userTeamData?.teamName || 'Your Team' : null,
+                        userTeam: 'team1',
+                        streamUrl: 'https://twitch.tv/tourneyhub',
+                        map: 'Ascent',
+                        server: 'Mumbai'
+                    });
+                    
+                } else if (tournamentStatus === 'completed') {
+                    // Generate completed matches
+                    const userWon = Math.random() > 0.4; // 60% chance of winning
+                    const userScore = userWon ? 16 : Math.floor(Math.random() * 12) + 8;
+                    const opponentScore = userWon ? Math.floor(Math.random() * 12) + 8 : 16;
+                    
+                    matches.push({
+                        id: `generated-${registration.id}-completed`,
+                        tournamentId: tournament.id,
+                        tournamentName: tournament.title || 'Tournament',
+                        matchName: 'Finals',
+                        team1: {
+                            name: userTeamData?.teamName || 'Your Team',
+                            score: userScore
+                        },
+                        team2: {
+                            name: this.generateRandomOpponent(),
+                            score: opponentScore
+                        },
+                        status: 'completed',
+                        scheduledTime: new Date(endDate.getTime() - Math.random() * 24 * 60 * 60 * 1000),
+                        startTime: new Date(endDate.getTime() - Math.random() * 24 * 60 * 60 * 1000),
+                        endTime: new Date(endDate.getTime() - Math.random() * 12 * 60 * 60 * 1000),
+                        duration: '75 min',
+                        format: tournament.format || 'BO3',
+                        round: 'Finals',
+                        stage: 'Championship',
+                        result: `${userScore}-${opponentScore}`,
+                        winner: userWon ? userTeamData?.teamName || 'Your Team' : this.generateRandomOpponent(),
+                        userTeam: 'team1',
+                        streamUrl: '',
+                        map: 'Haven',
+                        server: 'Singapore'
+                    });
+                }
+                
+                // Add additional matches for variety if tournament has multiple rounds
+                if (matches.length > 0 && (tournament.maxPlayers || 16) > 8) {
+                    const baseMatch = matches[0];
+                    const additionalUserScore = Math.floor(Math.random() * 16) + 10;
+                    const additionalOpponentScore = Math.floor(Math.random() * 16) + 8;
+                    
+                    matches.push({
+                        ...baseMatch,
+                        id: `generated-${registration.id}-2`,
+                        matchName: 'Group Stage Match 2',
+                        team2: {
+                            name: this.generateRandomOpponent(),
+                            score: additionalOpponentScore
+                        },
+                        team1: {
+                            ...baseMatch.team1,
+                            score: additionalUserScore
+                        },
+                        status: 'completed',
+                        scheduledTime: new Date(baseMatch.scheduledTime.getTime() - 24 * 60 * 60 * 1000),
+                        startTime: new Date(baseMatch.scheduledTime.getTime() - 24 * 60 * 60 * 1000),
+                        endTime: new Date(baseMatch.scheduledTime.getTime() - 23 * 60 * 60 * 1000),
+                        round: 'Group Stage',
+                        stage: 'Groups',
+                        result: `${additionalUserScore}-${additionalOpponentScore}`,
+                        winner: additionalUserScore > additionalOpponentScore ? userTeamData?.teamName || 'Your Team' : this.generateRandomOpponent(),
+                        map: 'Bind'
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error generating matches for registration:', error);
+            }
+            
+            return matches;
+        }
+        
+        generateRandomOpponent() {
+            const hindiNames = ['Phoenix Warriors', 'Shadow Legends', 'Storm Riders', 'Viper Squad', 'Titan Gaming', 'Cyber Knights', 'Nova Esports', 'Apex Hunters'];
+            const englishNames = ['Team Frost', 'Blaze Gaming', 'Void Esports', 'Nexus Pro', 'Elite Squad', 'Thunder Bolts', 'Fire Dragons', 'Ice Wolves'];
+            
+            const allNames = [...hindiNames, ...englishNames];
+            return allNames[Math.floor(Math.random() * allNames.length)];
+        }
+        
         async loadTransactions() {
             try {
-                this.state.transactions = this.getMockTransactions();
+                if (!this.db || !this.state.user) {
+                    this.loadMockTransactions();
+                    return;
+                }
+                
+                const transactionsSnapshot = await this.db.collection('transactions')
+                    .where('userId', '==', this.state.user.uid)
+                    .orderBy('timestamp', 'desc')
+                    .limit(20)
+                    .get();
+                
+                this.state.transactions = [];
+                transactionsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    this.state.transactions.push({
+                        id: doc.id,
+                        type: data.type || 'unknown',
+                        amount: parseFloat(data.amount) || 0,
+                        description: data.description || 'Transaction',
+                        status: data.status || 'completed',
+                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date(),
+                        reference: data.reference || '',
+                        method: data.method || 'wallet',
+                        details: data.details || {},
+                        fee: parseFloat(data.fee) || 0,
+                        netAmount: parseFloat(data.netAmount) || parseFloat(data.amount) || 0
+                    });
+                });
+                
                 this.renderTransactions();
                 
             } catch (error) {
                 console.error("Error loading transactions:", error);
-                this.state.transactions = this.getMockTransactions();
-                this.renderTransactions();
+                this.loadMockTransactions();
+            }
+        }
+        
+        async loadWalletBalance() {
+            try {
+                if (!this.db || !this.state.user) {
+                    this.state.stats.walletBalance = 1000;
+                    return;
+                }
+                
+                const walletDoc = await this.db.collection('wallets').doc(this.state.user.uid).get();
+                
+                if (walletDoc.exists) {
+                    this.state.stats.walletBalance = parseFloat(walletDoc.data().balance) || 0;
+                } else {
+                    // Create wallet if doesn't exist
+                    await this.db.collection('wallets').doc(this.state.user.uid).set({
+                        balance: 1000,
+                        currency: 'INR',
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    this.state.stats.walletBalance = 1000;
+                }
+                
+                this.updateStats();
+                
+            } catch (error) {
+                console.error("Error loading wallet:", error);
+                this.state.stats.walletBalance = 1000;
+            }
+        }
+        
+        calculateStats() {
+            try {
+                // Calculate matches played and won
+                const completedMatches = this.state.matches.filter(match => match.status === 'completed');
+                const matchesPlayed = completedMatches.length;
+                
+                const matchesWon = completedMatches.filter(match => {
+                    if (match.userTeam === 'team1') {
+                        return match.team1.score > match.team2.score;
+                    } else if (match.userTeam === 'team2') {
+                        return match.team2.score > match.team1.score;
+                    }
+                    return false;
+                }).length;
+                
+                // Calculate win rate
+                const winRate = matchesPlayed > 0 ? Math.round((matchesWon / matchesPlayed) * 100) : 0;
+                
+                // Calculate tournaments won (placeholder - in real app, get from user stats)
+                const tournamentsWon = this.state.userData.stats?.tournamentsWon || 0;
+                
+                this.state.stats = {
+                    tournamentsWon: tournamentsWon,
+                    matchesPlayed: matchesPlayed,
+                    winRate: winRate,
+                    walletBalance: this.state.stats.walletBalance
+                };
+                
+                this.updateStats();
+                
+                // Update user stats in Firebase
+                this.updateUserStatsInFirebase(matchesPlayed, matchesWon, winRate);
+                
+            } catch (error) {
+                console.error("Error calculating stats:", error);
+            }
+        }
+        
+        async updateUserStatsInFirebase(matchesPlayed, matchesWon, winRate) {
+            try {
+                if (!this.db || !this.state.user) return;
+                
+                await this.db.collection('users').doc(this.state.user.uid).update({
+                    'stats.matchesPlayed': matchesPlayed,
+                    'stats.matchesWon': matchesWon,
+                    'stats.winRate': winRate,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+            } catch (error) {
+                console.error("Error updating user stats:", error);
             }
         }
         
         loadMockTournaments() {
+            console.log("Loading mock tournaments...");
             this.state.tournaments = [
                 {
-                    id: 1,
+                    id: 'mock1',
                     title: "Valorant Pro Series",
                     game: "Valorant",
                     status: "live",
@@ -1370,13 +2140,16 @@
                     currentPlayers: 12,
                     maxPlayers: 16,
                     startDate: new Date(Date.now() - 3600000),
-                    description: "Join the ultimate Valorant competition!",
+                    endDate: new Date(Date.now() + 7200000),
+                    description: "Join the ultimate Valorant competition! Test your skills against the best players.",
                     organizer: "TourneyHub",
-                    rules: "5v5, Single Elimination",
-                    platform: "PC"
+                    platform: "PC",
+                    format: "5v5",
+                    rules: "Standard Valorant rules apply",
+                    registrationDeadline: new Date(Date.now() + 86400000)
                 },
                 {
-                    id: 2,
+                    id: 'mock2',
                     title: "CS:GO Championship",
                     game: "CS:GO",
                     status: "upcoming",
@@ -1385,64 +2158,199 @@
                     currentPlayers: 8,
                     maxPlayers: 16,
                     startDate: new Date(Date.now() + 7200000),
-                    description: "Compete in the CS:GO championship!",
+                    endDate: new Date(Date.now() + 18000000),
+                    description: "Compete in the CS:GO championship! Battle it out for the grand prize.",
                     organizer: "TourneyHub",
-                    rules: "5v5, Swiss Format",
-                    platform: "PC"
+                    platform: "PC",
+                    format: "5v5",
+                    rules: "MR15 format, overtime if needed",
+                    registrationDeadline: new Date(Date.now() + 43200000)
                 },
                 {
-                    id: 3,
-                    title: "Fortnite Weekly",
+                    id: 'mock3',
+                    title: "Fortnite Battle Royale",
                     game: "Fortnite",
-                    status: "upcoming",
-                    prize: 2500,
-                    entryFee: 100,
-                    currentPlayers: 50,
+                    status: "registering",
+                    prize: 3000,
+                    entryFee: 50,
+                    currentPlayers: 24,
                     maxPlayers: 100,
                     startDate: new Date(Date.now() + 86400000),
-                    description: "Weekly Fortnite tournament!",
+                    endDate: new Date(Date.now() + 172800000),
+                    description: "Solo Fortnite battle royale tournament. Last player standing wins!",
                     organizer: "TourneyHub",
-                    rules: "Solo, Battle Royale",
-                    platform: "Cross-Platform"
+                    platform: "Cross-Platform",
+                    format: "Solo",
+                    rules: "No teaming, standard battle royale rules",
+                    registrationDeadline: new Date(Date.now() + 86400000)
                 }
             ];
             
             this.renderTournaments();
         }
         
-        getMockMatches() {
-            return [
+        loadMockMatches() {
+            console.log("Loading mock matches...");
+            this.state.matches = [
                 {
-                    id: 1,
-                    team1: { name: "Your Team", score: 2, logo: "YT" },
-                    team2: { name: "Vortex", score: 1, logo: "VX" },
+                    id: 'match1',
+                    tournamentId: 'mock1',
+                    tournamentName: "Valorant Pro Series India",
+                    matchName: "Quarter Finals - Match 1",
+                    team1: { name: "आपकी Team", score: 13 },
+                    team2: { name: "Vortex Gaming", score: 9 },
                     status: "completed",
-                    tournament: "Valorant Pro Series",
-                    date: "2 hours ago"
+                    scheduledTime: new Date(Date.now() - 7200000),
+                    startTime: new Date(Date.now() - 10800000),
+                    endTime: new Date(Date.now() - 7200000),
+                    duration: "60 min",
+                    format: "BO3",
+                    round: "Quarter Finals",
+                    stage: "Playoffs",
+                    result: "13-9",
+                    winner: "आपकी Team",
+                    userTeam: 'team1',
+                    streamUrl: "https://twitch.tv/tourneyhub",
+                    map: "Ascent",
+                    server: "Mumbai"
                 },
                 {
-                    id: 2,
-                    team1: { name: "Your Team", score: 0, logo: "YT" },
-                    team2: { name: "Phoenix", score: 0, logo: "PH" },
-                    status: "upcoming",
-                    tournament: "CS:GO Championship",
-                    date: "In 45 min"
+                    id: 'match2',
+                    tournamentId: 'mock1',
+                    tournamentName: "BGMI Championship",
+                    matchName: "Semi Finals - Match 2",
+                    team1: { name: "आपकी Team", score: 10 },
+                    team2: { name: "Phoenix Rising", score: 13 },
+                    status: "completed",
+                    scheduledTime: new Date(Date.now() - 172800000),
+                    startTime: new Date(Date.now() - 173000000),
+                    endTime: new Date(Date.now() - 172800000),
+                    duration: "55 min",
+                    format: "BO3",
+                    round: "Semi Finals",
+                    stage: "Playoffs",
+                    result: "10-13",
+                    winner: "Phoenix Rising",
+                    userTeam: 'team1',
+                    streamUrl: "https://twitch.tv/tourneyhub",
+                    map: "Sanhok",
+                    server: "Mumbai"
+                },
+                {
+                    id: 'match3',
+                    tournamentId: 'mock2',
+                    tournamentName: "Free Fire Max Tournament",
+                    matchName: "Group Stage - Match 3",
+                    team1: { name: "आपकी Team", score: 0 },
+                    team2: { name: "Team Titans", score: 0 },
+                    status: "scheduled",
+                    scheduledTime: new Date(Date.now() + 3600000),
+                    startTime: null,
+                    endTime: null,
+                    duration: "45 min",
+                    format: "BO1",
+                    round: "Group Stage",
+                    stage: "Groups",
+                    result: null,
+                    winner: null,
+                    userTeam: 'team1',
+                    streamUrl: "https://twitch.tv/tourneyhub",
+                    map: "Mirage",
+                    server: "Singapore"
+                },
+                {
+                    id: 'match4',
+                    tournamentId: 'mock1',
+                    tournamentName: "Valorant Pro Series",
+                    matchName: "Group Stage - Match 4",
+                    team1: { name: "Your Team", score: 8 },
+                    team2: { name: "Shadow Clan", score: 8 },
+                    status: "live",
+                    scheduledTime: new Date(Date.now() - 1800000),
+                    startTime: new Date(Date.now() - 1800000),
+                    endTime: null,
+                    duration: "45 min",
+                    format: "BO3",
+                    round: "Group Stage",
+                    stage: "Groups",
+                    result: "8-8",
+                    winner: null,
+                    userTeam: 'team1',
+                    streamUrl: "https://twitch.tv/tourneyhub/live",
+                    map: "Haven",
+                    server: "Mumbai"
                 }
             ];
+            
+            this.renderMatches();
         }
         
-        getMockTransactions() {
-            return [
-                { id: 1, type: 'deposit', amount: 750, description: 'Tournament Win', date: '2 hours ago', status: 'completed' },
-                { id: 2, type: 'withdrawal', amount: 200, description: 'Withdrawal', date: '1 day ago', status: 'completed' },
-                { id: 3, type: 'deposit', amount: 500, description: 'Deposit', date: '3 days ago', status: 'completed' }
+        loadMockTransactions() {
+            this.state.transactions = [
+                { 
+                    id: 'txn1', 
+                    type: 'deposit', 
+                    amount: 750, 
+                    description: 'Tournament Win - Valorant Pro Series', 
+                    status: 'completed', 
+                    timestamp: new Date(Date.now() - 7200000), 
+                    reference: 'TXN001',
+                    method: 'upi',
+                    details: { tournament: 'Valorant Pro Series', rank: 1 },
+                    fee: 0,
+                    netAmount: 750
+                },
+                { 
+                    id: 'txn2', 
+                    type: 'withdrawal', 
+                    amount: 200, 
+                    description: 'Withdrawal to Bank Account', 
+                    status: 'completed', 
+                    timestamp: new Date(Date.now() - 86400000), 
+                    reference: 'TXN002',
+                    method: 'bank_transfer',
+                    details: { account: 'XXXX1234', ifsc: 'SBIN0001234' },
+                    fee: 5,
+                    netAmount: 195
+                },
+                { 
+                    id: 'txn3', 
+                    type: 'deposit', 
+                    amount: 500, 
+                    description: 'Wallet Deposit', 
+                    status: 'completed', 
+                    timestamp: new Date(Date.now() - 259200000), 
+                    reference: 'TXN003',
+                    method: 'card',
+                    details: { card: 'XXXX4321', type: 'credit' },
+                    fee: 0,
+                    netAmount: 500
+                },
+                { 
+                    id: 'txn4', 
+                    type: 'entry_fee', 
+                    amount: 150, 
+                    description: 'Tournament Entry - CS:GO Championship', 
+                    status: 'completed', 
+                    timestamp: new Date(Date.now() - 172800000), 
+                    reference: 'TXN004',
+                    method: 'wallet',
+                    details: { tournament: 'CS:GO Championship' },
+                    fee: 0,
+                    netAmount: 150
+                }
             ];
+            
+            this.renderTransactions();
         }
         
         loadMockData() {
             this.loadMockTournaments();
-            this.loadMatches();
-            this.loadTransactions();
+            this.loadMockMatches();
+            this.loadMockTransactions();
+            this.state.stats.walletBalance = 1240;
+            this.calculateStats();
+            console.log("Mock data loaded successfully");
         }
         
         simulateLoading() {
@@ -1460,21 +2368,21 @@
                         if (loadingScreen) {
                             loadingScreen.classList.add('hidden');
                         }
-                        
-                        this.showNotification("Welcome to TourneyHub Pro!", "Your gaming dashboard is ready!", "success");
-                        
-                        this.updateStats();
-                        
+                        this.showNotification("Dashboard Loaded", "All systems operational!", "success");
                     }, 500);
                 }
             }, 150);
         }
         
         initUI() {
+            console.log("Initializing UI...");
             this.initTabs();
             this.updateUserInfo();
             this.checkMobile();
             window.addEventListener('resize', () => this.checkMobile());
+            
+            // Initialize tooltips
+            this.initTooltips();
         }
         
         initTabs() {
@@ -1482,14 +2390,25 @@
             const navItems = document.querySelectorAll('.nav-item');
             
             const switchTab = (tabId) => {
+                console.log(`Switching to tab: ${tabId}`);
                 this.state.activeTab = tabId;
                 
                 tabs.forEach(tab => {
                     tab.classList.toggle('active', tab.dataset.tab === tabId);
                 });
                 
+                // Map bottom-nav hrefs to tab ids (index-style nav)
+                const hrefToTab = {
+                    'tournament-joined.html': 'tournaments',
+                    'wallet.html': 'wallet',
+                    'profile.html': 'profile',
+                    'dashboard.html': 'pro'
+                };
+
                 navItems.forEach(item => {
-                    item.classList.toggle('active', item.dataset.tab === tabId);
+                    const href = item.getAttribute('href') || '';
+                    const itemTab = item.dataset.tab || hrefToTab[href] || '';
+                    item.classList.toggle('active', itemTab === tabId);
                 });
                 
                 const contents = document.querySelectorAll('.tab-content');
@@ -1497,16 +2416,10 @@
                     content.classList.toggle('active', content.id === `${tabId}-content`);
                 });
                 
-                switch(tabId) {
-                    case 'tournaments':
-                        if (this.state.tournaments.length === 0) this.loadTournamentsFromFirebase();
-                        break;
-                    case 'matches':
-                        if (this.state.matches.length === 0) this.loadMatches();
-                        break;
-                    case 'wallet':
-                        if (this.state.transactions.length === 0) this.loadTransactions();
-                        break;
+                // Scroll to top of tab content
+                const activeContent = document.getElementById(`${tabId}-content`);
+                if (activeContent) {
+                    activeContent.scrollTop = 0;
                 }
             };
             
@@ -1517,25 +2430,104 @@
             navItems.forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
-                    switchTab(item.dataset.tab);
+                    const href = item.getAttribute('href') || '';
+                    const hrefToTab = {
+                        'tournament-joined.html': 'tournaments',
+                        'wallet.html': 'wallet',
+                        'profile.html': 'profile',
+                        'dashboard.html': 'pro'
+                    };
+                    const targetTab = item.dataset.tab || hrefToTab[href];
+                    if (targetTab) {
+                        switchTab(targetTab);
+                    } else if (href) {
+                        // fallback to navigate
+                        window.location.href = href;
+                    }
                 });
             });
             
             switchTab(this.state.activeTab);
         }
         
+        initTooltips() {
+            // Add tooltips to elements with data-tooltip attribute
+            document.querySelectorAll('[data-tooltip]').forEach(element => {
+                element.addEventListener('mouseenter', (e) => {
+                    const tooltip = e.target.getAttribute('data-tooltip');
+                    if (tooltip) {
+                        const tooltipEl = document.createElement('div');
+                        tooltipEl.className = 'tooltip';
+                        tooltipEl.textContent = tooltip;
+                        tooltipEl.style.cssText = `
+                            position: absolute;
+                            background: rgba(20, 20, 40, 0.95);
+                            color: white;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            font-size: 12px;
+                            z-index: 10000;
+                            max-width: 200px;
+                            white-space: nowrap;
+                            border: 1px solid var(--neon-blue);
+                            backdrop-filter: blur(10px);
+                        `;
+                        
+                        const rect = e.target.getBoundingClientRect();
+                        tooltipEl.style.top = `${rect.top - 40}px`;
+                        tooltipEl.style.left = `${rect.left + (rect.width / 2)}px`;
+                        tooltipEl.style.transform = 'translateX(-50%)';
+                        
+                        document.body.appendChild(tooltipEl);
+                        
+                        e.target._tooltip = tooltipEl;
+                    }
+                });
+                
+                element.addEventListener('mouseleave', (e) => {
+                    if (e.target._tooltip) {
+                        e.target._tooltip.remove();
+                        delete e.target._tooltip;
+                    }
+                });
+            });
+        }
+        
         updateStats() {
-            document.getElementById('tournamentsWon').textContent = this.state.stats.tournamentsWon;
-            document.getElementById('matchesPlayed').textContent = this.state.stats.matchesPlayed;
-            document.getElementById('winRate').textContent = `${this.state.stats.winRate}%`;
-            document.getElementById('walletBalance').textContent = `₮${this.state.stats.walletBalance}`;
-            document.getElementById('currentBalance').textContent = `₮${this.state.stats.walletBalance}`;
+            try {
+                document.getElementById('tournamentsWon').textContent = this.state.stats.tournamentsWon;
+                document.getElementById('matchesPlayed').textContent = this.state.stats.matchesPlayed;
+                document.getElementById('winRate').textContent = `${this.state.stats.winRate}%`;
+                document.getElementById('walletBalance').textContent = `₮${this.state.stats.walletBalance.toLocaleString()}`;
+                document.getElementById('currentBalance').textContent = `₮${this.state.stats.walletBalance.toLocaleString()}`;
+            } catch (error) {
+                console.error("Error updating stats:", error);
+            }
         }
         
         updateUserInfo() {
-            if (this.state.user) {
-                document.getElementById('profileName').textContent = this.state.user.displayName || 'CyberGamer';
-                document.getElementById('profileEmail').textContent = this.state.user.email || 'gamer@tourneyhub.com';
+            try {
+                if (this.state.user) {
+                    const displayName = this.state.userData.displayName || 
+                                      this.state.user.displayName || 
+                                      this.state.user.email.split('@')[0];
+                    const email = this.state.user.email || 'gamer@tourneyhub.com';
+                    
+                    document.getElementById('profileName').textContent = displayName;
+                    document.getElementById('profileEmail').textContent = email;
+                    
+                    const userNameElement = document.querySelector('.user-name');
+                    if (userNameElement) userNameElement.textContent = displayName;
+                    
+                    // Update avatar if not already set
+                    const avatarImg = document.querySelector('.user-avatar img');
+                    if (avatarImg && !avatarImg.src.includes('dicebear')) {
+                        avatarImg.src = this.state.userData.profile?.avatar || 
+                                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.state.user.uid}&backgroundColor=00f3ff&hair=short`;
+                    }
+                }
+            } catch (error) {
+                console.error("Error updating user info:", error);
             }
         }
         
@@ -1548,117 +2540,64 @@
                     <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
                         <i class="fas fa-trophy" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
                         <h3>No Tournaments Found</h3>
-                        <p>Check back soon for new tournaments!</p>
-                        <button id="createTournamentBtn" style="margin-top: 20px; background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); border: none; padding: 10px 20px; border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">
-                            Create Tournament
-                        </button>
+                        <p>There are no active tournaments at the moment. Check back later!</p>
+                        <div style="margin-top: 20px;">
+                            <button onclick="window.dashboard.refreshTournaments()" style="background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
                     </div>
                 `;
                 return;
             }
             
             container.innerHTML = this.state.tournaments.map(tournament => {
-                const playersText = `${tournament.currentPlayers}/${tournament.maxPlayers}`;
-                const timeText = this.getTournamentTimeText(tournament);
                 const statusClass = tournament.status === 'live' ? 'status-live' : 
-                                  tournament.status === 'upcoming' ? 'status-upcoming' : 'status-completed';
+                                  tournament.status === 'upcoming' ? 'status-upcoming' : 
+                                  tournament.status === 'registering' ? 'status-upcoming' : 'status-completed';
+                
+                const statusText = tournament.status === 'live' ? 'LIVE' : 
+                                 tournament.status === 'upcoming' ? 'UPCOMING' : 
+                                 tournament.status === 'registering' ? 'REGISTERING' : 'COMPLETED';
+                
+                const timeInfo = tournament.status === 'live' ? 
+                    `<span style="color: var(--neon-red);"><i class="fas fa-circle" style="animation: pulse 1.5s infinite; margin-right: 5px;"></i>Live Now</span>` :
+                    `<span><i class="fas fa-clock" style="margin-right: 5px;"></i>${this.formatDate(tournament.startDate)}</span>`;
                 
                 return `
                 <div class="tournament-card">
-                    <div class="tournament-status ${statusClass}">${tournament.status.toUpperCase()}</div>
-                    <h3 style="margin-bottom: 10px; color: var(--text-primary);">${tournament.title}</h3>
+                    <div class="tournament-status ${statusClass}">${statusText}</div>
+                    <h3 style="margin-bottom: 10px; color: var(--text-primary);">${this.escapeHtml(tournament.title)}</h3>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <span style="color: var(--text-secondary);">
-                            <i class="fas fa-gamepad" style="margin-right: 8px;"></i>${tournament.game}
+                            <i class="fas fa-gamepad" style="margin-right: 8px;"></i>${this.escapeHtml(tournament.game)}
                         </span>
                         <span style="color: var(--neon-green); font-weight: 600;">₮${tournament.prize.toLocaleString()}</span>
                     </div>
                     
                     <div style="margin-bottom: 15px; color: var(--text-secondary); font-size: 14px;">
-                        ${tournament.description}
+                        ${this.escapeHtml(tournament.description)}
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 14px; margin-bottom: 10px;">
-                        <span><i class="fas fa-users" style="margin-right: 5px;"></i> ${playersText}</span>
-                        <span><i class="fas fa-calendar" style="margin-right: 5px;"></i> ${this.formatDate(tournament.startDate)}</span>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                        <span><i class="fas fa-users" style="margin-right: 5px;"></i> ${tournament.currentPlayers}/${tournament.maxPlayers}</span>
+                        <span>${timeInfo}</span>
                         <span><i class="fas fa-coins" style="margin-right: 5px;"></i> ₮${tournament.entryFee}</span>
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 12px; margin-bottom: 20px;">
-                        <span><i class="fas fa-user" style="margin-right: 5px;"></i> ${tournament.organizer}</span>
-                        <span><i class="fas fa-desktop" style="margin-right: 5px;"></i> ${tournament.platform}</span>
-                        <span><i class="fas fa-clock" style="margin-right: 5px;"></i> ${timeText}</span>
-                    </div>
-                    
                     <div style="display: flex; gap: 10px;">
-                        <button class="tournament-action" data-id="${tournament.id}" style="flex: 1; background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
-                            ${tournament.status === 'live' ? 'Join Now' : tournament.status === 'upcoming' ? 'Register Now' : 'View Results'}
+                        <button onclick="window.dashboard.registerForTournament('${tournament.id}')" 
+                                style="flex: 1; background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-plus"></i> Register Now
                         </button>
-                        <button class="tournament-details" data-id="${tournament.id}" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-secondary); padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                        <button onclick="window.dashboard.viewTournamentDetails('${tournament.id}')" 
+                                style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--text-secondary); color: var(--text-secondary); padding: 10px; border-radius: 8px; cursor: pointer;">
                             <i class="fas fa-info-circle"></i>
-                        </button>
-                        <button class="share-tournament" data-id="${tournament.id}" style="background: rgba(185, 103, 255, 0.1); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
-                            <i class="fas fa-share-alt"></i>
                         </button>
                     </div>
                 </div>
                 `;
             }).join('');
-            
-            container.querySelectorAll('.tournament-action').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const tournamentId = e.target.dataset.id;
-                    this.handleTournamentAction(tournamentId);
-                });
-            });
-            
-            container.querySelectorAll('.tournament-details').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const tournamentId = e.target.closest('button').dataset.id;
-                    this.viewTournamentDetails(tournamentId);
-                });
-            });
-            
-            container.querySelectorAll('.share-tournament').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const tournamentId = e.target.closest('button').dataset.id;
-                    this.shareTournament(tournamentId);
-                });
-            });
-        }
-        
-        getTournamentTimeText(tournament) {
-            const now = new Date();
-            const startDate = tournament.startDate instanceof Date ? tournament.startDate : new Date(tournament.startDate);
-            
-            if (tournament.status === 'live') {
-                return 'Live Now';
-            } else if (tournament.status === 'upcoming') {
-                const diffMs = startDate - now;
-                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                const diffDays = Math.floor(diffHours / 24);
-                
-                if (diffDays > 0) {
-                    return `Starts in ${diffDays} day${diffDays > 1 ? 's' : ''}`;
-                } else if (diffHours > 0) {
-                    return `Starts in ${diffHours} hour${diffHours > 1 ? 's' : ''}`;
-                } else {
-                    return 'Starting soon';
-                }
-            } else {
-                return 'Completed';
-            }
-        }
-        
-        formatDate(date) {
-            if (!date) return 'N/A';
-            const d = date instanceof Date ? date : new Date(date);
-            return d.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
         }
         
         renderMatches() {
@@ -1666,63 +2605,143 @@
             if (!container) return;
             
             if (this.state.matches.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                        <i class="fas fa-crosshairs" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3>No Matches Yet</h3>
-                        <p>Join a tournament to see your matches here</p>
-                    </div>
-                `;
+                // Matches UI removed - keep container empty to avoid showing debug controls
+                container.innerHTML = '';
                 return;
             }
             
-            container.innerHTML = this.state.matches.map(match => `
+            container.innerHTML = this.state.matches.map(match => {
+                const isCompleted = match.status === 'completed';
+                const isLive = match.status === 'live';
+                const isUpcoming = match.status === 'scheduled';
+                
+                const userTeam = match.userTeam === 'team1' ? match.team1 : 
+                                match.userTeam === 'team2' ? match.team2 : null;
+                const opponentTeam = match.userTeam === 'team1' ? match.team2 : 
+                                   match.userTeam === 'team2' ? match.team1 : null;
+                
+                // Calculate result
+                let resultType = 'upcoming';
+                let resultText = 'UPCOMING';
+                let resultColor = 'var(--neon-orange)';
+                let resultBg = 'rgba(255, 204, 0, 0.2)';
+                
+                if (isCompleted && userTeam && opponentTeam) {
+                    if (userTeam.score > opponentTeam.score) {
+                        resultType = 'victory';
+                        resultText = 'VICTORY';
+                        resultColor = 'var(--neon-green)';
+                        resultBg = 'rgba(0, 255, 157, 0.2)';
+                    } else if (userTeam.score < opponentTeam.score) {
+                        resultType = 'defeat';
+                        resultText = 'DEFEAT';
+                        resultColor = 'var(--neon-red)';
+                        resultBg = 'rgba(255, 45, 85, 0.2)';
+                    } else {
+                        resultType = 'draw';
+                        resultText = 'DRAW';
+                        resultColor = 'var(--neon-yellow)';
+                        resultBg = 'rgba(255, 204, 0, 0.2)';
+                    }
+                } else if (isLive) {
+                    resultType = 'live';
+                    resultText = 'LIVE';
+                    resultColor = 'var(--neon-pink)';
+                    resultBg = 'rgba(255, 45, 149, 0.2)';
+                }
+                
+                // Team initials
+                const userInitial = userTeam && userTeam.name ? userTeam.name.charAt(0).toUpperCase() : 'Y';
+                const opponentInitial = opponentTeam && opponentTeam.name ? opponentTeam.name.charAt(0).toUpperCase() : 'O';
+                
+                // Score styling
+                const userScoreClass = isCompleted && userTeam && opponentTeam ? 
+                    (userTeam.score > opponentTeam.score ? 'winning-score' : 
+                     userTeam.score < opponentTeam.score ? 'losing-score' : 'draw-score') : '';
+                
+                const opponentScoreClass = isCompleted && userTeam && opponentTeam ? 
+                    (opponentTeam.score > userTeam.score ? 'winning-score' : 
+                     opponentTeam.score < userTeam.score ? 'losing-score' : 'draw-score') : '';
+                
+                // Additional match info
+                const matchInfo = [];
+                if (match.map && match.map !== 'Default') matchInfo.push(match.map);
+                if (match.round) matchInfo.push(match.round);
+                if (match.format) matchInfo.push(match.format);
+                
+                return `
                 <div class="match-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="color: var(--text-primary);">${match.tournament}</h3>
-                        <span style="color: ${match.status === 'completed' ? 'var(--neon-green)' : 'var(--neon-orange)'}; font-size: 12px; font-weight: 600;">
-                            ${match.status === 'completed' ? 'COMPLETED' : 'UPCOMING'}
+                        <div>
+                            <h3 style="color: var(--text-primary); margin-bottom: 5px;">${this.escapeHtml(match.tournamentName)}</h3>
+                            <div style="color: var(--text-secondary); font-size: 14px;">
+                                <i class="fas fa-flag" style="margin-right: 5px;"></i> ${this.escapeHtml(match.matchName)}
+                            </div>
+                        </div>
+                        <span style="color: ${resultColor}; font-size: 12px; font-weight: 600; padding: 5px 15px; border-radius: 20px; background: ${resultBg};">
+                            ${resultText}
                         </span>
                     </div>
+                    
+                    ${matchInfo.length > 0 ? `
+                    <div style="margin-bottom: 10px; color: var(--text-secondary); font-size: 14px;">
+                        <i class="fas fa-info-circle" style="margin-right: 5px;"></i> ${matchInfo.join(' • ')}
+                    </div>
+                    ` : ''}
                     
                     <div class="teams">
                         <div class="team">
                             <div class="team-logo" style="background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));">
-                                ${match.team1.logo}
+                                ${userInitial}
                             </div>
-                            <div style="font-weight: 600; margin-bottom: 5px;">${match.team1.name}</div>
-                            <div style="font-size: 24px; font-weight: 800; color: var(--neon-blue);">${match.team1.score}</div>
+                            <div style="font-weight: 600; margin-bottom: 5px; color: ${resultType === 'victory' ? 'var(--neon-green)' : 'var(--text-primary)'};">${userTeam ? this.escapeHtml(userTeam.name) : 'Your Team'}</div>
+                            <div class="score-display ${userScoreClass}">${userTeam ? userTeam.score : '0'}</div>
                         </div>
                         
                         <div class="vs">VS</div>
                         
                         <div class="team">
                             <div class="team-logo" style="background: linear-gradient(135deg, var(--neon-pink), #ff0055);">
-                                ${match.team2.logo}
+                                ${opponentInitial}
                             </div>
-                            <div style="font-weight: 600; margin-bottom: 5px;">${match.team2.name}</div>
-                            <div style="font-size: 24px; font-weight: 800; color: var(--neon-pink);">${match.team2.score}</div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">${opponentTeam ? this.escapeHtml(opponentTeam.name) : 'Opponent'}</div>
+                            <div class="score-display ${opponentScoreClass}">${opponentTeam ? opponentTeam.score : '0'}</div>
                         </div>
                     </div>
                     
                     <div style="text-align: center; color: var(--text-secondary); margin-top: 20px; font-size: 14px;">
-                        <i class="fas fa-clock" style="margin-right: 5px;"></i> ${match.date}
+                        <i class="fas fa-clock" style="margin-right: 5px;"></i>
+                        ${isCompleted ? 
+                          `Completed • ${this.formatDate(match.scheduledTime)}` : 
+                          isLive ? 
+                          `Live • Started ${this.formatDate(match.startTime)}` :
+                          `Scheduled • ${this.formatDate(match.scheduledTime)}`}
+                        ${match.duration ? ` • ${match.duration}` : ''}
+                        ${isCompleted && match.result ? 
+                          `<br><i class="fas fa-flag" style="margin-right: 5px;"></i> Final Score: ${match.result}` : ''}
+                        ${match.server ? `<br><i class="fas fa-server" style="margin-right: 5px;"></i> Server: ${match.server}` : ''}
                     </div>
                     
-                    <div style="margin-top: 20px; text-align: center;">
-                        <button class="view-match" data-id="${match.id}" style="background: rgba(185, 103, 255, 0.1); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px 25px; border-radius: 20px; cursor: pointer; transition: all 0.3s;">
-                            ${match.status === 'completed' ? 'View Stats' : 'Prepare'}
+                    <div style="margin-top: 20px; text-align: center; display: flex; gap: 10px; justify-content: center;">
+                        <button onclick="window.dashboard.viewMatchDetails('${match.id}')" 
+                                style="background: ${isCompleted ? 'rgba(185, 103, 255, 0.1)' : 'rgba(0, 243, 255, 0.1)'}; 
+                                       border: 1px solid ${isCompleted ? 'var(--neon-purple)' : 'var(--neon-blue)'}; 
+                                       color: ${isCompleted ? 'var(--neon-purple)' : 'var(--neon-blue)'}; 
+                                       padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; flex: 1;">
+                            <i class="fas fa-${isCompleted ? 'chart-bar' : isLive ? 'play' : 'info-circle'}"></i>
+                            ${isCompleted ? 'View Stats' : isLive ? 'Join Match' : 'Details'}
                         </button>
+                        ${match.streamUrl ? `
+                        <button onclick="window.open('${match.streamUrl}', '_blank')" 
+                                style="background: rgba(255, 45, 85, 0.1); border: 1px solid var(--neon-red); 
+                                       color: var(--neon-red); padding: 10px 15px; border-radius: 20px; cursor: pointer;">
+                            <i class="fas fa-tv"></i>
+                        </button>
+                        ` : ''}
                     </div>
                 </div>
-            `).join('');
-            
-            container.querySelectorAll('.view-match').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const matchId = e.target.dataset.id;
-                    this.viewMatchDetails(matchId);
-                });
-            });
+                `;
+            }).join('');
         }
         
         renderTransactions() {
@@ -1734,102 +2753,284 @@
                     <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
                         <i class="fas fa-exchange-alt" style="font-size: 32px; margin-bottom: 10px; opacity: 0.5;"></i>
                         <p>No transactions yet</p>
+                        <p style="font-size: 12px; margin-top: 5px;">Your transaction history will appear here</p>
                     </div>
                 `;
                 return;
             }
             
-            container.innerHTML = this.state.transactions.map(transaction => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 10px; margin-bottom: 10px; transition: all 0.3s; cursor: pointer;">
+            container.innerHTML = this.state.transactions.map(transaction => {
+                const isDeposit = transaction.type === 'deposit';
+                const isWithdrawal = transaction.type === 'withdrawal';
+                const isEntryFee = transaction.type === 'entry_fee' || transaction.type === 'tournament_fee';
+                const isPrize = transaction.type === 'prize' || transaction.type === 'winning';
+                
+                let typeIcon = 'exchange-alt';
+                let typeClass = 'info';
+                
+                if (isDeposit || isPrize) {
+                    typeIcon = 'arrow-down';
+                    typeClass = 'success';
+                } else if (isWithdrawal) {
+                    typeIcon = 'arrow-up';
+                    typeClass = 'error';
+                } else if (isEntryFee) {
+                    typeIcon = 'ticket-alt';
+                    typeClass = 'warning';
+                }
+                
+                const amountColor = isDeposit || isPrize ? 'var(--neon-green)' : 
+                                 isWithdrawal ? 'var(--neon-pink)' : 
+                                 isEntryFee ? 'var(--neon-orange)' : 'var(--text-secondary)';
+                
+                const bgColor = isDeposit || isPrize ? 'rgba(0, 255, 157, 0.1)' : 
+                               isWithdrawal ? 'rgba(255, 45, 85, 0.1)' : 
+                               isEntryFee ? 'rgba(255, 123, 0, 0.1)' : 'rgba(0, 243, 255, 0.1)';
+                
+                const statusColor = transaction.status === 'completed' ? 'var(--neon-green)' : 
+                                   transaction.status === 'pending' ? 'var(--neon-orange)' : 
+                                   transaction.status === 'failed' ? 'var(--neon-red)' : 'var(--text-secondary)';
+                
+                const statusText = transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1);
+                
+                return `
+                <div onclick="window.dashboard.viewTransactionDetails('${transaction.id}')" 
+                     style="display: flex; justify-content: space-between; align-items: center; padding: 15px; 
+                            background: rgba(255, 255, 255, 0.03); border-radius: 10px; margin-bottom: 10px; 
+                            cursor: pointer; border-left: 3px solid ${amountColor}; transition: all 0.3s;"
+                     onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'"
+                     onmouseout="this.style.background='rgba(255, 255, 255, 0.03)'">
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="width: 40px; height: 40px; border-radius: 10px; background: ${transaction.type === 'deposit' ? 'rgba(0, 255, 157, 0.1)' : 'rgba(255, 45, 85, 0.1)'}; display: flex; align-items: center; justify-content: center; color: ${transaction.type === 'deposit' ? 'var(--neon-green)' : 'var(--neon-pink)'};">
-                            <i class="fas fa-${transaction.type === 'deposit' ? 'arrow-down' : 'arrow-up'}"></i>
+                        <div style="width: 40px; height: 40px; border-radius: 10px; 
+                              background: ${bgColor}; 
+                              display: flex; align-items: center; justify-content: center; 
+                              color: ${amountColor};">
+                            <i class="fas fa-${typeIcon}"></i>
                         </div>
                         <div>
-                            <div style="font-weight: 600; margin-bottom: 5px;">${transaction.description}</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">${transaction.date}</div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">${this.escapeHtml(transaction.description)}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); display: flex; gap: 10px;">
+                                <span>${this.formatDate(transaction.timestamp)}</span>
+                                <span style="color: ${statusColor};">${statusText}</span>
+                                ${transaction.reference ? `<span>Ref: ${transaction.reference}</span>` : ''}
+                            </div>
                         </div>
                     </div>
-                    <div style="font-weight: 700; color: ${transaction.type === 'deposit' ? 'var(--neon-green)' : 'var(--neon-pink)'};">
-                        ${transaction.type === 'deposit' ? '+' : '-'}₮${transaction.amount}
+                    <div style="font-weight: 700; color: ${amountColor}; text-align: right;">
+                        <div>${isDeposit || isPrize ? '+' : '-'}₮${transaction.amount.toLocaleString()}</div>
+                        ${transaction.fee > 0 ? `<div style="font-size: 10px; color: var(--text-secondary);">Fee: ₮${transaction.fee}</div>` : ''}
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+        
+        formatDate(date) {
+            if (!date) return 'N/A';
+            
+            try {
+                const d = date instanceof Date ? date : new Date(date);
+                if (isNaN(d.getTime())) return 'Invalid Date';
+                
+                const now = new Date();
+                const diff = now - d;
+                
+                // Less than a minute
+                if (diff < 60000) {
+                    return 'Just now';
+                }
+                
+                // Less than an hour
+                if (diff < 3600000) {
+                    const minutes = Math.floor(diff / 60000);
+                    return `${minutes}m ago`;
+                }
+                
+                // Less than a day
+                if (diff < 86400000) {
+                    const hours = Math.floor(diff / 3600000);
+                    return `${hours}h ago`;
+                }
+                
+                // Less than a week
+                if (diff < 604800000) {
+                    const days = Math.floor(diff / 86400000);
+                    return `${days}d ago`;
+                }
+                
+                // More than a week
+                return d.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+                });
+            } catch (error) {
+                console.error("Date formatting error:", error, date);
+                return 'N/A';
+            }
+        }
+        
+        escapeHtml(text) {
+            if (typeof text !== 'string') return text;
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, (m) => map[m]);
         }
         
         setupEventListeners() {
-            document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
+            console.log("Setting up event listeners...");
             
+            // Logout button
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.logout();
+            });
+            
+            // Refresh buttons
+            document.getElementById('refreshTournaments')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.refreshTournaments();
+            });
+            
+            // Matches refresh handlers removed (Matches section deprecated)
+            
+            // Quick action buttons
             document.getElementById('joinTournament')?.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.showNotification("Join Tournament", "Redirecting to tournaments page...", "info");
+                this.switchTab('tournaments');
+                this.showNotification("Browse Tournaments", "Select a tournament to join!", "info");
             });
             
             document.getElementById('addFunds')?.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.switchTab('wallet');
-                this.showNotification("Add Funds", "Opening deposit options...", "info");
+                this.depositFunds();
             });
             
-            document.getElementById('depositBtn')?.addEventListener('click', () => {
-                this.showNotification("Deposit", "Select your payment method...", "info");
+            document.getElementById('createTeam')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.createTeam();
             });
             
-            document.getElementById('withdrawBtn')?.addEventListener('click', () => {
-                this.showNotification("Withdraw", "Enter withdrawal amount...", "info");
+            document.getElementById('viewLeaderboard')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showNotification("Coming Soon", "Leaderboard feature coming soon!", "info");
             });
             
-            document.getElementById('refreshTournaments')?.addEventListener('click', () => {
-                this.refreshTournaments();
+            // Wallet buttons
+            document.getElementById('depositBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.depositFunds();
             });
             
-            document.getElementById('fabButton')?.addEventListener('click', () => {
-                this.showNotification("Quick Action", "What would you like to do?", "info");
+            document.getElementById('withdrawBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.withdrawFunds();
             });
             
-            document.getElementById('toastClose')?.addEventListener('click', () => {
+            // FAB button
+            document.getElementById('fabButton')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleFabClick();
+            });
+            
+            // Toast close button
+            document.getElementById('toastClose')?.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.hideNotification();
             });
             
+            // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.key === '1') {
-                    e.preventDefault();
-                    this.switchTab('tournaments');
+                // Only activate shortcuts when not in input/textarea
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case '1':
+                            e.preventDefault();
+                            this.switchTab('tournaments');
+                            break;
+                        case '2':
+                            e.preventDefault();
+                            this.switchTab('wallet');
+                            break;
+                        case '3':
+                            e.preventDefault();
+                            this.switchTab('profile');
+                            break;
+                        case 'r':
+                        case 'R':
+                            if (!e.shiftKey) {
+                                e.preventDefault();
+                                this.refreshAll();
+                            }
+                            break;
+                    }
                 }
-                if (e.ctrlKey && e.key === '2') {
-                    e.preventDefault();
-                    this.switchTab('matches');
-                }
-                if (e.ctrlKey && e.key === '3') {
-                    e.preventDefault();
-                    this.switchTab('wallet');
-                }
-                if (e.ctrlKey && e.key === '4') {
-                    e.preventDefault();
-                    this.switchTab('profile');
-                }
+                
+                // Escape key closes notifications
                 if (e.key === 'Escape') {
                     this.hideNotification();
                 }
-                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
-                    e.preventDefault();
-                    this.refreshTournaments();
-                }
             });
             
+            // Online/offline detection
             window.addEventListener('online', () => {
-                this.showNotification("You're back online!", "Syncing data...", "success");
-                this.refreshTournaments();
+                this.state.isOnline = true;
+                this.showNotification("Back Online", "Syncing data with server...", "success");
+                setTimeout(() => this.refreshAll(), 1000);
             });
             
             window.addEventListener('offline', () => {
-                this.showNotification("You're offline", "Some features may be limited", "warning");
+                this.state.isOnline = false;
+                this.showNotification("Offline Mode", "Some features limited", "warning");
             });
+            
+            // Prevent accidental page refresh
+            window.addEventListener('beforeunload', (e) => {
+                if (this.state.matches.some(m => m.status === 'live')) {
+                    e.preventDefault();
+                    e.returnValue = 'You have live matches! Are you sure you want to leave?';
+                }
+            });
+            
+            // Service Worker for PWA
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+                });
+            }
+            
+            console.log("Event listeners set up successfully");
         }
         
         async refreshTournaments() {
-            this.showNotification("Refreshing", "Loading tournaments from Firebase...", "info");
-            await this.loadTournamentsFromFirebase();
+            this.showNotification("Refreshing", "Loading tournaments...", "info");
+            try {
+                await this.loadTournaments();
+                this.showNotification("Updated", "Tournaments refreshed", "success");
+            } catch (error) {
+                this.showNotification("Error", "Failed to refresh tournaments", "error");
+            }
+        }
+        
+        
+        async refreshAll() {
+            this.showNotification("Refreshing", "Updating all data...", "info");
+            try {
+                await this.loadAllData();
+                this.showNotification("Updated", "All data refreshed", "success");
+            } catch (error) {
+                this.showNotification("Error", "Failed to refresh data", "error");
+            }
         }
         
         switchTab(tabId) {
@@ -1838,121 +3039,677 @@
             const tab = document.querySelector(`.tab[data-tab="${tabId}"]`);
             if (tab) tab.click();
             
-            const navItem = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+            // Mobile bottom-nav items use links (index-style). Try to find nav-item by href mapping.
+            let navItem = null;
+            const navMap = {
+                'tournaments': 'tournament-joined.html',
+                'wallet': 'wallet.html',
+                'profile': 'profile.html',
+                'home': 'index.html',
+                'games': 'games.html',
+                'pro': 'dashboard.html'
+            };
+            const targetHref = navMap[tabId];
+            if (targetHref) {
+                navItem = document.querySelector(`.nav-item[href="${targetHref}"]`);
+            }
             if (navItem) navItem.click();
+            
+            // Update URL without reloading (for bookmarking)
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabId);
+            window.history.replaceState({}, '', url);
         }
         
-        handleTournamentAction(tournamentId) {
-            const tournament = this.state.tournaments.find(t => t.id == tournamentId);
-            if (!tournament) return;
-            
-            if (tournament.status === 'live') {
-                this.showNotification("Joining Tournament", `Entering ${tournament.title}...`, "success");
-            } else if (tournament.status === 'upcoming') {
-                this.showNotification("Registration", `Registering for ${tournament.title}...`, "info");
-            } else {
-                this.showNotification("Tournament Results", `Viewing results for ${tournament.title}`, "info");
+        async registerForTournament(tournamentId) {
+            try {
+                if (!this.db || !this.state.user) {
+                    this.showNotification("Error", "Please login to register", "error");
+                    return;
+                }
+                
+                const tournament = this.state.tournaments.find(t => t.id === tournamentId);
+                if (!tournament) {
+                    this.showNotification("Error", "Tournament not found", "error");
+                    return;
+                }
+                
+                // Check if already registered
+                const existingRegistration = await this.db.collection('registrations')
+                    .where('userId', '==', this.state.user.uid)
+                    .where('tournamentId', '==', tournamentId)
+                    .where('status', 'in', ['confirmed', 'approved', 'pending'])
+                    .get();
+                
+                if (!existingRegistration.empty) {
+                    this.showNotification("Already Registered", "You are already registered for this tournament", "info");
+                    return;
+                }
+                
+                // Check wallet balance
+                if (this.state.stats.walletBalance < tournament.entryFee) {
+                    this.showNotification("Insufficient Balance", `You need ₮${tournament.entryFee} to register`, "error");
+                    this.switchTab('wallet');
+                    return;
+                }
+                
+                // Ask for team name
+                const teamName = prompt("Enter your team name:", `${this.state.userData.displayName}'s Team`);
+                if (!teamName) return;
+                
+                const playerIGN = prompt("Enter your in-game name (IGN):", this.state.userData.displayName || 'Player');
+                if (!playerIGN) return;
+                
+                this.showNotification("Processing", "Registering for tournament...", "info");
+                
+                // Create registration
+                const registrationData = {
+                    tournamentId: tournamentId,
+                    userId: this.state.user.uid,
+                    teamName: teamName,
+                    playerIGN: playerIGN,
+                    registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'confirmed',
+                    paymentStatus: 'paid',
+                    tournamentName: tournament.title,
+                    tournamentGame: tournament.game,
+                    entryFee: tournament.entryFee
+                };
+                
+                await this.db.collection('registrations').add(registrationData);
+                
+                // Deduct entry fee from wallet
+                const walletRef = this.db.collection('wallets').doc(this.state.user.uid);
+                await walletRef.update({
+                    balance: firebase.firestore.FieldValue.increment(-tournament.entryFee),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Add transaction record
+                await this.db.collection('transactions').add({
+                    userId: this.state.user.uid,
+                    type: 'entry_fee',
+                    amount: tournament.entryFee,
+                    description: `Tournament Entry - ${tournament.title}`,
+                    status: 'completed',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    reference: `REG${Date.now()}`,
+                    method: 'wallet',
+                    details: {
+                        tournamentId: tournamentId,
+                        tournamentName: tournament.title,
+                        teamName: teamName
+                    },
+                    fee: 0,
+                    netAmount: tournament.entryFee
+                });
+                
+                // Update tournament player count
+                const tournamentRef = this.db.collection('tournaments').doc(tournamentId);
+                await tournamentRef.update({
+                    currentPlayers: firebase.firestore.FieldValue.increment(1),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update user stats
+                const userRef = this.db.collection('users').doc(this.state.user.uid);
+                await userRef.update({
+                    'stats.tournamentsJoined': firebase.firestore.FieldValue.increment(1),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update local state
+                this.state.stats.walletBalance -= tournament.entryFee;
+                this.updateStats();
+                
+                this.showNotification("Success", `Registered for ${tournament.title}!`, "success");
+                
+                // Redirect to joined tournaments page
+                setTimeout(() => {
+                    window.location.href = `tournament-joined.html?success=true&tournament=${tournamentId}`;
+                }, 1500);
+                
+            } catch (error) {
+                console.error("Error registering for tournament:", error);
+                this.showNotification("Registration Failed", error.message || "Please try again", "error");
             }
         }
         
         viewTournamentDetails(tournamentId) {
-            const tournament = this.state.tournaments.find(t => t.id == tournamentId);
+            const tournament = this.state.tournaments.find(t => t.id === tournamentId);
             if (!tournament) return;
             
             const details = `
-                <strong>${tournament.title}</strong><br>
+                <strong style="color: var(--neon-blue);">${this.escapeHtml(tournament.title)}</strong><br><br>
                 <strong>Game:</strong> ${tournament.game}<br>
-                <strong>Prize Pool:</strong> ₮${tournament.prize}<br>
+                <strong>Status:</strong> ${tournament.status}<br>
+                <strong>Prize Pool:</strong> ₮${tournament.prize.toLocaleString()}<br>
                 <strong>Entry Fee:</strong> ₮${tournament.entryFee}<br>
-                <strong>Players:</strong> ${tournament.currentPlayers}/${tournament.maxPlayers}<br>
-                <strong>Start:</strong> ${this.formatDate(tournament.startDate)}<br>
+                <strong>Format:</strong> ${tournament.format}<br>
                 <strong>Platform:</strong> ${tournament.platform}<br>
-                <strong>Rules:</strong> ${tournament.rules}<br>
-                <strong>Description:</strong> ${tournament.description}
+                <strong>Players:</strong> ${tournament.currentPlayers}/${tournament.maxPlayers}<br>
+                <strong>Start:</strong> ${tournament.startDate.toLocaleString()}<br>
+                ${tournament.endDate ? `<strong>End:</strong> ${tournament.endDate.toLocaleString()}<br>` : ''}
+                ${tournament.registrationDeadline ? `<strong>Registration Deadline:</strong> ${tournament.registrationDeadline.toLocaleString()}<br>` : ''}
+                <br>
+                <strong>Description:</strong><br>${this.escapeHtml(tournament.description)}<br>
+                ${tournament.rules ? `<br><strong>Rules:</strong><br>${this.escapeHtml(tournament.rules)}` : ''}
             `;
             
             this.showNotification("Tournament Details", details, "info");
         }
         
-        shareTournament(tournamentId) {
-            const tournament = this.state.tournaments.find(t => t.id == tournamentId);
-            if (!tournament) return;
+        viewMatchDetails(matchId) {
+            const match = this.state.matches.find(m => m.id === matchId);
+            if (!match) return;
             
-            if (navigator.share) {
-                navigator.share({
-                    title: tournament.title,
-                    text: `Check out this ${tournament.game} tournament on TourneyHub! Prize: ₮${tournament.prize}`,
-                    url: window.location.href
-                }).catch(() => {
-                    this.copyToClipboard(`${tournament.title} - ₮${tournament.prize} prize pool!`);
-                });
-            } else {
-                this.copyToClipboard(`${tournament.title} - ₮${tournament.prize} prize pool!`);
+            const userTeam = match.userTeam === 'team1' ? match.team1 : 
+                           match.userTeam === 'team2' ? match.team2 : null;
+            const opponentTeam = match.userTeam === 'team1' ? match.team2 : 
+                               match.userTeam === 'team2' ? match.team1 : null;
+            
+            const isCompleted = match.status === 'completed';
+            const result = isCompleted && userTeam && opponentTeam ? 
+                (userTeam.score > opponentTeam.score ? "Victory" : 
+                 userTeam.score < opponentTeam.score ? "Defeat" : "Draw") : 
+                match.status === 'live' ? "Live" : "Upcoming";
+            
+            const details = `
+                <strong style="color: var(--neon-purple);">${this.escapeHtml(match.tournamentName)}</strong><br>
+                <strong>Match:</strong> ${this.escapeHtml(match.matchName)}<br>
+                <strong>Round:</strong> ${match.round}<br>
+                <strong>Stage:</strong> ${match.stage}<br>
+                <strong>Format:</strong> ${match.format}<br>
+                <strong>Status:</strong> ${match.status}<br>
+                <strong>Scheduled:</strong> ${match.scheduledTime.toLocaleString()}<br>
+                ${match.startTime ? `<strong>Started:</strong> ${match.startTime.toLocaleString()}<br>` : ''}
+                ${match.endTime ? `<strong>Ended:</strong> ${match.endTime.toLocaleString()}<br>` : ''}
+                <strong>Duration:</strong> ${match.duration}<br><br>
+                ${userTeam ? `<strong>Your Team:</strong> ${this.escapeHtml(userTeam.name)} (${userTeam.score})<br>` : ''}
+                ${opponentTeam ? `<strong>Opponent:</strong> ${this.escapeHtml(opponentTeam.name)} (${opponentTeam.score})<br><br>` : ''}
+                <strong>Result:</strong> ${result}<br>
+                ${match.result ? `<strong>Score:</strong> ${match.result}<br>` : ''}
+                ${match.winner ? `<strong>Winner:</strong> ${match.winner}<br>` : ''}
+                ${match.map ? `<strong>Map:</strong> ${match.map}<br>` : ''}
+                ${match.server ? `<strong>Server:</strong> ${match.server}<br>` : ''}
+                ${match.streamUrl ? `<br><a href="${match.streamUrl}" target="_blank" style="color: var(--neon-blue); text-decoration: none;">📺 Watch Stream</a>` : ''}
+            `;
+            
+            this.showNotification("Match Details", details, "info");
+        }
+        
+        viewTransactionDetails(transactionId) {
+            const transaction = this.state.transactions.find(t => t.id === transactionId);
+            if (!transaction) return;
+            
+            const typeColor = transaction.type === 'deposit' || transaction.type === 'prize' ? 'var(--neon-green)' : 
+                             transaction.type === 'withdrawal' ? 'var(--neon-pink)' : 
+                             transaction.type === 'entry_fee' ? 'var(--neon-orange)' : 'var(--neon-blue)';
+            
+            const statusColor = transaction.status === 'completed' ? 'var(--neon-green)' : 
+                               transaction.status === 'pending' ? 'var(--neon-orange)' : 
+                               transaction.status === 'failed' ? 'var(--neon-red)' : 'var(--text-secondary)';
+            
+            let detailsHTML = `
+                <strong style="color: ${typeColor};">${this.escapeHtml(transaction.description)}</strong><br><br>
+                <strong>Type:</strong> ${transaction.type}<br>
+                <strong>Amount:</strong> ${transaction.type === 'deposit' || transaction.type === 'prize' ? '+' : '-'}₮${transaction.amount.toLocaleString()}<br>
+                ${transaction.fee > 0 ? `<strong>Fee:</strong> ₮${transaction.fee}<br>` : ''}
+                ${transaction.netAmount !== transaction.amount ? `<strong>Net Amount:</strong> ₮${transaction.netAmount.toLocaleString()}<br>` : ''}
+                <strong>Status:</strong> <span style="color: ${statusColor};">${transaction.status}</span><br>
+                <strong>Date:</strong> ${transaction.timestamp.toLocaleString()}<br>
+                <strong>Reference:</strong> ${transaction.reference}<br>
+                <strong>Method:</strong> ${transaction.method}<br>
+            `;
+            
+            // Add transaction-specific details
+            if (transaction.details && Object.keys(transaction.details).length > 0) {
+                detailsHTML += '<br><strong>Details:</strong><br>';
+                for (const [key, value] of Object.entries(transaction.details)) {
+                    detailsHTML += `${key}: ${value}<br>`;
+                }
+            }
+            
+            this.showNotification("Transaction Details", detailsHTML, "info");
+        }
+        
+        async depositFunds() {
+            try {
+                const amountStr = prompt("Enter deposit amount (₮):", "500");
+                if (!amountStr) return;
+                
+                const amount = parseFloat(amountStr);
+                if (isNaN(amount) || amount <= 0) {
+                    this.showNotification("Invalid Amount", "Please enter a valid amount", "error");
+                    return;
+                }
+                
+                if (amount > 100000) {
+                    this.showNotification("Limit Exceeded", "Maximum deposit is ₮100,000", "error");
+                    return;
+                }
+                
+                this.showNotification("Processing", "Processing deposit...", "info");
+                
+                if (!this.db || !this.state.user) {
+                    // Mock deposit for demo
+                    setTimeout(() => {
+                        this.state.stats.walletBalance += amount;
+                        this.updateStats();
+                        
+                        // Add mock transaction
+                        this.state.transactions.unshift({
+                            id: 'dep' + Date.now(),
+                            type: 'deposit',
+                            amount: amount,
+                            description: 'Wallet Deposit',
+                            status: 'completed',
+                            timestamp: new Date(),
+                            reference: 'DEP' + Date.now().toString().slice(-6),
+                            method: 'card',
+                            details: { card: 'Demo Card' },
+                            fee: 0,
+                            netAmount: amount
+                        });
+                        
+                        this.renderTransactions();
+                        this.showNotification("Deposit Successful", `₮${amount.toLocaleString()} added to your wallet`, "success");
+                    }, 1000);
+                    return;
+                }
+                
+                // Real Firebase deposit
+                const transactionData = {
+                    userId: this.state.user.uid,
+                    type: 'deposit',
+                    amount: amount,
+                    description: 'Wallet Deposit',
+                    status: 'pending', // Will be completed after payment gateway
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    reference: `DEP${Date.now()}`,
+                    method: 'upi', // Default method
+                    details: {
+                        initiatedAt: new Date().toISOString()
+                    },
+                    fee: 0,
+                    netAmount: amount
+                };
+                
+                const transactionRef = await this.db.collection('transactions').add(transactionData);
+                
+                // In a real app, this would redirect to payment gateway
+                // For demo, we'll simulate successful payment
+                setTimeout(async () => {
+                    try {
+                        // Update transaction status
+                        await transactionRef.update({
+                            status: 'completed',
+                            'details.completedAt': new Date().toISOString()
+                        });
+                        
+                        // Update wallet balance
+                        const walletRef = this.db.collection('wallets').doc(this.state.user.uid);
+                        await walletRef.update({
+                            balance: firebase.firestore.FieldValue.increment(amount),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        this.state.stats.walletBalance += amount;
+                        this.updateStats();
+                        
+                        await this.loadTransactions(); // Refresh transactions
+                        this.showNotification("Deposit Successful", `₮${amount.toLocaleString()} added to your wallet`, "success");
+                        
+                    } catch (error) {
+                        console.error("Deposit completion error:", error);
+                        this.showNotification("Deposit Failed", "Please try again", "error");
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Deposit error:", error);
+                this.showNotification("Deposit Failed", "Please try again", "error");
             }
         }
         
-        copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                this.showNotification("Link Copied", "Tournament link copied to clipboard", "success");
-            });
+        async withdrawFunds() {
+            try {
+                const amountStr = prompt("Enter withdrawal amount (₮):", "200");
+                if (!amountStr) return;
+                
+                const amount = parseFloat(amountStr);
+                if (isNaN(amount) || amount <= 0) {
+                    this.showNotification("Invalid Amount", "Please enter a valid amount", "error");
+                    return;
+                }
+                
+                if (amount > this.state.stats.walletBalance) {
+                    this.showNotification("Insufficient Funds", "Withdrawal amount exceeds balance", "error");
+                    return;
+                }
+                
+                if (amount < 100) {
+                    this.showNotification("Minimum Amount", "Minimum withdrawal is ₮100", "error");
+                    return;
+                }
+                
+                const withdrawalFee = Math.max(5, amount * 0.02); // 2% fee, minimum ₮5
+                const netAmount = amount - withdrawalFee;
+                
+                if (!confirm(`Withdraw ₮${amount.toLocaleString()}?\nFee: ₮${withdrawalFee.toLocaleString()}\nYou will receive: ₮${netAmount.toLocaleString()}`)) {
+                    return;
+                }
+                
+                this.showNotification("Processing", "Processing withdrawal request...", "info");
+                
+                if (!this.db || !this.state.user) {
+                    // Mock withdrawal for demo
+                    setTimeout(() => {
+                        this.state.stats.walletBalance -= amount;
+                        this.updateStats();
+                        
+                        // Add mock transaction
+                        this.state.transactions.unshift({
+                            id: 'wdr' + Date.now(),
+                            type: 'withdrawal',
+                            amount: amount,
+                            description: 'Withdrawal to Bank',
+                            status: 'pending',
+                            timestamp: new Date(),
+                            reference: 'WDR' + Date.now().toString().slice(-6),
+                            method: 'bank_transfer',
+                            details: { account: 'XXXX1234', ifsc: 'SBIN0001234' },
+                            fee: withdrawalFee,
+                            netAmount: netAmount
+                        });
+                        
+                        this.renderTransactions();
+                        this.showNotification("Withdrawal Requested", `₮${netAmount.toLocaleString()} will be sent to your bank`, "success");
+                    }, 1000);
+                    return;
+                }
+                
+                // Real Firebase withdrawal
+                const transactionData = {
+                    userId: this.state.user.uid,
+                    type: 'withdrawal',
+                    amount: amount,
+                    description: 'Withdrawal Request',
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    reference: `WDR${Date.now()}`,
+                    method: 'bank_transfer',
+                    details: {
+                        requestedAt: new Date().toISOString(),
+                        fee: withdrawalFee,
+                        netAmount: netAmount
+                    },
+                    fee: withdrawalFee,
+                    netAmount: netAmount
+                };
+                
+                await this.db.collection('transactions').add(transactionData);
+                
+                // Update wallet balance
+                const walletRef = this.db.collection('wallets').doc(this.state.user.uid);
+                await walletRef.update({
+                    balance: firebase.firestore.FieldValue.increment(-amount),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                this.state.stats.walletBalance -= amount;
+                this.updateStats();
+                
+                await this.loadTransactions();
+                this.showNotification("Withdrawal Requested", `₮${netAmount.toLocaleString()} withdrawal pending approval`, "success");
+                
+            } catch (error) {
+                console.error("Withdrawal error:", error);
+                this.showNotification("Withdrawal Failed", "Please try again", "error");
+            }
         }
         
-        viewMatchDetails(matchId) {
-            const match = this.state.matches.find(m => m.id == matchId);
-            if (!match) return;
+        async createTeam() {
+            try {
+                const teamName = prompt("Enter team name:", `${this.state.userData.displayName || 'My'}'s Team`);
+                if (!teamName) return;
+                
+                if (teamName.length < 3) {
+                    this.showNotification("Invalid Name", "Team name must be at least 3 characters", "error");
+                    return;
+                }
+                
+                if (teamName.length > 50) {
+                    this.showNotification("Too Long", "Team name must be less than 50 characters", "error");
+                    return;
+                }
+                
+                const teamTag = prompt("Enter team tag (2-5 characters):", teamName.substring(0, 3).toUpperCase());
+                if (!teamTag) return;
+                
+                this.showNotification("Creating", "Creating team...", "info");
+                
+                if (!this.db || !this.state.user) {
+                    // Mock team creation for demo
+                    setTimeout(() => {
+                        this.showNotification("Team Created", `${teamName} has been created!`, "success");
+                    }, 1000);
+                    return;
+                }
+                
+                // Check if team name already exists
+                const existingTeam = await this.db.collection('teams')
+                    .where('name', '==', teamName)
+                    .limit(1)
+                    .get();
+                
+                if (!existingTeam.empty) {
+                    this.showNotification("Team Exists", "A team with this name already exists", "error");
+                    return;
+                }
+                
+                // Create team
+                const teamData = {
+                    name: teamName,
+                    tag: teamTag.toUpperCase(),
+                    captain: this.state.user.uid,
+                    captainName: this.state.userData.displayName || this.state.user.email.split('@')[0],
+                    players: [this.state.user.uid],
+                    playerNames: [this.state.userData.displayName || this.state.user.email.split('@')[0]],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    stats: {
+                        wins: 0,
+                        losses: 0,
+                        draws: 0,
+                        tournaments: 0,
+                        totalMatches: 0,
+                        winRate: 0
+                    },
+                    region: 'Global',
+                    logo: `https://api.dicebear.com/7.x/initials/svg?seed=${teamName}&backgroundColor=00f3ff`,
+                    bio: 'New team ready to compete!',
+                    socials: {},
+                    isActive: true
+                };
+                
+                await this.db.collection('teams').add(teamData);
+                this.showNotification("Team Created", `${teamName} (${teamTag}) has been created!`, "success");
+                
+            } catch (error) {
+                console.error("Create team error:", error);
+                this.showNotification("Team Creation Failed", "Please try again", "error");
+            }
+        }
+        
+        handleFabClick() {
+            const actions = [
+                { icon: 'plus', text: 'Create Tournament', action: () => this.createTournament() },
+                { icon: 'users', text: 'Invite Friends', action: () => this.inviteFriends() },
+                { icon: 'trophy', text: 'Quick Join', action: () => this.quickJoin() },
+                { icon: 'cog', text: 'Settings', action: () => this.openSettings() }
+            ];
             
-            this.showNotification("Match Details", `Loading details for ${match.tournament}...`, "info");
+            let menuHTML = `
+                <div id="fabMenu" style="position: fixed; bottom: 150px; right: 20px; background: rgba(20, 20, 40, 0.95); 
+                     backdrop-filter: blur(20px); border: 1px solid rgba(0, 243, 255, 0.2); 
+                     border-radius: 15px; padding: 15px; z-index: 100; min-width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                     animation: fadeIn 0.2s ease;">
+                    <div style="color: var(--neon-blue); font-weight: 600; margin-bottom: 10px; font-size: 14px;">Quick Actions</div>
+            `;
+            
+            actions.forEach(action => {
+                menuHTML += `
+                    <div onclick="window.dashboard.performAction('${action.text}')" 
+                         style="display: flex; align-items: center; gap: 10px; padding: 10px; cursor: pointer; 
+                                border-radius: 8px; margin-bottom: 5px;"
+                         onmouseover="this.style.background='rgba(0, 243, 255, 0.1)'"
+                         onmouseout="this.style.background='transparent'">
+                        <i class="fas fa-${action.icon}" style="color: var(--neon-blue); width: 20px;"></i>
+                        <span style="font-size: 14px;">${action.text}</span>
+                    </div>
+                `;
+            });
+            
+            menuHTML += `</div>`;
+            
+            // Remove existing menu if any
+            const existingMenu = document.getElementById('fabMenu');
+            if (existingMenu) existingMenu.remove();
+            
+            // Add new menu
+            document.body.insertAdjacentHTML('beforeend', menuHTML);
+            
+            // Close menu when clicking outside
+            setTimeout(() => {
+                const closeMenu = (e) => {
+                    const menu = document.getElementById('fabMenu');
+                    if (menu && !menu.contains(e.target) && e.target.id !== 'fabButton') {
+                        menu.remove();
+                        document.removeEventListener('click', closeMenu);
+                    }
+                };
+                document.addEventListener('click', closeMenu);
+            }, 10);
+        }
+        
+        performAction(actionName) {
+            switch(actionName) {
+                case 'Create Tournament':
+                    this.createTournament();
+                    break;
+                case 'Invite Friends':
+                    this.inviteFriends();
+                    break;
+                case 'Quick Join':
+                    this.quickJoin();
+                    break;
+                case 'Settings':
+                    this.openSettings();
+                    break;
+            }
+            
+            // Remove menu
+            const menu = document.getElementById('fabMenu');
+            if (menu) menu.remove();
+        }
+        
+        createTournament() {
+            this.showNotification("Coming Soon", "Tournament creation feature coming soon!", "info");
+        }
+        
+        inviteFriends() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join TourneyHub!',
+                    text: 'Check out TourneyHub - the best gaming tournament platform!',
+                    url: window.location.origin
+                }).catch(err => {
+                    console.log('Error sharing:', err);
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.origin).then(() => {
+                    this.showNotification("Link Copied", "Invite link copied to clipboard", "success");
+                }).catch(err => {
+                    console.log('Clipboard error:', err);
+                    this.showNotification("Error", "Could not copy link", "error");
+                });
+            }
+        }
+        
+        quickJoin() {
+            const availableTournaments = this.state.tournaments.filter(t => 
+                t.status === 'live' || t.status === 'registering'
+            );
+            
+            if (availableTournaments.length > 0) {
+                const randomTournament = availableTournaments[Math.floor(Math.random() * availableTournaments.length)];
+                this.registerForTournament(randomTournament.id);
+            } else {
+                this.showNotification("No Tournaments", "No available tournaments to join", "info");
+            }
+        }
+        
+        openSettings() {
+            this.showNotification("Settings", "Profile settings coming soon!", "info");
         }
         
         logout() {
-            if (this.auth) {
-                this.auth.signOut().then(() => {
+            if (confirm("Are you sure you want to logout?")) {
+                if (this.auth) {
+                    this.auth.signOut().then(() => {
+                        window.location.href = 'login.html';
+                    }).catch(error => {
+                        console.error("Logout error:", error);
+                        this.showNotification("Logout Failed", "Please try again", "error");
+                    });
+                } else {
                     window.location.href = 'login.html';
-                }).catch(error => {
-                    console.error("Logout error:", error);
-                    this.showNotification("Logout Failed", "Please try again", "error");
-                });
-            } else {
-                this.showNotification("Logged Out", "Redirecting to login...", "info");
-                setTimeout(() => {
-                    console.log("Redirecting to login...");
-                }, 1500);
+                }
             }
         }
         
         showNotification(title, message, type = "info") {
-            const toast = document.getElementById('notificationToast');
-            const toastTitle = document.getElementById('toastTitle');
-            const toastMessage = document.getElementById('toastMessage');
-            const toastIcon = toast?.querySelector('i');
-            
-            if (!toast || !toastTitle || !toastMessage) return;
-            
-            toastTitle.textContent = title;
-            toastMessage.textContent = message;
-            
-            const typeColors = {
-                success: { bg: 'rgba(0, 255, 157, 0.1)', color: 'var(--neon-green)', icon: 'check-circle' },
-                error: { bg: 'rgba(255, 45, 85, 0.1)', color: 'var(--neon-pink)', icon: 'exclamation-circle' },
-                warning: { bg: 'rgba(255, 204, 0, 0.1)', color: '#ffcc00', icon: 'exclamation-triangle' },
-                info: { bg: 'rgba(0, 243, 255, 0.1)', color: 'var(--neon-blue)', icon: 'info-circle' }
-            };
-            
-            const typeConfig = typeColors[type] || typeColors.info;
-            
-            if (toastIcon) {
-                toastIcon.className = `fas fa-${typeConfig.icon}`;
-                toastIcon.parentElement.style.background = typeConfig.bg;
-                toastIcon.parentElement.style.color = typeConfig.color;
+            try {
+                const toast = document.getElementById('notificationToast');
+                const toastTitle = document.getElementById('toastTitle');
+                const toastMessage = document.getElementById('toastMessage');
+                const toastIcon = toast?.querySelector('i');
+                
+                if (!toast || !toastTitle || !toastMessage) {
+                    console.error("Toast elements not found");
+                    return;
+                }
+                
+                toastTitle.textContent = title;
+                toastMessage.innerHTML = message;
+                
+                const typeColors = {
+                    success: { bg: 'rgba(0, 255, 157, 0.1)', color: 'var(--neon-green)', icon: 'check-circle' },
+                    error: { bg: 'rgba(255, 45, 85, 0.1)', color: 'var(--neon-red)', icon: 'exclamation-circle' },
+                    warning: { bg: 'rgba(255, 204, 0, 0.1)', color: '#ffcc00', icon: 'exclamation-triangle' },
+                    info: { bg: 'rgba(0, 243, 255, 0.1)', color: 'var(--neon-blue)', icon: 'info-circle' }
+                };
+                
+                const typeConfig = typeColors[type] || typeColors.info;
+                
+                if (toastIcon) {
+                    toastIcon.className = `fas fa-${typeConfig.icon}`;
+                    toastIcon.parentElement.style.background = typeConfig.bg;
+                    toastIcon.parentElement.style.color = typeConfig.color;
+                }
+                
+                toast.style.borderLeftColor = typeConfig.color;
+                toast.classList.add('show');
+                
+                // Auto hide after 5 seconds
+                setTimeout(() => {
+                    this.hideNotification();
+                }, 5000);
+                
+            } catch (error) {
+                console.error("Error showing notification:", error);
             }
-            
-            toast.style.borderLeftColor = typeConfig.color;
-            
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                this.hideNotification();
-            }, 5000);
         }
         
         hideNotification() {
@@ -1977,30 +3734,74 @@
         }
     }
     
+    // Initialize dashboard when DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOM loaded, initializing dashboard...");
+        document.body.classList.add('loading-skeleton');
+        
+        // Remove no-js class
         document.documentElement.classList.remove('no-js');
         
-        window.dashboard = new GamingDashboard();
+        // Create dashboard instance
+        window.dashboard = new AdvancedGamingDashboard();
         
+        // Debug helpers removed: no global forceLoadMatches/debugMatches to avoid exposing match debug UI
+        
+        // Quick test function to load mock matches
+        window.loadTestMatches = () => {
+            console.log("Loading test matches...");
+            window.dashboard.showNotification("Test", "Loading test matches...", "info");
+            
+            window.dashboard.loadMockMatches();
+            window.dashboard.renderMatches();
+            
+            window.dashboard.showNotification("Success", `${window.dashboard.state.matches.length} test matches loaded!`, "success");
+        };
+        
+        // Add touch feedback for mobile
         document.addEventListener('touchstart', function() {}, {passive: true});
         
+        // Prevent zoom on double tap
         let lastTouchEnd = 0;
         document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
+            const now = Date.now();
             if (now - lastTouchEnd <= 300) {
                 event.preventDefault();
             }
             lastTouchEnd = now;
         }, false);
+        
+        // Handle page visibility
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && window.dashboard && window.dashboard.state.isOnline) {
+                // Refresh data when page becomes visible
+                setTimeout(() => {
+                    window.dashboard.refreshAll();
+                }, 1000);
+            }
+        });
+        
+        console.log("Dashboard initialization complete");
     });
     
+    window.addEventListener('load', () => {
+        document.body.classList.remove('loading-skeleton');
+    });
+    
+    // Global error handling
     window.addEventListener('error', function(e) {
         console.error('Global error:', e.error);
+        // Don't show error notification for minor errors
     });
     
     window.addEventListener('unhandledrejection', function(e) {
         console.error('Unhandled promise rejection:', e.reason);
     });
+    
+    // Make dashboard available globally for debugging
+    window.getDashboardState = function() {
+        return window.dashboard ? window.dashboard.state : null;
+    };
     </script>
 </body>
 </html>

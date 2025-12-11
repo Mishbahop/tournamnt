@@ -235,7 +235,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
-  padding-bottom: 90px;
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
 }
 
 /* Remove tap highlights and improve touch */
@@ -391,8 +391,10 @@ a, button, .btn, .nav-item {
   display: flex;
   justify-content: space-around;
   padding: 12px 8px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   z-index: 1000;
   box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
 }
 
 .nav-item {

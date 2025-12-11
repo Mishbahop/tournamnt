@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Matches Display</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #b967ff;
+            --neon-pink: #ff2d95;
+            --neon-green: #00ff9d;
+            --neon-orange: #ff7b00;
+            --neon-red: #ff2d55;
+            --neon-yellow: #ffcc00;
+            --bg-dark: #0a0a14;
+            --bg-surface: rgba(20, 20, 40, 0.8);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0d0;
+            --border: #2d3748;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0a0a20 50%, #151530 100%);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 243, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn.success {
+            background: rgba(0, 255, 157, 0.1);
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+        
+        .btn.warning {
+            background: rgba(255, 204, 0, 0.1);
+            border-color: var(--neon-yellow);
+            color: var(--neon-yellow);
+        }
+        
+        #matchesList {
+            min-height: 200px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--bg-surface);
+            border-radius: 10px;
+            border-left: 3px solid var(--neon-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-crosshairs"></i> Matches Display Test</h1>
+            <p>Testing the matches display functionality</p>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="btn" onclick="loadMockMatches()">
+                <i class="fas fa-plus"></i> Load Mock Matches
+            </button>
+            <button class="btn success" onclick="renderMatches()">
+                <i class="fas fa-sync"></i> Re-render Matches
+            </button>
+            <button class="btn warning" onclick="clearMatches()">
+                <i class="fas fa-trash"></i> Clear Matches
+            </button>
+            <button class="btn" onclick="debugMatches()">
+                <i class="fas fa-bug"></i> Debug Info
+            </button>
+        </div>
+        
+        <div id="matchesList">
+            <!-- Matches will be rendered here -->
+        </div>
+        
+        <div class="status">
+            <h3>Status</h3>
+            <div id="statusInfo">Ready to test matches display</div>
+        </div>
+    </div>
+
+    <script>
+        // Mock AppState for testing
+        const AppState = {
+            matches: []
+        };
+        
+        // Mock DOM object
+        const DOM = {
+            matchesList: document.getElementById('matchesList')
+        };
+        
+        // Mock functions
+        function formatCurrency(amount) {
+            return `₮${amount.toLocaleString()}`;
+        }
+        
+        function formatDate(date) {
+            if (!date) return 'N/A';
+            
+            try {
+                const d = date instanceof Date ? date : new Date(date);
+                if (isNaN(d.getTime())) return 'Invalid Date';
+                
+                const now = new Date();
+                const diff = now - d;
+                
+                if (diff < 60000) return 'Just now';
+                if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+                if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+                if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+                
+                return d.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+                });
+            } catch (error) {
+                console.error("Date formatting error:", error, date);
+                return 'N/A';
+            }
+        }
+        
+        function viewMatch(matchId) {
+            alert(`Viewing match: ${matchId}`);
+        }
+        
+        function showToast(message, type) {
+            document.getElementById('statusInfo').innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+        }
+        
+        // Mock matches data
+        function getMockMatches() {
+            const now = new Date();
+            return [
+                {
+                    id: 'mock1',
+                    tournamentName: 'Valorant Pro Series',
+                    round: 'Semi Finals',
+                    format: 'BO3',
+                    status: 'completed',
+                    date: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+                    userScore: 13,
+                    opponentScore: 9,
+                    opponent: 'Phoenix Rising',
+                    prize: 2500,
+                    result: 'victory'
+                },
+                {
+                    id: 'mock2',
+                    tournamentName: 'CS:GO Championship',
+                    round: 'Group Stage',
+                    format: 'BO1',
+                    status: 'live',
+                    date: new Date(now.getTime() - 30 * 60 * 1000),
+                    userScore: 8,
+                    opponentScore: 7,
+                    opponent: 'Team Titans',
+                    prize: 1500,
+                    result: 'ongoing'
+                },
+                {
+                    id: 'mock3',
+                    tournamentName: 'Valorant Pro Series',
+                    round: 'Quarter Finals',
+                    format: 'BO3',
+                    status: 'upcoming',
+                    date: new Date(now.getTime() + 45 * 60 * 1000),
+                    userScore: 0,
+                    opponentScore: 0,
+                    opponent: 'Shadow Wolves',
+                    prize: 1200,
+                    result: null
+                }
+            ];
+        }
+        
+        // Load the renderMatches function from dashboard.js
+        function renderMatches() {
+            console.log('Rendering matches:', AppState.matches);
+            
+            if (!DOM.matchesList) {
+                console.error('matchesList DOM element not found');
+                return;
+            }
+            
+            if (!AppState.matches || AppState.matches.length === 0) {
+                DOM.matchesList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;">⚔️</div>
+                        <h4 style="margin-bottom: 10px; color: var(--text-primary);">No Matches Yet</h4>
+                        <p style="margin-bottom: 20px;">Load some mock matches to test the display</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = AppState.matches.map(match => {
+                try {
+                    const isUpcoming = match.status === 'upcoming' || match.status === 'scheduled';
+                    const isLive = match.status === 'live';
+                    const isCompleted = match.status === 'completed';
+                    
+                    let resultType = 'upcoming';
+                    let resultText = 'UPCOMING';
+                    let resultColor = 'var(--neon-orange)';
+                    let resultBg = 'rgba(255, 204, 0, 0.2)';
+                    
+                    if (isLive) {
+                        resultType = 'live';
+                        resultText = 'LIVE';
+                        resultColor = 'var(--neon-pink)';
+                        resultBg = 'rgba(255, 45, 149, 0.2)';
+                    } else if (isCompleted) {
+                        const userScore = match.userScore || 0;
+                        const opponentScore = match.opponentScore || 0;
+                        
+                        if (userScore > opponentScore) {
+                            resultType = 'victory';
+                            resultText = 'VICTORY';
+                            resultColor = 'var(--neon-green)';
+                            resultBg = 'rgba(0, 255, 157, 0.2)';
+                        } else if (userScore < opponentScore) {
+                            resultType = 'defeat';
+                            resultText = 'DEFEAT';
+                            resultColor = 'var(--neon-red)';
+                            resultBg = 'rgba(255, 45, 85, 0.2)';
+                        } else {
+                            resultType = 'draw';
+                            resultText = 'DRAW';
+                            resultColor = 'var(--neon-yellow)';
+                            resultBg = 'rgba(255, 204, 0, 0.2)';
+                        }
+                    }
+                    
+                    let timeText = 'TBD';
+                    if (match.date) {
+                        timeText = formatDate(match.date);
+                    }
+                    
+                    return `
+                        <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin-bottom: 15px; transition: all 0.3s; cursor: pointer;" 
+                             onclick="viewMatch('${match.id}')"
+                             onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--neon-blue)'"
+                             onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border)'">
+                          
+                          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                              <h3 style="color: var(--text-primary); margin-bottom: 5px; font-size: 16px; font-weight: 600;">
+                                ${match.tournamentName || 'Tournament Match'}
+                              </h3>
+                              <div style="color: var(--text-secondary); font-size: 14px;">
+                                <i class="fas fa-flag" style="margin-right: 5px;"></i>
+                                ${match.round || 'Match'} • ${match.format || 'BO1'}
+                              </div>
+                            </div>
+                            <span style="color: ${resultColor}; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; background: ${resultBg};">
+                              ${isLive ? '<i class="fas fa-circle" style="animation: pulse 1.5s infinite; margin-right: 5px;"></i>' : ''}
+                              ${resultText}
+                            </span>
+                          </div>
+                          
+                          <div style="display: flex; align-items: center; justify-content: space-between; margin: 20px 0;">
+                            <div style="text-align: center; flex: 1;">
+                              <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 18px;">
+                                YOU
+                              </div>
+                              <div style="font-weight: 600; margin-bottom: 5px; color: ${resultType === 'victory' ? 'var(--neon-green)' : 'var(--text-primary)'};">
+                                Your Team
+                              </div>
+                              ${isCompleted ? `<div style="font-size: 24px; font-weight: 800; color: ${resultType === 'victory' ? 'var(--neon-green)' : resultType === 'defeat' ? 'var(--neon-pink)' : 'var(--neon-yellow)'};">${match.userScore || 0}</div>` : ''}
+                            </div>
+                            
+                            <div style="text-align: center; padding: 0 20px;">
+                              <div style="width: 40px; height: 40px; border-radius: 50%; background: ${isUpcoming ? 'linear-gradient(135deg, var(--neon-blue), var(--neon-purple))' : 'var(--bg-dark)'}; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-weight: 700; font-size: 14px; color: ${isUpcoming ? 'white' : 'var(--text-secondary)'};">
+                                VS
+                              </div>
+                              <div style="font-size: 12px; color: var(--text-secondary);">${match.format || 'BO1'}</div>
+                            </div>
+                            
+                            <div style="text-align: center; flex: 1;">
+                              <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--neon-pink), #ff0055); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 16px;">
+                                ${match.opponent ? match.opponent.charAt(0).toUpperCase() : 'OP'}
+                              </div>
+                              <div style="font-weight: 600; margin-bottom: 5px;">
+                                ${match.opponent || 'Opponent'}
+                              </div>
+                              ${isCompleted ? `<div style="font-size: 24px; font-weight: 800; color: ${resultType === 'defeat' ? 'var(--neon-green)' : resultType === 'victory' ? 'var(--neon-pink)' : 'var(--neon-yellow)'};">${match.opponentScore || 0}</div>` : ''}
+                            </div>
+                          </div>
+                          
+                          <div style="text-align: center; color: var(--text-secondary); margin-top: 15px; font-size: 14px; border-top: 1px solid var(--border); padding-top: 15px;">
+                            <i class="fas fa-clock" style="margin-right: 5px;"></i>
+                            ${isCompleted ? `Completed • ${timeText}` : 
+                              isLive ? `Live • Started ${timeText}` :
+                              `Scheduled • ${timeText}`}
+                            ${match.prize ? `<br><i class="fas fa-trophy" style="margin-right: 5px; color: var(--neon-yellow);"></i>Prize: ${formatCurrency(match.prize)}` : ''}
+                          </div>
+                          
+                          <div style="margin-top: 15px; text-align: center;">
+                            <button onclick="event.stopPropagation(); viewMatch('${match.id}')" 
+                                    style="background: ${isCompleted ? 'rgba(185, 103, 255, 0.1)' : 'rgba(0, 243, 255, 0.1)'}; 
+                                           border: 1px solid ${isCompleted ? 'var(--neon-purple)' : 'var(--neon-blue)'}; 
+                                           color: ${isCompleted ? 'var(--neon-purple)' : 'var(--neon-blue)'}; 
+                                           padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                              <i class="fas fa-${isCompleted ? 'chart-bar' : isLive ? 'play' : 'info-circle'}" style="margin-right: 5px;"></i>
+                              ${isCompleted ? 'View Stats' : isLive ? 'Join Match' : 'Details'}
+                            </button>
+                          </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('Error rendering match:', match, error);
+                    return `
+                        <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin-bottom: 15px;">
+                          <div style="text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-exclamation-triangle" style="margin-right: 5px;"></i>
+                            Error loading match data
+                          </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            DOM.matchesList.innerHTML = html;
+            console.log('Matches rendered successfully');
+            showToast('Matches rendered successfully', 'success');
+        }
+        
+        // Test functions
+        function loadMockMatches() {
+            AppState.matches = getMockMatches();
+            showToast(`Loaded ${AppState.matches.length} mock matches`, 'info');
+            renderMatches();
+        }
+        
+        function clearMatches() {
+            AppState.matches = [];
+            renderMatches();
+            showToast('Matches cleared', 'warning');
+        }
+        
+        function debugMatches() {
+            console.log('=== MATCHES DEBUG ===');
+            console.log('AppState.matches:', AppState.matches);
+            console.log('DOM.matchesList:', DOM.matchesList);
+            
+            const info = `
+                <strong>Debug Info:</strong><br>
+                Matches count: ${AppState.matches ? AppState.matches.length : 0}<br>
+                DOM element: ${DOM.matchesList ? 'Found' : 'Not found'}<br>
+                Element ID: ${document.getElementById('matchesList') ? 'Found' : 'Not found'}
+            `;
+            
+            document.getElementById('statusInfo').innerHTML = info;
+        }
+        
+        // Auto-load mock matches on page load
+        window.addEventListener('load', () => {
+            loadMockMatches();
+        });
+    </script>
+</body>
+</html>

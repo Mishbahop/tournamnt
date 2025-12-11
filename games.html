@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tournaments | TourneyHub - Compete & Win</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> 
-    <!-- Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
@@ -53,6 +54,7 @@
   display: flex;
   justify-content: space-around;
   padding: 12px 5px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   z-index: 1000;
   box-shadow: 
     0 -5px 30px rgba(108, 99, 255, 0.2),
@@ -62,6 +64,7 @@
     rgba(20, 20, 40, 0.95) 0%,
     rgba(15, 15, 30, 0.98) 50%,
     rgba(10, 10, 25, 0.95) 100%);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
 }
 
 .nav-item {
@@ -358,7 +361,7 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
-    padding-bottom: 80px; /* Space for bottom nav */
+    padding-bottom: calc(110px + env(safe-area-inset-bottom)); /* Space for bottom nav + safe area */
 }
 
 body::before {
@@ -1732,25 +1735,30 @@ body::before {
 
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-text">Home</span>
+        <a href="tournament-joined.html" class="nav-item">
+            <span class="nav-icon">⚔️</span>
+            <span class="nav-text">Tourneys</span>
         </a>
         <a href="games.html" class="nav-item active">
             <span class="nav-icon">🎮</span>
             <span class="nav-text">Games</span>
         </a>
+        <a href="index.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
+        </a>
         <a href="wallet.html" class="nav-item">
             <span class="nav-icon">💰</span>
             <span class="nav-text">Wallet</span>
         </a>
-        <a href="leaderboards.html" class="nav-item">
-            <span class="nav-icon">🏆</span>
-            <span class="nav-text">Rankings</span>
-        </a>
-        <a href="profile.html" class="nav-item">
+        <a href="dashboard.html" class="nav-item">
             <span class="nav-icon">👑</span>
             <span class="nav-text">Pro</span>
+        </a>
+        <a href="admin.html" class="nav-item" id="organizerNav" style="display:none;">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Organizer</span>
+            <!-- Organizer nav is only shown for admins via JS -->
         </a>
     </nav>
 
